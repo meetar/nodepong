@@ -1,0 +1,15 @@
+{
+  "name": "NodePong",
+  "description": "NodePong game",
+  "version": "0.0.1",
+  "author": "Peter Richardson <peter@zoomy.net>",
+  "directories": {
+    "lib": ""
+  },
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "socket.io": "*"
+  }
+}

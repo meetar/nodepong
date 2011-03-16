@@ -5,6 +5,7 @@ var lastBallX = 0, lastBallY = 0;
 var lastPaddleY = 0;
 var deltax = 0, deltay = 0;
 
+// array of score-displaying divs
 var scores = {
   0:[1,2,3,5,6,7],
   1:[3,6],
@@ -235,7 +236,7 @@ function collisionDetection() {
   if (ix1 <= px2 && ix2 >= px1 && iy1 <= py2 && iy2 >= py1) {
     // successful return
 
-    // calculate english based on current relative posisions
+    // calculate english based on current relative positions
     var relativeY = ball.position().top+(ball.width()/2) - paddle.position().top;
     english(relativeY);
     colliding = false;
@@ -249,7 +250,7 @@ function collisionDetection() {
 
 function ready() {
   $("#welcome").css("visibility","hidden");
-  $(document).mousemove(function(e){ mouseY = e.pageY; });
+  $(document).mousemove(function(e){ mouseY = e.pageY; }); // turn on mouse tracking
 
   // i don't think this works
   //$(court).tap(function(e){

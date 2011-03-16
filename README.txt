@@ -5,11 +5,9 @@ socket.io for websocket integration
 jQuery for dynamic browser interaction
 jQuery touch for mobile touch support
 
-To function, this app requires that node.js be installed, as well as the node module socket.io, using npm (node package manager).
-
 This repository is a work in progress, and may not function from day to day. I'll list stable versions below. Additionally, the components are all non-proprietary open standards, and continually in flux.
 
-This is my first attempt at a network game, and my first foray back into both JavaScript and game construction in a long time. I'll try to keep things well-commented to guide those who are interested in following along, and eventually I hope to write a clear set of tutorials explaining what I'm up to, so other interested parties can avoid the same problems I encountered.
+This is my first attempt at a network game, and my first foray back into both javaScript and game construction in a long time. I'll try to keep things well-commented to guide those who are interested in following along, and eventually I hope to write a clear set of tutorials explaining what I'm up to, so other interested parties can avoid the same problems I encountered.
 
 Ping,
 Peter Richardson

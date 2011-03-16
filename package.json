@@ -2,14 +2,21 @@
   "name": "NodePong",
   "description": "NodePong game",
   "version": "0.0.1",
-  "author": "Peter Richardson <peter@zoomy.net>",
+  "author": "Peter Richardson <github@zoomy.net>",
   "directories": {
-    "lib": ""
+    "lib": "."
   },
   "engines": {
     "node": "*"
   },
   "dependencies": {
     "socket.io": "*"
+  },
+  "files": [
+    ""
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/meetar/NodePong.git"
   }
 }

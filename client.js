@@ -260,7 +260,6 @@ function ready() {
   // activate paddle touch areas
   //$("#p1touch").draggable();
   //$("#p2touch").draggable();
-
   socket.send({type:'ready', name:$("#name").val()});
 }
 

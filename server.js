@@ -26,7 +26,7 @@ send404 = function(res){
   res.end();
 };
 
-server.listen(80);
+server.listen(9980);
 
 // socket.io, I choose you
 var io = io.listen(server);
@@ -72,6 +72,7 @@ io.on('connection', function(client){
     }
 
     if (msg.type == 'ready') {
+      log('ready msg');
       if (!hasAttr(queue, "id", client.sessionId)) {
         log('ready: '+msg.name+" "+client.sessionId)
 
@@ -540,7 +541,7 @@ function moveDivs() {
   // Test for wall collision
 
   // var to enable scoring - useful for testing touch
-  var scoringOn = false;
+  var scoringOn = true;
 
   if (ballx == maxx && scoringOn) { // P1 point
     justScored = "p1";

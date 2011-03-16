@@ -9,7 +9,7 @@ To function, this app requires that node.js be installed, as well as the node mo
 
 This repository is a work in progress, and may not function from day to day. Additionally, the components are all non-proprietary open standards, and continually in flux.
 
-Working versions may be occasionally playable at http://nodepong.duostack.net/pong.html
+Working versions may be occasionally playable at http://nodepong.duostack.net:9980/pong.html
 
 This is my first attempt at a network game, and my first foray back into both JavaScript and game construction in a long time. I'll try to keep things well-commented to guide those who are interested in following along, and eventually I hope to write a clear set of tutorials explaining what I've done and how I've done it, so other interested parties can avoid the problems I encountered and make cooler things faster.
 

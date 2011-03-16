@@ -150,7 +150,7 @@ function command(msg){
   }
 }
 
-var socket = new io.Socket(null, {port: 80, rememberTransport: false});
+var socket = new io.Socket(null, {port: 9980, rememberTransport: false});
 socket.connect();
 // sends message to 'command' function
 socket.on('message', function(obj){

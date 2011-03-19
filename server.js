@@ -72,7 +72,6 @@ io.on('connection', function(client){
     }
 
     if (msg.type == 'ready') {
-      log('ready msg');
       if (!hasAttr(queue, "id", client.sessionId)) {
         log('ready: '+msg.name+" "+client.sessionId)
 
@@ -89,6 +88,8 @@ io.on('connection', function(client){
 
         queue.push(player);
         send(client.sessionId, {type:'html', html:player.name});
+        log('queue.size:'+queue.length);
+        send(client.sessionId, {type:'position', position:queue.length});
         send(client.sessionId, {type:'display', alert:"WELCOME "+player.name});
         // broadcast self to all
         io.broadcast({type:"board", mode:"add", name:player.name, wins:player.wins, losses:player.losses});

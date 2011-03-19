@@ -3,7 +3,9 @@
     <meta name="viewport" content="width=640; initial-scale=.5; maximum-scale=1.0;">
     <script src="http://code.jquery.com/jquery-1.5.min.js"></script>
     <script src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
+    <!-- don't remember why jquery ui is in here -->
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+
     <script src="http://cdn.socket.io/stable/socket.io.js"></script>
 
     <style type="text/css">
@@ -76,6 +78,7 @@ WHAT YOUR PONG NAME<br><form id="nameform"><input type="text" id="name" />
 </div>
 <div style="top: 500; position:absolute">
 <h1 id="playing"></h1>
+<h1 id="position"></h1>
 <h1 id="status2"></h1>
 
 <!-- leaderboard -->
@@ -102,8 +105,16 @@ $(document).ready(function() {
   $("#name").val(makeid());
 
   // testing jquery touch
-  $("#p1touch").draggable();
-  $("#p2touch").draggable();
+  $("#court").bind('touchstart', function(e) {
+    //mouseY = e.touches[0].pageY;
+    //alert(e);
+    msg = '';
+    for (x in e) {
+      msg += "["+x+"]:"+e[x]+"\n\n";
+    }
+    alert(msg);
+  });
+  //$("div").bind('touchstart',function() {
 
   ready();
 

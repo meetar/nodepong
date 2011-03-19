@@ -86,6 +86,9 @@ function command(msg){
     case 'html':
       $('#status2').html(msg.html);
       break;
+    case 'position':
+      $('#position').html(msg.position);
+      break;
     case 'playing':
       if (msg.paddle == "p1" || msg.paddle == "p2") {
         playing = msg.paddle;

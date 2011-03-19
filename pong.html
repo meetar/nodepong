@@ -105,15 +105,17 @@ $(document).ready(function() {
   $("#name").val(makeid());
 
   // testing jquery touch
-  $("#court").bind('touchstart', function(e) {
+  $("#court").bind('touchstart', function(event) {
     //mouseY = e.touches[0].pageY;
     //alert(e);
+  	var e = event.originalEvent;
     msg = '';
     for (x in e) {
       msg += "["+x+"]:"+e[x]+"\n\n";
     }
     alert(msg);
   });
+
   //$("div").bind('touchstart',function() {
 
   ready();

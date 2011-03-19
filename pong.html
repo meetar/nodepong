@@ -105,15 +105,16 @@ $(document).ready(function() {
   $("#name").val(makeid());
 
   // testing jquery touch
-  $("#court").bind('touchstart', function(event) {
-    //mouseY = e.touches[0].pageY;
+  $("#court").bind('touchstart touchmove', function(event) {
     //alert(e);
-  	var e = event.originalEvent;
-    msg = '';
-    for (x in e) {
-      msg += "["+x+"]:"+e[x]+"\n\n";
-    }
-    alert(msg);
+    var e = event.originalEvent;
+    mouseY = e.touches[0].pageY;
+    return false;
+    //msg = '';
+    //for (x in e) {
+    //  msg += "["+x+"]:"+e[x]+"\n\n";
+    //}
+    //alert(msg);
   });
 
   //$("div").bind('touchstart',function() {

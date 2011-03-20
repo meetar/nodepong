@@ -1,0 +1,18 @@
+NodePong is a browser-based multi-player implementation of the classic arcade game Pong, written in JavaScript. My goal is to write a very simple game playable on desktop and mobile devices, with enough features to keep it interesting. It uses:
+
+node.js for non-blocking server code
+socket.io for websocket integration
+jQuery for dynamic browser interaction
+jQuery mobile for mobile touch support
+
+To run the server and serve the app, node.js and socket.io must be installed. To play, you just need a webkit browser (or another browser which supports websockets), such as Chrome or Safari.
+
+This repository and all of its components are works in progress, and may not function from day to day. It may be occasionally playable at http://nodepong.duostack.net:9980/pong.html - give it a shot!
+
+This is a learning exercise -- I'll try to keep things well-commented, and eventually I hope to write a clear set of tutorials explaining what I've done and how I've done it, so like minds can avoid the problems I encountered and make cooler things faster.
+
+Ping!
+Peter Richardson
+http://zoomy.net
+[@meetar on Twitter][http://twitter.com/#!/meetar]
+NYC, Mar 15 2011

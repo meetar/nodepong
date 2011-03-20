@@ -12,9 +12,19 @@ server = http.createServer(function(req, res){
     if (err) return send404(res);
 
     var doctype = path.split('.');
+    log (path+' doctype: '+doctype);
     doctype = doctype[doctype.length-1];
 
-    res.writeHead(200, {'Content-Type': doctype == 'html' ? 'text/html' : 'text/javascript'})
+    var contentType = 'text/plain';
+
+    if (doctype == 'html') contentType = 'text/html';
+    else if (doctype == 'js') contentType = 'text/javascript';
+    else if (doctype == 'css') contentType = 'text/css';
+
+    log ('contype: '+contentType);
+
+    //res.writeHead(200, {'contentType': contentType})
+    res.writeHead(200, {'contentType': 'text/plain'})
     res.write(data, 'utf8');
     res.end();
   });
@@ -26,16 +36,17 @@ send404 = function(res){
   res.end();
 };
 
-server.listen(9980);
+server.listen(9980); // duostack's experimental websockets port
 
 // socket.io, I choose you
 var io = io.listen(server);
 
 sessions = []; // list of all sessions
-queue = []; // player queue
+queue = []; // list of all players waiting to play, in order
+// any sessions not in queue are spectators
 var player1 = 0, player2 = 0; // current players
 
-// tidier helper app with session checking to prevent send errors
+// tidier helper function with session checking to prevent send errors
 function send(client, message){
   if (contains(sessions, client)) io.clients[client].send(message);
 }
@@ -52,17 +63,18 @@ Object.size = function(obj) {
 // ***** CLIENT CONNECT ***** //
 
 io.on('connection', function(client){
-  if (!contains(sessions, client.sessionId)) {
+  if (!contains(sessions, client.sessionId)) { // prevent double connections
     sessions.push(client.sessionId);
     log('\nCONNECT: '+client.sessionId);
   }
 
   client.on('message', function(msg){
-    // for logging all messages
+    // to log all messages from clients:
     //var logmsg = 'msg: ';
     //for (i in msg) { logmsg += (i+":"+msg[i]+" "); }
     //log(logmsg);
 
+    // receive player's position and prepare for broadcast
     if (msg.type == 'move') {
       if (msg.which == "p1") {
         p1pos = msg.y;
@@ -71,8 +83,9 @@ io.on('connection', function(client){
       }
     }
 
+    // session announces readiness to play
     if (msg.type == 'ready') {
-      if (!hasAttr(queue, "id", client.sessionId)) {
+      if (!hasAttr(queue, "id", client.sessionId)) { // prevent double additions
         log('ready: '+msg.name+" "+client.sessionId)
 
         // player object definition
@@ -86,27 +99,31 @@ io.on('connection', function(client){
           send(client.sessionId, {type:"board", mode:"add", name:p.name, wins:p.wins, losses:p.losses});
         }
 
+        // add player to waiting list
         queue.push(player);
         send(client.sessionId, {type:'html', html:player.name});
         //log('queue.length:'+queue.length);
         send(client.sessionId, {type:'position', position:queue.length});
         send(client.sessionId, {type:'display', alert:"WELCOME "+player.name});
-        // broadcast self to all
+
+        // add player to bottom of leaderboard
         io.broadcast({type:"board", mode:"add", name:player.name, wins:player.wins, losses:player.losses});
       }
 
-      if (queue.length == 1) {
+      if (queue.length == 1) { // lonely player1...
         newgameID = setTimeout(function() {send(client.sessionId, {type:"display", alert:"WAITING FOR CHALLENGER"})}, 2000);
       }
 
       //report(['gameOn', 'playing', 'resetID']);
       //log("queue length: "+Object.size(queue));
+
+      // second player! start new game!
       if (Object.size(queue) > 1 && !gameOn && !newgameID) {
         log(' connect NEWGAME');
         newgameID = setTimeout(function() {newgame(2)}, newgameDelay );
       }
 
-      if (gameOn) {
+      if (gameOn) { // reveal game already underway
         send(client.sessionId, {type:'css', which:'p1', property:'visibility', value:'visible'});
         send(client.sessionId, {type:'css', which:'p2', property:'visibility', value:'visible'});
         if (playing) {
@@ -118,36 +135,32 @@ io.on('connection', function(client){
     if (msg.type == 'return') {
       if (!playing) {
         log(' false return: not playing');
-        return 0; // sometimes return is sent after score:
+        return 0; // sometimes return is sent after score
       }
       if (Math.abs(ballx - courtWidth*.5) < 100) {
         log(' false return: ball not at edge');
         return 0;
       }
 
-      if (msg.which == "p1") { // tell p2 to detect collisions
+      if (msg.which == "p1") { // p1 return, tell p2 to detect collisions
         deltax = Math.abs(deltax);
         send(player1.id, {type:'collide', value:false});
         send(player2.id, {type:'collide', value:true});
-      } else { // tell p1 to detect collisions
+      } else { // p2 return, tell p1 to detect collisions
         deltax = Math.abs(deltax) * -1;
         send(player1.id, {type:'collide', value:true});
         send(player2.id, {type:'collide', value:false});
       }
 
-      var increase = 1.1; // normally 1.1
-      var maxSpeed = 100; // normally 100
-      if (deltax > 1) {
-        deltax = Math.min(deltax * increase, maxSpeed);
-      }
-      else {
-        deltax = Math.max(deltax * increase, -1 * maxSpeed);
-      }
+      var increase = 1.1; // normal: 1.1
+      var maxSpeed = 100; // normal: 100
+      if (deltax > 1) { deltax = Math.min(deltax * increase, maxSpeed); }
+      else { deltax = Math.max(deltax * increase, -1 * maxSpeed); }
 
       deltay = msg.english;
     }
 
-    if (msg.type == 'heartBeat') {
+    if (msg.type == 'heartBeat') { // player not timing out, all's well
       //log("heartbeat:"+client.sessionId+", p1.id:"+player1.id+", p2.id:"+player2.id);
       if (client.sessionId == player1.id) p1heartBeat = true;
       else if (client.sessionId == player2.id) p2heartBeat = true;
@@ -175,7 +188,7 @@ io.on('connection', function(client){
   });
 });
 
-
+// helper function to approximate python's "is in"
 function contains(a, obj) {
   var i = a.length;
   while (i--) { if (a[i] == obj) return true; }
@@ -195,7 +208,7 @@ function hasAttr(obj, id, val) {
 
 //**** GAME LOGIC ****//
 
-var courtWidth = 640, courtHeight = 480;
+var courtWidth = 640, courtHeight = 480; // hard-coding values feels wrong
 io.broadcast({type:'size', which:'court', width:courtWidth, height:courtHeight});
 
 var paddleHeight = 40, paddleWidth = 20, ballSize = 10;

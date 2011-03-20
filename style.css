@@ -1,0 +1,56 @@
+#court {
+  background-color:pink;
+  width:100%;
+  height:75%;
+  max-width:640px;
+  max-height:480px;
+  position:relative;
+  top: 0px;
+  border:2px solid black;
+}
+#p1 { 
+  background-color:grey;
+  position:absolute;
+  left:40;
+  top:240;
+  height:40;
+  width:20;
+  visibility:hidden;
+}
+#p2 {
+  background-color:grey;
+  position:absolute;
+  left:580;
+  top:240;
+  height:40;
+  width:20;
+  visibility:hidden;
+}
+#ball {
+  width:20;
+  height:20;
+  background-color:grey;
+  position:absolute;
+  left:300;
+  top:300;
+  visibility:hidden;
+}
+#score1 { position:absolute; top:10; left:30; width:40px; height:80px;}
+#score2 { position:absolute; top:10; left:570; width:40px; height:80px; }
+#alert { position:absolute; left:0; top:240; width:640; font-size:48px; color:red; text-align:center}
+#welcome { position:absolute; left:0; top:50%; width:100%; font-size:36px; color:red;
+           text-align:center; border:2px solid red; z-index:1;}
+#board { font-size: 1.5em; }
+
+.s {position:absolute; width:10px; height:10px; background-color:black;}
+#s1 {left:0; top:0; width:40px;}
+#s2 {left:0; top:0; height:40px;}
+#s3 {left:31; top:0; height:40px;}
+#s4 {left:0; top:31; width:40px;}
+#s5 {left:0; top:30; height:49px;}
+#s6 {left:31; top:30; height:49px;}
+#s7 {left:0; top:70; width:40px;}
+
+/*
+body { height:960px;}
+*/

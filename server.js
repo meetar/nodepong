@@ -88,11 +88,15 @@ io.on('connection', function(client){
 
         queue.push(player);
         send(client.sessionId, {type:'html', html:player.name});
-        log('queue.size:'+queue.length);
+        //log('queue.length:'+queue.length);
         send(client.sessionId, {type:'position', position:queue.length});
         send(client.sessionId, {type:'display', alert:"WELCOME "+player.name});
         // broadcast self to all
         io.broadcast({type:"board", mode:"add", name:player.name, wins:player.wins, losses:player.losses});
+      }
+
+      if (queue.length == 1) {
+        newgameID = setTimeout(function() {send(client.sessionId, {type:"display", alert:"WAITING FOR CHALLENGER"})}, 2000);
       }
 
       //report(['gameOn', 'playing', 'resetID']);

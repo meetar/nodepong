@@ -76,7 +76,6 @@ io.on('connection', function(client){
 
     // receive player's position and prepare for broadcast
     if (msg.type == 'move') {
-      //log('move');
       if (msg.which == "p1") {
         p1pos = msg.y;
       } else if (msg.which == "p2") {
@@ -93,7 +92,7 @@ io.on('connection', function(client){
         player = {id:client.sessionId, name:msg.name, wins:0, losses:0}
 
         // populate leaderboard
-        //log("populating queue, size: "+queue.length);
+        //log("populating queue, size: "+Object.size(queue));
         for (x in queue) {
           //log("queue["+x+"]: "+queue[x].name);
           p = queue[x];
@@ -112,14 +111,14 @@ io.on('connection', function(client){
       }
 
       if (queue.length == 1) { // lonely player1...
-        setTimeout(function() {send(client.sessionId, {type:"display", alert:"WAITING FOR CHALLENGER"})}, 2000);
+        newgameID = setTimeout(function() {send(client.sessionId, {type:"display", alert:"WAITING FOR CHALLENGER"})}, 2000);
       }
 
-      report(['gameOn', 'playing', 'newgameID']);
-      log("queue length: "+queue.length);
+      //report(['gameOn', 'playing', 'resetID']);
+      //log("queue length: "+Object.size(queue));
 
       // second player! start new game!
-      if (queue.length > 1 && !gameOn && !newgameID) {
+      if (Object.size(queue) > 1 && !gameOn && !newgameID) {
         log(' connect NEWGAME');
         newgameID = setTimeout(function() {newgame(2)}, newgameDelay );
       }
@@ -134,14 +133,11 @@ io.on('connection', function(client){
     }
 
     if (msg.type == 'return') {
-      log('return');
-
       if (!playing) {
         log(' false return: not playing');
         return 0; // sometimes return is sent after score
       }
-      report(["ballx"]);;
-      if (Math.abs(ballx - 50) < 35) {
+      if (Math.abs(ballx - courtWidth*.5) < 100) {
         log(' false return: ball not at edge');
         return 0;
       }
@@ -157,7 +153,7 @@ io.on('connection', function(client){
       }
 
       var increase = 1.1; // normal: 1.1
-      var maxSpeed = 15; // normal: 15
+      var maxSpeed = 100; // normal: 100
       if (deltax > 1) { deltax = Math.min(deltax * increase, maxSpeed); }
       else { deltax = Math.max(deltax * increase, -1 * maxSpeed); }
 
@@ -212,23 +208,21 @@ function hasAttr(obj, id, val) {
 
 //**** GAME LOGIC ****//
 
-// all values are percentages of the court dimensions - originally 640x480
-// all heights are percentages of courtheight, all widths of courtwidth
-var courtWidth = 100, courtHeight = 100;
+var courtWidth = 640, courtHeight = 480; // hard-coding values feels wrong
 io.broadcast({type:'size', which:'court', width:courtWidth, height:courtHeight});
 
-var paddleHeight = 8.333, paddleWidth = 3.125, ballWidth = 1.5625, ballHeight = 2.08333;
+var paddleHeight = 40, paddleWidth = 20, ballSize = 10;
 var p1pos = courtHeight/2, p2pos = courtHeight/2;
 io.broadcast({type:'size', which:'p1', height:paddleHeight, width:paddleWidth});
 io.broadcast({type:'size', which:'p2', height:paddleHeight, width:paddleWidth});
-io.broadcast({type:'size', which:'ball', height:ballHeight, width:ballWidth});
+io.broadcast({type:'size', which:'ball', height:ballSize, width:ballSize});
 
 var courtleft = 0, courttop = 0;
 var minx = courtleft;
 var miny = courttop;
 io.broadcast({type:'move', which:'court', y:courttop, x:courtleft});
-var maxx = courtWidth-(ballWidth*2);
-var maxy = courtHeight-(ballHeight*2);
+var maxx = courtWidth-(ballSize*2);
+var maxy = courtHeight-(ballSize*2);
 
 var p1heartBeat = false, p2heartBeat = false;
 var p1skippedBeat = 0, p2skippedBeat = 0;
@@ -242,14 +236,14 @@ var justScored = "";
 
 // game settings
 var delay = 50; // ms between updates
-var startSpeed = 1;
+var startSpeed = 10;
 var maxScore = 2;
 var flatline = 25; // maximum allowable number of skipped heartBeats
 var resetDelay = 2000 // delay between volleys - normal: 1000
 var newgameDelay = 2000 // delay between games - normal: 2000
 
 // flip a coin to see who serves
-var deltax = (Math.random() < .5 ? -1 * startSpeed : startSpeed) * delay/50;
+var deltax = (Math.random() < .5 ? -1 * startSpeed : startSpeed) * delay/5;
 var deltay = 0;
 var ballx = 0, bally = 0;
 
@@ -278,7 +272,6 @@ function report(list) {
   for (x in list) {
     msg += list[x]+': '+eval(list[x])+' | ';
   }
-  log(msg);
 }
 
 
@@ -286,8 +279,8 @@ function report(list) {
 
 function newgame(id) {
   log('\n*NEWGAME* '+id);
-  if (sessions.length < 2 || queue.length < 2) {
-    log(' false start- sessions.length:'+sessions.length+", queue.length:"+queue.length);
+  if (sessions.length < 2 || Object.size(queue) < 2) {
+    log(' false start- sessions.length:'+sessions.length+", Object.size(queue):"+Object.size(queue));
     return false;
   }
   //log('current players: p1:'+player1+', p2:'+player2);
@@ -335,7 +328,7 @@ function newgame(id) {
     newgame(0);
   }
 
-  io.broadcast({type:"newgame", player1:player1.name, player2:player2.name});
+  io.broadcast({type:"newgame"});
 
   volleys = 0;
   score1 = 0;
@@ -430,7 +423,7 @@ function playLoop(caller) {
     log('gameOn false: killing playLoop');
   }
 
-  //report(["gameOn", "getSet", "playing"]);
+  report(["gameOn", "getSet", "playing"]);
   playLoopID = false;
 }
 
@@ -470,7 +463,7 @@ function gameover(type, which) {
       queue.push(loser);
       var qmsg = "";
       for (x in queue) qmsg += " "+queue[x].name;
-      //log(queue.length+" in queue:"+qmsg);
+      //log(Object.size(queue)+" in queue:"+qmsg);
     }
 
     // update winner's wins
@@ -505,8 +498,8 @@ function gameover(type, which) {
     report(["sessions", "queue"]);
   }
 
-  if (queue.length > 1) {
-    //log('queue.length: '+queue.length+": "+queue);
+  if (Object.size(queue) > 1) {
+    //log('Object.size(queue): '+Object.size(queue)+": "+queue);
     if (!newgameID) newgameID = setTimeout(function() {newgame(1)}, newgameDelay );
     else log('PROB: already newgame');
   }
@@ -518,7 +511,7 @@ function reset() {
     log(" false reset: playing: "+playing+", gameOn: "+gameOn);
     return false;
   }
-  if (queue.length < 2) {
+  if (Object.size(queue) < 2) {
     log("Awaiting another player...");
     return 0;
   }
@@ -536,7 +529,7 @@ function reset() {
   }
 
   deltax /= Math.abs(deltax); // set to 1 while keeping sign
-  deltax *= delay/50; // keep same velocity, accounting for delay
+  deltax *= delay/5; // keep same velocity, accounting for delay
   deltay = 0;
   ballx = courtWidth/2, bally = courtHeight/2;
   io.broadcast({type:'move', which:'ball', bally:bally, ballx:ballx});

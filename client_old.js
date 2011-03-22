@@ -45,8 +45,6 @@ function command(msg){
 
   switch(msg.type) {
     case "newgame":
-      $("#player1").html(msg.player1);
-      $("#player2").html(msg.player2);
       p1.css('visibility', 'visible');
       //p1.css('width', paddleWidth); // legacy from server-side
       //p1.css('height', paddleHeight);
@@ -77,7 +75,7 @@ function command(msg){
       break;
     case 'size':
       var which = '#'+msg.which;
-      $(which).css({width:msg.width+"%", height:msg.height+"%"});
+      $(which).css({width:msg.width, height:msg.height});
       break;
     case 'css':
       var which = '#'+msg.which;
@@ -111,9 +109,9 @@ function command(msg){
       colliding = ((playing == "p1" && deltax < 0) ||
                    (playing == "p2" && deltax > 0)) ? true : false;
 
-      $('#ball').css({'top': msg.bally+'%', 'left': msg.ballx+'%'});
-      $('#p1').css({'top': msg.p1pos+'%'});
-      $('#p2').css({'top': msg.p2pos+'%'});
+      $('#ball').css({'top': msg.bally+'px', 'left': msg.ballx+'px'});
+      $('#p1').css({'top': msg.p1pos+'px'});
+      $('#p2').css({'top': msg.p2pos+'px'});
       if (playing) lastPaddleY = paddle.position().top;
       break;
     case 'collide':
@@ -167,20 +165,20 @@ socket.on('message', function(obj){
 
 var mouseY = 0;
 
-var paddleLimit = 20; // max pixels per ms (convert to %)
+var paddleLimit = 20; // max pixels per millisecond
 var delay = 50; // ms between updates
 
 // paddle position is calculated locally and sent to server
-// need to convert to %
 function movePaddles() {
   // get mouse position relative to court
-  var targetY = mouseY - court.position().top; // (convert to %)
+  var targetY = mouseY - court.position().top;
+
   // THROTTLE PADDLE SPEED
 
   // get abs of distance since last update
   var delta = paddle.position().top - targetY;
   // compare to speed limit
-  delta1 = Math.min(paddleLimit * delay/50, Math.abs(delta));
+  delta1 = Math.min(paddleLimit * delay/20, Math.abs(delta));
   // minimum movement = 5px
   delta1 = delta1 >  5 ? delta1 : 0;
   delta1 *= (delta < 0 ? -1 : 1); // keep sign
@@ -190,25 +188,23 @@ function movePaddles() {
   targetY = Math.min(targetY, court.height()-paddle.height());
   targetY = Math.max(targetY, 0);
 
-  sendY = targetY/$("#court").height()*100;
-  $("#readout").html(sendY);
-  socket.send({type:'move', which:playing, y:sendY});
+  socket.send({type:'move', which:playing, y:targetY});
 }
 
 // returns ball at an angle based on point of contact with paddle
 function english(yval) {
-  yval /= paddle.height() / 100; // percentage up from bottom
-  if (yval < 10) deltay = -2;
-  else if (yval < 20) deltay = -1.666;
-  else if (yval < 30) deltay = -1.25;
-  else if (yval < 40) deltay = -.8333;
-  else if (yval < 50) deltay = -.41666;
+  yval /= paddle.height() / 100;
+  if (yval < 10) deltay = -20;
+  else if (yval < 20) deltay = -8;
+  else if (yval < 30) deltay = -6;
+  else if (yval < 40) deltay = -4;
+  else if (yval < 50) deltay = -2;
   else if (yval < 60) deltay = 0;
-  else if (yval < 70) deltay = .41666;
-  else if (yval < 80) deltay = .83333;
-  else if (yval < 90) deltay = 1.25;
-  else if (yval < 100) deltay = 1.6666;
-  else deltay = 2;
+  else if (yval < 70) deltay = 2;
+  else if (yval < 80) deltay = 4;
+  else if (yval < 90) deltay = 6;
+  else if (yval < 100) deltay = 8;
+  else deltay = 20;
   ///deltay *= Math.abs(deltax/10); // not sure how this works
 }
 

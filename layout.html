@@ -1,6 +1,6 @@
 <html>
   <head>
-    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable:0;">
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable:no;">
     <script type="text/javascript"  src="http://code.jquery.com/jquery-1.5.min.js"></script>
     <script type="text/javascript"  src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
     <!-- don't remember why jquery ui is in here -->
@@ -12,13 +12,15 @@
   </head>
 <body>
 
-<div id="welcome">
-WHAT YOUR PONG NAME<br><form id="nameform"><input type="text" id="name" />
-<input type="submit" id="go" value="Go" onClick="return false;" />
-</form>
-</div>
-
+<div id="center">
 <div id="court">
+  <img id="xgif" src="x.gif" />
+  <div id="welcome">
+    WHAT YOUR PONG NAME<br>
+    <form id="nameform"><input type="text" id="name" />
+    <input type="submit" id="go" value="Go" onClick="return false;" /></form>
+  </div>
+
   <div id="score1">
     <div id = "s1" class="s"></div>
     <div id = "s2" class="s"></div>
@@ -50,7 +52,9 @@ WHAT YOUR PONG NAME<br><form id="nameform"><input type="text" id="name" />
   <div id="ball">&nbsp;</div>
 
 </div>
-<div style="top: 500; position:absolute">
+</div>
+
+<div>
 <h1 id="playing"></h1>
 <h1 id="position"></h1>
 <h1 id="status2"></h1>

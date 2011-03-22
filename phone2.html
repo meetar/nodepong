@@ -1,0 +1,186 @@
+<html>
+  <head>
+
+    <style>
+
+    html, body {
+      height: 100%;
+      width:100%;
+      padding:0px;
+      margin:0px;
+    }
+
+    #center {
+      outline: 2px solid blue;
+      width:100%;
+    }
+
+    #court {
+      padding:0px;
+      width:95%;
+      max-width:50em;
+      height:auto%;
+      outline:1px solid green;
+      text-align: center;
+      margin-left:auto;
+      margin-right:auto;
+      margin-top:2.5%;
+      background-color:transparent;
+      position:relative;
+    }
+
+    #court.portrait {
+      max-width:50em;
+    }
+
+    #court.landscape {
+      width:75%;
+    }
+
+    #xgif {
+      width:100%;
+    }
+
+    #p1 {
+      background-color:grey;
+      position:absolute;
+      left:6.4%;
+      top:50%;
+      height:8.3333%;
+      width:3.125%;
+      visibility:visible;
+    }
+
+    #p2 {
+      background-color:grey;
+      position:absolute;
+      left:90.625%;
+      top:50%;
+      height:8.3333%;
+      width:3.125%;
+      visibility:visible;
+    }
+
+    #ball {
+      width:3.125%;
+      height:4.16666%;
+      background-color:grey;
+      position:absolute;
+      left:50%;
+      top:50%;
+      visibility:visible;
+    }
+
+    #score1 {
+      position:absolute;
+      top:2.08333%;
+      left:4.5875%;
+      width:6.25px%;
+      height:16.66666%;}
+
+    #score2 {
+      position:absolute;
+      top:2.08333%;
+      left:89.0625%;
+      width:6.25%;
+      height:16.6666%;
+    }
+
+    #alert {
+      position:absolute;
+      left:0;
+      top:50%;
+      width:100%;
+      font-size:48px;
+      color:red;
+      text-align:center}
+
+    #welcome {
+      position:absolute;
+      left:0;
+      top:50%;
+      width:100%;
+      font-size:36px;
+      color:red;
+      text-align:center;
+      border:2px solid red;
+      z-index:1;}
+
+    #board {
+      font-size: 1.5em;
+    }
+
+    .s {position:absolute;
+      width:12.5%;
+      height:12.5%;
+      background-color:black;}
+
+    #s1 {left:0;   top:0;   width:50%;}
+    #s2 {left:0; top:0; height:50%;}
+    #s3 {left:38.75%; top:0; height:50%;}
+    #s4 {left:0; top:38.75%; width:50%;}
+    #s5 {left:0; top:37.5%; height:61.25%;}
+    #s6 {left:38.75%; top:37.5%; height:61.25%;}
+    #s7 {left:0; top:87.5%; width:50%;}
+
+    body{
+        height: 240px;
+    }
+
+    /* Reposition on orientation change */
+    body.landscape{
+        height: 160px;
+    }
+
+    </style>
+
+  </head>
+<body>
+
+<div id="center">
+  <div id="court">
+    <img id="xgif" src="x.gif" />
+    <div id="welcome">
+      WHAT YOUR PONG NAME<br>
+      <form id="nameform"><input type="text" id="name" />
+      <input type="submit" id="go" value="Go" onClick="return false;" /></form>
+    </div>
+
+    <div id="score1">
+      <div id = "s1" class="s"></div>
+      <div id = "s2" class="s"></div>
+      <div id = "s3" class="s"></div>
+      <div id = "s4" class="s"></div>
+      <div id = "s5" class="s"></div>
+      <div id = "s6" class="s"></div>
+      <div id = "s7" class="s"></div>
+    </div>
+
+    <div id="score2">
+      <div id = "s1" class="s"></div>
+      <div id = "s2" class="s"></div>
+      <div id = "s3" class="s"></div>
+      <div id = "s4" class="s"></div>
+      <div id = "s5" class="s"></div>
+      <div id = "s6" class="s"></div>
+      <div id = "s7" class="s"></div>
+    </div>
+
+
+  <h1 id="alert"></h1>
+
+  <div id="p1">
+    <div id="p1touch">&nbsp;</div>
+  </div>
+  <div id="p2">
+    <div id="p2touch">&nbsp;</div>
+  </div>
+  <div id="ball">&nbsp;</div>
+
+
+  </div>
+</div>
+
+</body>
+
+</html>

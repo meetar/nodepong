@@ -1,0 +1,414 @@
+<html>
+  <head>
+    <!--meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"-->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <script type="text/javascript"  src="http://code.jquery.com/jquery-1.5.min.js"></script>
+    <script type="text/javascript"  src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
+    <!-- don't remember why jquery ui is in here -->
+    <script type="text/javascript"  src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+
+    <script type="text/javascript" src="http://cdn.socket.io/stable/socket.io.js"></script>
+
+    <script type="text/javascript" src="http://use.typekit.com/lmg8kpk.js"></script>
+    <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+
+    <style>
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      padding: 0px;
+      margin: 0px;
+      background-color: darkgrey;
+    }
+
+    #readout {
+      position:absolute;
+      top:0px;
+      left:0px;
+      z-index:1000;
+      color:blue;
+      background-color:lightblue;
+      font-size:50%;
+      margin-left:auto;
+      margin-right:auto;
+    }
+
+    .center {
+      position:absolute;
+      outline: 2px solid blue;
+      width:100%;
+      background-color: lightgreen;
+    }
+
+    #court {
+      position:relative;
+      width:95%;
+      max-width:20em;
+      min-width:240px;
+      height:auto%;
+      outline:2px solid green;
+      text-align: center;
+      margin-left:auto;
+      margin-right:auto;
+      margin-top:2%;
+      background-color: lightgreen;
+    }
+
+    #court.portrait {
+      width:95%;
+      background-color: grey;
+    }
+
+    #court.landscape {
+      width:70%;
+      background-color: grey;
+    }
+    #xgif {
+      width:100%;
+      visible:hidden;
+    }
+
+    #p1 {
+      background-color:pink;
+      position:absolute;
+      left:6.4%;
+      top:50%;
+      height:8.3333%;
+      width:3.125%;
+      visibility:visible;
+    }
+
+    #p2 {
+      background-color:orange;
+      position:absolute;
+      left:90.625%;
+      top:50%;
+      height:8.3333%;
+      width:3.125%;
+      visibility:visible;
+    }
+
+    #ball {
+      width:3.125%;
+      height:4.16666%;
+      background-color:grey;
+      position:absolute;
+      left:50%;
+      top:50%;
+      visibility:visible;
+    }
+
+    #scores {
+      outline: green dashed 2px;
+      background-color: lightpink;
+      position:absolute;
+      width:100%;
+      height:16.66666%;
+      top:0%;
+    }
+
+    #score1 {
+      //outline: 2px solid green;
+      position:absolute;
+      top:2.08333%;
+      left:4.5875%;
+      width:6.25%;
+      height:100%;}
+
+    #score2 {
+      position:absolute;
+      top:2.08333%;
+      left:89.0625%;
+      width:6.25%;
+      height:100%;
+    }
+
+    .s {position:absolute;
+      width:25%;
+      height:12.5%;
+      background-color:black;}
+
+    #s1 {left:0; top:0; width:100%;}
+    #s2 {left:0; top:0; height:100%;}
+    #s3 {left:77%; top:0; height:100%;}
+    #s4 {left:0; top:37.5%; width:100%;}
+    #s5 {left:0; top:37.5%; height:61.25%;}
+    #s6 {left:77%; top:37.5%; height:61.25%;}
+    #s7 {left:0; top:90%; width:100%;}
+
+    #player1 {
+      outline: green dashed 2px;
+      position:absolute;
+      top:0%;
+      left: 15%;
+    }
+
+    #player2 {
+      outline: green dashed 2px;
+      position:absolute;
+      top:0%;
+      right: 15%;
+    }
+
+    #vs{
+      text-align: center;
+      font-size:70%;
+      position:relative;
+      top:5%;
+    }
+
+    #alert {
+      position:absolute;
+      left:0;
+      top:50%;
+      width:100%;
+      font-size: 100%;
+      color:red;
+      text-align:center}
+
+    #welcome {
+      position:absolute;
+      left:0;
+      top:40%;
+      width:100%;
+      font-size: 100%;
+      color:red;
+      text-align:center;
+      outline:0px solid red;
+      background-color: lightgrey;
+      z-index:1;}
+
+    #leaderboard {
+      position:relative;
+      width:100%;
+      outline:2px solid purple;
+      text-align: center;
+      font-size: 80%;
+      margin-left:auto;
+      margin-right:auto;
+      margin-top: 2%;
+      margin-bottom: 10%;
+      background-color: lavender;
+    }
+
+    ol {
+      text-align: center;
+      margin:0%;
+      margin-left:auto;
+      margin-right:auto;
+      padding:0%;
+      width: 50%;
+      list-style-position: inside;
+    }
+
+    #scoretable {
+      outline: solid 2px red;
+      width: 50%;
+      padding: 0%;
+      margin: 0%;
+      margin-left:auto;
+      margin-right:auto;
+    }
+
+    .rank {
+      text-align: right;
+      padding-right: 5%;
+    }
+
+    .name {
+      text-align: left;
+    }
+
+    .scor {
+      text-align: right;
+    }
+
+
+    li {
+      font-size: 100%;
+      margin:0%;
+      padding:0%;
+    }
+
+    #footer {
+      position:relative;
+      //width:100%;
+      outline:2px solid green;
+      text-align: center;
+      font-size: 50%;
+      padding:5%;
+      margin-left:auto;
+      margin-right:auto;
+      margin-top: 2%;
+      margin-bottom: 10%;
+      background-color: lightorange;
+    }
+
+    @media all and (max-width: 380px) {
+      body { font-size:1em; }
+      #s3 {left:80%; top:0; height:100%;}
+      #s6 {left:80%; top:37.5%; height:61.25%;}
+      #footer { font-size: .6em; }
+    }
+
+    @media all and (min-width: 381px) and (max-width: 480px) {
+      body { font-size:1.20em; }
+      #court { width:70%; }
+      #footer { font-size: .5em; }
+
+    }
+
+    @media all and (min-width: 481px) and (max-width: 640px) {
+      body {
+        font-size:1.5em;
+      }
+      #court {
+        width:70%;
+      }
+      #footer { font-size: .6em; }
+    }
+
+    @media all and (orientation: 90) or (orientation: -90) {
+      body {
+        font-size:1.5em;
+      }
+      #court {
+        width:70%;
+      }
+    }
+
+    @media all and (min-width: 641px) {
+      body {
+        font-size:2em;
+      }
+    }
+    </style>
+
+  </head>
+<body>
+
+
+<div id="readout">READOUT</div>
+
+<div class="center">
+  <div id="court">
+    <img id="xgif" src="x.gif" />
+    <div id="welcome">
+      WHAT YOUR PONG NAME<br>
+      <form id="nameform"><input type="text" id="entername" />
+      <input type="submit" id="go" value="Go" onClick="ready();return false;" /></form>
+    </div>
+
+    <h1 id="alert"></h1>
+
+    <div id="p1">
+      <div id="p1touch">&nbsp;</div>
+    </div>
+    <div id="p2">
+      <div id="p2touch">&nbsp;</div>
+    </div>
+    <div id="ball">&nbsp;</div>
+
+    <div id="scores">
+      <div id="score1">
+        <div id = "s1" class="s"></div>
+        <div id = "s2" class="s"></div>
+        <div id = "s3" class="s"></div>
+        <div id = "s4" class="s"></div>
+        <div id = "s5" class="s"></div>
+        <div id = "s6" class="s"></div>
+        <div id = "s7" class="s"></div>
+      </div>
+
+      <div id="player1">METAR</div>
+      <div id="vs">VS</div>
+      <div id="player2">BORON</div>
+
+      <div id="score2">
+        <div id = "s1" class="s"></div>
+        <div id = "s2" class="s"></div>
+        <div id = "s3" class="s"></div>
+        <div id = "s4" class="s"></div>
+        <div id = "s5" class="s"></div>
+        <div id = "s6" class="s"></div>
+        <div id = "s7" class="s"></div>
+      </div>
+    <div>
+  </div>
+
+</div>
+
+<div class="center">
+  <!-- leaderboard -->
+
+  <div id="status">
+  METAR - 25TH IN LINE
+  </div>
+
+  <div id="leaderboard">
+    NODEPONG TOP 10<br>
+    <table id="scoretable">
+    <tr><td class="rank">1.</td> <td class="name">NAME</td> <td class="scor">999</td></tr>
+    <tr><td class="rank">2.</td> <td class="name">NAME</td> <td class="scor">999</td></tr>
+    <tr><td class="rank">3.</td> <td class="name">NAME</td> <td class="scor">999</td></tr>
+    <tr><td class="rank">4.</td> <td class="name">NAME</td> <td class="scor">999</td></tr>
+    <tr><td class="rank">5.</td> <td class="name">NAME</td> <td class="scor">999</td></tr>
+    <tr><td class="rank">6.</td> <td class="name">NAME</td> <td class="scor">999</td></tr>
+    <tr><td class="rank">7.</td> <td class="name">NAME</td> <td class="scor">999</td></tr>
+    <tr><td class="rank">8.</td> <td class="name">NAME</td> <td class="scor">999</td></tr>
+    <tr><td class="rank">9.</td> <td class="name">NAME</td> <td class="scor">999</td></tr>
+    <tr><td class="rank">10.</td> <td class="name">NAME</td> <td class="scor">999</td></tr>
+    </table>
+
+  </div>
+  <div id="footer">
+    Footer text here. blahdyblahdyblah.
+    For more information check out this <a href="#">about page</a>.
+  </div>
+
+</div>
+</body>
+
+<script type='text/javascript'>
+
+function makeid() {
+    var txt = "";
+    //var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    for (x in [1,2,3,4,5]) { txt += possible.charAt(Math.floor(Math.random() * possible.length)); }
+    return txt;
+}
+
+function scrollWindow() {
+  /mobile/i.test(navigator.userAgent) && !location.hash && setTimeout(function() {
+    window.scrollTo(0, 1);
+  }, 1000);
+  var hstring = $(window).width() + "px";
+  $("#readout").html(hstring);
+  test();
+}
+
+$(document).ready(function() {
+  scrollWindow();
+  window.onorientationchange = scrollWindow;
+
+  $("#entername").val(makeid());
+
+  $("#court").bind('touchstart touchmove', function(event) {
+    var e = event.originalEvent;
+    mouseY = e.touches[0].pageY;
+    return false;
+  });
+
+  setTimeout("test();", 500);
+});
+
+function test() {
+  //alert($(".typekit-badge")[0]);
+  $(".typekit-badge").css("top", $("#footer").top()+$("#footer").height());
+}
+
+</script>
+
+</html>

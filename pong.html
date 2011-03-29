@@ -1,6 +1,7 @@
 <html>
   <head>
-    <title>NodePong</title><!--meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"-->
+    <title>NodePong</title>
+    <!--meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=yes"-->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <script type="text/javascript"  src="http://code.jquery.com/jquery-1.5.min.js"></script>
     <script type="text/javascript"  src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
@@ -396,13 +397,6 @@ $(document).ready(function() {
   window.onorientationchange = scrollWindow;
 
   $("#entername").val(makeid());
-
-  $("#court").bind('touchstart touchmove', function(event) {
-    var e = event.originalEvent;
-    mouseY = e.touches[0].pageY;
-    return false;
-  });
-
   $("#entername").focus();
   $("#entername").select();
   //ready();

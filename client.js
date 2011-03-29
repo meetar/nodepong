@@ -230,6 +230,13 @@ function ready() {
   // turn on mouse tracking
   $(document).mousemove(function(e){ mouseY = e.pageY; });
 
+  // turn on toch tracking
+  $("#court").bind('touchstart touchmove', function(event) {
+    var e = event.originalEvent;
+    mouseY = e.touches[0].pageY;
+    return false;
+  });
+
   socket.send({type:'ready', name:$("#entername").val()});
 }
 

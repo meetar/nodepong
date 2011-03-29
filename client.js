@@ -96,7 +96,7 @@ function command(msg){
       if (msg.paddle == "p1" || msg.paddle == "p2") {
         playing = msg.paddle;
         paddle = $("#"+msg.paddle);
-        paddle.css('background-color', 'blue');
+        paddle.css('background-color', 'black');
         ball.css('background-color', 'black');
         lastPaddleY = paddle.position().top;
         lastBallX = $('#ball').position().left;
@@ -121,8 +121,8 @@ function command(msg){
       //$('#output2').html('collide: '+msg.value);
       if (msg.value != undefined) {
         colliding = msg.value;
-        if (msg.value) paddle.css('background-color', 'red');
-        else paddle.css('background-color', 'blue');
+        //if (msg.value) paddle.css('background-color', 'red'); // old
+        //else paddle.css('background-color', 'blue'); // old
       } // else { $('#output2').html('collide malformed'); }
       break;
     case 'score':
@@ -253,7 +253,7 @@ function collisionDetection() {
     var relativeY = ball.position().top+(ball.width()/2) - paddle.position().top;
     english(relativeY);
     colliding = false;
-    paddle.css('background-color', 'blue');
+    //paddle.css('background-color', 'blue'); //old
 
     //$('#output2').html('Return!');
 

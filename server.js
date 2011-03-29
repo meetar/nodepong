@@ -60,12 +60,38 @@ Object.size = function(obj) {
   return size;
 };
 
+// gets ordinal for number
+function getOrdinal(number) {
+  var ordinal = "th";
+  var lastchar = String(number).charAt(String(number).length-1);
+  if (lastchar == "1") {ordinal = "st"}
+  else if (lastchar == "2") {ordinal = "nd"}
+  else if (lastchar == "3") {ordinal = "rd"}
+  ordinal = String(number)+ordinal;
+  return ordinal;
+}
+
+function updateDisplayedPositions() {
+  for (x in queue) {
+    if (x != 0 && x != 1) { // don't update status of the current players
+      if (x == 2) {
+        var statusmsg = queue[x].name+ " - NEXT IN LINE!";
+      } else {
+        var y = parseInt(x)-1;
+        log("updating queue["+x+"]: "+queue[x]+": "+queue[x].name +": "+getOrdinal(y));
+        var statusmsg = queue[x].name+ " - "+getOrdinal(y) + " IN LINE";
+      }
+      send(queue[x].id, {type:'html', id:135, which:"status", html:statusmsg});
+    }
+  }
+}
+
 // ***** CLIENT CONNECT ***** //
 
 io.on('connection', function(client){
   if (!contains(sessions, client.sessionId)) { // prevent double connections
     sessions.push(client.sessionId);
-    log('\nCONNECT: '+client.sessionId);
+    log('\nCONNECTION NUMBER '+sessions.length+": "+client.sessionId);
   }
 
   client.on('message', function(msg){
@@ -102,7 +128,7 @@ io.on('connection', function(client){
 
         // add player to waiting list
         queue.push(player);
-        send(client.sessionId, {type:'html', html:player.name});
+        //send(client.sessionId, {type:'html', which:"html", html:player.name});
         //log('queue.length:'+queue.length);
         send(client.sessionId, {type:'position', position:queue.length});
         send(client.sessionId, {type:'display', alert:"WELCOME "+player.name});
@@ -112,7 +138,15 @@ io.on('connection', function(client){
       }
 
       if (queue.length == 1) { // lonely player1...
+        log("1st connection");
         setTimeout(function() {send(client.sessionId, {type:"display", alert:"WAITING FOR CHALLENGER"})}, 2000);
+        var statusmsg = player.name + " - WAITING FOR CHALLENGER";
+        send(client.sessionId, {type:'html', id:117, which:"status", html:statusmsg});
+      } else if (queue.length == 2) {
+        var statusmsg = player.name+ " - READY TO PLAY";
+        send(client.sessionId, {type:'html', id:122, which:"status", html:statusmsg});
+      } else {
+        updateDisplayedPositions();
       }
 
       report(['gameOn', 'playing', 'newgameID']);
@@ -190,6 +224,8 @@ io.on('connection', function(client){
     if (idx != -1) {
       queue.splice(idx, 1);
       io.broadcast({type:"board", mode:"remove", remove:idx});
+      // update everyone's place in line
+      updateDisplayedPositions();
     }
     var idx = sessions.indexOf(client.sessionId);
     if (idx != -1) sessions.splice(idx, 1);
@@ -249,7 +285,7 @@ var justScored = "";
 // game settings
 var delay = 50; // ms between updates
 var startSpeed = 1;
-var maxScore = 2;
+var maxScore = 9;
 var flatline = 25; // maximum allowable number of skipped heartBeats
 var resetDelay = 2000 // delay between volleys - normal: 1000
 var newgameDelay = 2000 // delay between games - normal: 2000
@@ -342,6 +378,13 @@ function newgame(id) {
   }
 
   io.broadcast({type:"newgame", player1:player1.name, player2:player2.name});
+  var statusmsg = player1.name + " - PLAYING";
+  send(player1.id, {type:'html', id:352, which:"status", html:statusmsg});
+  var statusmsg = player2.name + " - PLAYING";
+  send(player2.id, {type:'html', id:354, which:"status", html:statusmsg});
+
+  updateDisplayedPositions();
+
 
   volleys = 0;
   score1 = 0;

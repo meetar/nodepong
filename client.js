@@ -23,13 +23,13 @@ function score(which, val) {
   for (x in [1,2,3,4,5,6,7,8,9]) {
     element = '#'+which+' #s'+x;
     $(element).css('visibility', 'hidden');
-    $(element).css('background-color', 'green');
+    //$(element).css('background-color', 'green');
   }
   for (x in scores[val]) {
     element = '#'+which+' #s'+scores[val][x];
     //alert('val: '+x);
     $(element).css('visibility', 'visible');
-    $(element).css('background-color', 'black');
+    //$(element).css('background-color', 'black');
   }
 }
 
@@ -86,7 +86,8 @@ function command(msg){
       $(which).css(property,value);
       break;
     case 'html':
-      $('#status2').html(msg.html);
+      //alert(msg.id + " msg.which: "+msg.which+", msg.html: "+msg.html);
+      $('#'+msg.which).html(msg.html);
       break;
     case 'position':
       $('#position').html(msg.position);

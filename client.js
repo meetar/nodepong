@@ -23,13 +23,10 @@ function score(which, val) {
   for (x in [1,2,3,4,5,6,7,8,9]) {
     element = '#'+which+' #s'+x;
     $(element).css('visibility', 'hidden');
-    //$(element).css('background-color', 'green');
   }
   for (x in scores[val]) {
     element = '#'+which+' #s'+scores[val][x];
-    //alert('val: '+x);
     $(element).css('visibility', 'visible');
-    //$(element).css('background-color', 'black');
   }
 }
 
@@ -41,21 +38,15 @@ var displayText;
 
 // this command is triggered by the server's "broadcast"
 function command(msg){
-  //$('#status1').html(msg.type+"<br>"+$('#status1').html());
 
   switch(msg.type) {
     case "newgame":
       $("#player1").html(msg.player1);
       $("#player2").html(msg.player2);
       p1.css('visibility', 'visible');
-      //p1.css('width', paddleWidth); // legacy from server-side
-      //p1.css('height', paddleHeight);
       p2.css('visibility', 'visible');
-      //p2.css('width', paddleWidth);
-      //p2.css('height', paddleHeight);
       break;
     case "endgame":
-      //$('#status1').html("GAMEOVER");
       colliding = false;
       playing = false;
       paddle = '';
@@ -70,10 +61,8 @@ function command(msg){
       $('#alert').html(msg.alert);
       $('#alert').css('opacity', 1);
       displayText = setTimeout( function() {
-        //$('#alert').html("cleared");
         $('#alert').animate({opacity: 0}, 500);
         }, 900);
-      //$('#alert').html("alert: "+alert);
       break;
     case 'size':
       var which = '#'+msg.which;
@@ -85,8 +74,7 @@ function command(msg){
       var value = msg.value;
       $(which).css(property,value);
       break;
-    case 'html':
-      //alert(msg.id + " msg.which: "+msg.which+", msg.html: "+msg.html);
+    case 'html': // change the html of 'which' div
       $('#'+msg.which).html(msg.html);
       break;
     case 'position':
@@ -101,7 +89,6 @@ function command(msg){
         lastPaddleY = paddle.position().top;
         lastBallX = $('#ball').position().left;
         lastBallY = $('#ball').position().top;
-        //$('#output2').html('msg.paddle else: '+msg.paddle+"<br>playing: "+playing);
         playLoop(msg.delay);
       }
       break;
@@ -118,11 +105,8 @@ function command(msg){
       if (playing) lastPaddleY = paddle.position().top;
       break;
     case 'collide':
-      //$('#output2').html('collide: '+msg.value);
       if (msg.value != undefined) {
         colliding = msg.value;
-        //if (msg.value) paddle.css('background-color', 'red'); // old
-        //else paddle.css('background-color', 'blue'); // old
       } // else { $('#output2').html('collide malformed'); }
       break;
     case 'score':
@@ -134,7 +118,6 @@ function command(msg){
 
         var output = $('#output').html();
         output+= 'remove '+msg.remove+"<br>";
-        //$('#output').html(output);
 
       } else if (msg.mode == "add") {
         var newli = "<li>" + msg.name + " " + msg.wins + " "+msg.losses+"</li>";
@@ -142,15 +125,10 @@ function command(msg){
 
         var output = $('#output').html();
         output+= 'add '+msg.name+"<br>";
-        //$('#output').html(output);
 
       } else if (msg.mode == "win") {
-        // wins are only incremented after the winner is index 0
+        // wins would only increment when the winner is index 0
         $('#board li:eq(0)').html(msg.name+" "+msg.wins+" "+msg.losses);
-        var output = $('#output').html();
-        output+= 'win '+msg.name+"<br>";
-        //$('#output').html(output);
-
       }
       break;
     default: break;
@@ -168,37 +146,50 @@ socket.on('message', function(obj){
 
 var mouseY = 0;
 
-var paddleLimit = 10; // max percent per update
+var paddleLimit = .05; // max percent per update
 var delay = 50; // ms between updates
 
 // paddle position is calculated locally and sent to server
-// need to convert to %
+// need to convert to fractions
 function movePaddles() {
-  // get mouse position relative to court
-  var targetY = mouseY - court.position().top; // in pixels
-
+	var readout = "";
+  // get mouse position relative to court in pixels
+  var targetY = mouseY - court.offset().top;
+	readout += "paddle: "+paddle.position().top;
+	readout += "<br>mouseY: "+mouseY;
+	readout += "<br>court.offset().top: "+court.offset().top;
+	readout += "<br>targetY: "+targetY;
   // THROTTLE PADDLE SPEED
-  // get abs of distance since last update
-  var delta = paddle.position().top - targetY;
-  // this is where the wobble's first visible - i think because the wobble is first introduced below, when paddle.position is set
+  // get abs of distance since last update, measured from paddle center
+  // below is from center
+  var delta = paddle.position().top + paddle.height()/2 - targetY;
+	readout += "<br>delta: "+delta;
 
-  // convert to % and compare to speed limit
-  // don't remember where this equation came from. something to do
-  // with attempting to account for various delay settings
-  delta1 = Math.min(paddleLimit * delay/50, Math.abs(delta));
+  // convert to fracion and compare to speed limit
+  delta1 = Math.abs(delta)/court.height();
+	readout += "<br>delta1: "+delta1;
+  delta1 = Math.min(paddleLimit, delta1);
+	readout += "<br>delta1: "+delta1;
 
-  $("#readout").html(delta1);
-  // minimum movement = 1%
-  delta1 = delta1 >  5 ? delta1 : 0;
-  delta1 *= (delta < 0 ? -1 : 1); // keep sign
-  // calculate new position
-  targetY = paddle.position().top - delta1;
+  // minimum movement = 2%
+  if (delta1 < .02) return false;
+  // set delta1 to sign of delta
+  delta1 *= (delta < 0 ? -1 : 1);
+	readout += "<br>delta1: "+delta1;
+  // calculate new fractional position
+  targetY = (paddle.position().top/court.height() - delta1);
+	readout += "<br>targetY: "+targetY;
   // keep in court
-  targetY = Math.min(targetY, court.height()-paddle.height());
+  targetY = Math.min(targetY, (court.height()-paddle.height())/court.height());
+	readout += "<br>paddle.height(): "+String((court.height()-paddle.height())/court.height());
   targetY = Math.max(targetY, 0);
 
-  sendY = targetY/$("#court").height()*100;
+	readout += "<br>targetY: "+targetY;
+  sendY = targetY*100;
+	readout += "<br>sendY: "+sendY;
+	readout += "<br>court.height(): "+court.height();
   socket.send({type:'move', which:playing, y:sendY});
+  //$("#readout").html(readout);
 }
 
 // returns ball at an angle based on point of contact with paddle
@@ -215,11 +206,10 @@ function english(yval) {
   else if (yval < 90) deltay = 1.25;
   else if (yval < 100) deltay = 1.6666;
   else deltay = 2;
-  ///deltay *= Math.abs(deltax/10); // not sure how this works
+  ///deltay *= Math.abs(deltax/10); // not sure what this was doing
 }
 
 function collisionDetection() {
-  //$('#output2').html("paddle.position().top: "+paddle.position().top);
 /*
       y1
       __
@@ -242,10 +232,6 @@ function collisionDetection() {
 
   var result = '';
 
-  // Test for paddle/ball overlap
-  //$('#output2').html('ix1:'+ix1+' ix2:'+ix2+' px1:'+px1+' px2:'+px2+' iy1:'+iy1+' iy2:'+iy2+' py1:'+py1+' py2:'+py2);
-  //$('#output2').html('paddle.css(top):'+paddle.position().top+' paddle.position().top:'+paddle.position().top);
-
   if (ix1 <= px2 && ix2 >= px1 && iy1 <= py2 && iy2 >= py1) {
     // successful return
 
@@ -253,9 +239,6 @@ function collisionDetection() {
     var relativeY = ball.position().top+(ball.width()/2) - paddle.position().top;
     english(relativeY);
     colliding = false;
-    //paddle.css('background-color', 'blue'); //old
-
-    //$('#output2').html('Return!');
 
     socket.send({type:'return', which:playing, english:deltay});
   }
@@ -263,16 +246,9 @@ function collisionDetection() {
 
 function ready() {
   $("#welcome").css("visibility","hidden");
-  $(document).mousemove(function(e){ mouseY = e.pageY; }); // turn on mouse tracking
+  // turn on mouse tracking
+  $(document).mousemove(function(e){ mouseY = e.pageY; });
 
-  // i don't think this works
-  //$(court).tap(function(e){
-  //  $("#output").html(e.pageY);
-  //});
-
-  // activate paddle touch areas
-  //$("#p1touch").draggable();
-  //$("#p2touch").draggable();
   socket.send({type:'ready', name:$("#entername").val()});
 }
 
@@ -289,6 +265,7 @@ function playLoop(delay) {
   }
 }
 
+// helper function
 function contains(a, obj) {
   var i = a.length;
   while (i--) {
@@ -298,6 +275,3 @@ function contains(a, obj) {
   }
   return false;
 }
-
-//setTimeout($('#alert').fadeTo('slow', 0.5), 1000);
-//$('#alert').fadeTo('slow', 0.5);

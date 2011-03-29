@@ -296,8 +296,8 @@
     <img id="xgif" src="x.gif" />
     <div id="welcome">
       WHAT YOUR PONG NAME<br>
-      <form id="nameform"><input type="text" id="name" />
-      <input type="submit" id="go" value="Go" onClick="return false;" /></form>
+      <form id="nameform"><input type="text" id="entername" />
+      <input type="submit" id="go" value="Go" onClick="ready();return false;" /></form>
     </div>
 
     <h1 id="alert"></h1>
@@ -376,7 +376,14 @@ function makeid() {
     var txt = "";
     //var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    for (x in [1,2,3,4,5]) { txt += possible.charAt(Math.floor(Math.random() * possible.length)); }
+    var consonants = "BCDFGHJKLMNPQRSTVWXYZ";
+    var vowels = "AEIOUY";
+    txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
+    txt += vowels.charAt(Math.floor(Math.random() * vowels.length));
+    txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
+    txt += vowels.charAt(Math.floor(Math.random() * vowels.length));
+    txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
+    //for (x in [1,2,3,4,5]) { txt += possible.charAt(Math.floor(Math.random() * possible.length)); }
     return txt;
 }
 
@@ -393,8 +400,7 @@ $(document).ready(function() {
   scrollWindow();
   window.onorientationchange = scrollWindow;
 
-  $("#name").val(makeid());
-
+  $("#entername").val(makeid());
 
   $("#court").bind('touchstart touchmove', function(event) {
     var e = event.originalEvent;
@@ -402,14 +408,19 @@ $(document).ready(function() {
     return false;
   });
 
-  setTimeout("test();", 500);
+  $("#entername").focus();
+  $("#entername").select();
+
+  //setTimeout("test();", 500);
 });
 
 function test() {
   //alert($(".typekit-badge")[0]);
-  $(".typekit-badge").css("top", $("#footer").top()+$("#footer").height());
+  //$(".typekit-badge").css("top", $("#footer").top()+$("#footer").height());
 }
 
 </script>
+
+<script type='text/javascript' src="/client.js"></script>
 
 </html>

@@ -167,21 +167,27 @@ socket.on('message', function(obj){
 
 var mouseY = 0;
 
-var paddleLimit = 20; // max pixels per ms (convert to %)
+var paddleLimit = 10; // max percent per update
 var delay = 50; // ms between updates
 
 // paddle position is calculated locally and sent to server
 // need to convert to %
 function movePaddles() {
   // get mouse position relative to court
-  var targetY = mouseY - court.position().top; // (convert to %)
-  // THROTTLE PADDLE SPEED
+  var targetY = mouseY - court.position().top; // in pixels
 
+  // THROTTLE PADDLE SPEED
   // get abs of distance since last update
   var delta = paddle.position().top - targetY;
-  // compare to speed limit
+  // this is where the wobble's first visible - i think because the wobble is first introduced below, when paddle.position is set
+
+  // convert to % and compare to speed limit
+  // don't remember where this equation came from. something to do
+  // with attempting to account for various delay settings
   delta1 = Math.min(paddleLimit * delay/50, Math.abs(delta));
-  // minimum movement = 5px
+
+  $("#readout").html(delta1);
+  // minimum movement = 1%
   delta1 = delta1 >  5 ? delta1 : 0;
   delta1 *= (delta < 0 ? -1 : 1); // keep sign
   // calculate new position
@@ -191,7 +197,6 @@ function movePaddles() {
   targetY = Math.max(targetY, 0);
 
   sendY = targetY/$("#court").height()*100;
-  $("#readout").html(sendY);
   socket.send({type:'move', which:playing, y:sendY});
 }
 

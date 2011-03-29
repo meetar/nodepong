@@ -119,6 +119,12 @@ io.on('connection', function(client){
       log("queue length: "+queue.length);
 
       // second player! start new game!
+      // newgameID is getting set erroneously - is it necessary? i think it
+      // might be, so the timer knows what timer to cancel - when is cancelling
+      // necessary? not sure
+      // could a newgame trigger time be set instead? and if it was longer
+      // ago that the setTimeout, something failed, so cancel the old one and
+      // make a new one? convoluted - debug
       if (queue.length > 1 && !gameOn && !newgameID) {
         log(' connect NEWGAME');
         newgameID = setTimeout(function() {newgame(2)}, newgameDelay );

@@ -285,7 +285,7 @@ var justScored = "";
 // game settings
 var delay = 50; // ms between updates
 var startSpeed = 1;
-var maxScore = 9;
+var maxScore = 2;
 var flatline = 25; // maximum allowable number of skipped heartBeats
 var resetDelay = 2000 // delay between volleys - normal: 1000
 var newgameDelay = 2000 // delay between games - normal: 2000

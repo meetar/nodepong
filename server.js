@@ -102,12 +102,8 @@ io.on('connection', function(client){
 
     // receive player's position and prepare for broadcast
     if (msg.type == 'move') {
-      //log('move');
-      if (msg.which == "p1") {
-        p1pos = msg.y;
-      } else if (msg.which == "p2") {
-        p2pos = msg.y;
-      }
+      if (msg.which == "p1") p1pos = msg.y;
+      else if (msg.which == "p2") p2pos = msg.y;
     }
 
     // session announces readiness to play
@@ -118,27 +114,19 @@ io.on('connection', function(client){
         // player object definition
         player = {id:client.sessionId, name:msg.name, wins:0, losses:0}
 
-        // populate leaderboard
-        //log("populating queue, size: "+queue.length);
-        for (x in queue) {
-          //log("queue["+x+"]: "+queue[x].name);
-          p = queue[x];
-          send(client.sessionId, {type:"board", mode:"add", name:p.name, wins:p.wins, losses:p.losses});
-        }
-
         // add player to waiting list
         queue.push(player);
-        //send(client.sessionId, {type:'html', which:"html", html:player.name});
-        //log('queue.length:'+queue.length);
         send(client.sessionId, {type:'position', position:queue.length});
         send(client.sessionId, {type:'display', alert:"WELCOME "+player.name});
 
-        // add player to bottom of leaderboard
-        io.broadcast({type:"board", mode:"add", name:player.name, wins:player.wins, losses:player.losses});
+        // populate leaderboard
+        if (queue.length < 10) {
+          updateLeaderboard();
+          io.broadcast({type:'html', which:'scoretable', html:leaderboard});
+        }
       }
 
       if (queue.length == 1) { // lonely player1...
-        log("1st connection");
         setTimeout(function() {send(client.sessionId, {type:"display", alert:"WAITING FOR CHALLENGER"})}, 2000);
         var statusmsg = player.name + " - WAITING FOR CHALLENGER";
         send(client.sessionId, {type:'html', id:117, which:"status", html:statusmsg});
@@ -153,12 +141,9 @@ io.on('connection', function(client){
       log("queue length: "+queue.length);
 
       // second player! start new game!
-      // newgameID is getting set erroneously - is it necessary? i think it
-      // might be, so the timer knows what timer to cancel - when is cancelling
-      // necessary? not sure
-      // could a newgame trigger time be set instead? and if it was longer
-      // ago that the setTimeout, something failed, so cancel the old one and
-      // make a new one? convoluted - debug
+      // newgameID is getting set erroneously - is it necessary? i think it might be, so the timer knows what timer to cancel - when is cancelling necessary? not sure
+      // could a newgame trigger time be set instead? and if it was longer ago than the setTimeout, something failed, so cancel the old one and make a new one?
+      // convoluted - debug
       if (queue.length > 1 && !gameOn && !newgameID) {
         log(' connect NEWGAME');
         newgameID = setTimeout(function() {newgame(2)}, newgameDelay );
@@ -174,15 +159,13 @@ io.on('connection', function(client){
     }
 
     if (msg.type == 'return') {
-      log('return');
-
       if (!playing) {
-        log(' false return: not playing');
+        //log(' false return: not playing');
         return 0; // sometimes return is sent after score
       }
-      report(["ballx"]);;
+      //report(["ballx"]);;
       if (Math.abs(ballx - 50) < 35) {
-        log(' false return: ball not at edge');
+        //log(' false return: ball not at edge');
         return 0;
       }
 
@@ -223,14 +206,11 @@ io.on('connection', function(client){
     var idx = queue.indexOf(hasAttr(queue, "id", client.sessionId));
     if (idx != -1) {
       queue.splice(idx, 1);
-      io.broadcast({type:"board", mode:"remove", remove:idx});
       // update everyone's place in line
       updateDisplayedPositions();
     }
     var idx = sessions.indexOf(client.sessionId);
     if (idx != -1) sessions.splice(idx, 1);
-
-    //log('  sessions: '+sessions);
   });
 });
 
@@ -243,19 +223,18 @@ function contains(a, obj) {
 
 // does obj contain a key with value val? if so return key
 function hasAttr(obj, id, val) {
- for(x in obj) {
-  for (y in obj[x]) {
-   //alert("x:"+x+", obj[x]:"+obj[x]+", y:"+y+", obj[x][y]:"+obj[x][y]);
-   if (y == id && obj[x][y] == val) {return obj[x];}
+  for(x in obj) {
+    for (y in obj[x]) {
+      if (y == id && obj[x][y] == val) {return obj[x];}
+    }
   }
- }
- return false;
+  return false;
 }
 
 //**** GAME LOGIC ****//
 
-// all values are percentages of the court dimensions - originally 640x480
-// all heights are percentages of courtheight, all widths of courtwidth
+// all values are percentages of their parents' dimensions, mostly of court
+// most heights are percentages of courtheight, most widths of courtwidth
 var courtWidth = 100, courtHeight = 100;
 io.broadcast({type:'size', which:'court', width:courtWidth, height:courtHeight});
 
@@ -268,7 +247,7 @@ io.broadcast({type:'size', which:'ball', height:ballHeight, width:ballWidth});
 var courtleft = 0, courttop = 0;
 var minx = courtleft;
 var miny = courttop;
-io.broadcast({type:'move', which:'court', y:courttop, x:courtleft});
+//io.broadcast({type:'move', which:'court', y:courttop, x:courtleft});
 var maxx = courtWidth-(ballWidth*2);
 var maxy = courtHeight-(ballHeight*2);
 
@@ -298,17 +277,40 @@ var ballx = 0, bally = 0;
 updateScores();
 
 function score() {
-  //log('score');
   point = true;
   playing = false;
-
-  //log("score! p1: "+score1+", p2: "+score2);
   updateScores();
 }
 
 function updateScores() {
   io.broadcast({type:'score', which:'score1', val:score1});
   io.broadcast({type:'score', which:'score2', val:score2});
+}
+
+var leaderboard = "";
+
+function updateLeaderboard() {
+  log("updating leaderboard, queue length: "+queue.length);
+  leaders = queue.slice(0); // make a copy of the queue
+  // sort by wins
+  leaders.sort(function(a, b){
+   return b.wins-a.wins;
+  })
+
+  // trim to top 10
+  leaders = leaders.slice(0,10);
+  blanks = 10 - leaders.length; // how many blank lines?
+
+  var scores = "";
+  for (x in leaders) {
+    scores += "<tr><td class='rank'>"+String(parseInt(x)+1)+".</td><td class='name'>"+leaders[x].name+"</td><td class='scor'>"+leaders[x].wins+"</td></tr>\n"
+  }
+  for (x=0;x<blanks;x++) {
+    scores += "<tr><td class='rank'>"+String(leaders.length+x+1)+".</td><td class='name'>...</td><td class='scor'>...</td></tr>\n"
+  }
+  leaderboard = scores;
+  //log("leaderboard:"+leaderboard);
+
 }
 
 function log(x) {
@@ -332,31 +334,23 @@ function newgame(id) {
     log(' false start- sessions.length:'+sessions.length+", queue.length:"+queue.length);
     return false;
   }
-  //log('current players: p1:'+player1+', p2:'+player2);
   // assign unassigned players to unassigned player slots
   if (player1 == 0) { // for slot 1
-    //log(10);
     if (queue[0] != player1 && queue[0] != player2) {
-      //log(11);
       player1 = queue[0];
     } else if (queue[1] != player1 && queue[1] != player2) {
-      //log(12);
       player1 = queue[1];
     }
   }
   if (player2 == 0) { // same for slot 2
-    //log(20);
     if (queue[0] != player1 && queue[0] != player2) {
       player2 = queue[0];
-      //log(21);
     } else if (queue[1] != player1 && queue[1] != player2) {
       player2 = queue[1];
-      //log(22);
     }
   }
 
   log(" PLAYERS: p1: "+player1.name+", p2: "+player2.name);
-  //justScored = "";
 
   if (contains(sessions, player1.id)) {
     send(player1.id, { type:'playing', paddle:'p1', delay:delay });
@@ -396,7 +390,6 @@ function newgame(id) {
   if (!playing) {
     getSet = true;
     if (!playLoopID) {
-      //log(' newgame PLAYLOOP');
       playLoopID = setTimeout(playLoop, delay, 'NEWGAME');
     } else log('PROB: playloop already going');
 
@@ -405,7 +398,6 @@ function newgame(id) {
       clearTimeout(resetID);
     }
     resetID = setTimeout( reset, resetDelay );
-    //log(' newgame RESET');
 
   } else {
     //log(' PROB: already playing');
@@ -420,7 +412,6 @@ function newgame(id) {
 
 // helper function
 function setcss(which, property, value){
-  //log("css: "+which+"."+property+":"+value);
   io.broadcast({type:'css', which:which, property:property, value:value});
 }
 
@@ -511,19 +502,12 @@ function gameover(type, which) {
     var idx = queue.indexOf(loser);
     //log("loser idx:"+idx);
     if (idx != -1) {
-      //log('sending board idx: '+idx);
-      //"" makes this to string - passing as toString(idx) = [object Object]... why?
-      io.broadcast({type:"board", mode:"remove", remove:""+idx+""});
-      io.broadcast({type:"board", mode:"add", name:loser.name, wins:loser.wins, losses:loser.losses});
       queue.splice(idx,1);
       queue.push(loser);
       var qmsg = "";
       for (x in queue) qmsg += " "+queue[x].name;
       //log(queue.length+" in queue:"+qmsg);
     }
-
-    // update winner's wins
-    io.broadcast({type:"board", mode:"win", name:winner.name, wins:winner.wins, losses:winner.losses}); // will increment wins figure in slot 1
 
     // tag losing player slot for reassignment
     if (loser == player1) player1 = 0; else player2 = 0;
@@ -553,6 +537,10 @@ function gameover(type, which) {
 
     report(["sessions", "queue"]);
   }
+
+  updateLeaderboard();
+  io.broadcast({type:'html', which:'scoretable', html:leaderboard});
+
 
   if (queue.length > 1) {
     //log('queue.length: '+queue.length+": "+queue);

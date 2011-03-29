@@ -112,25 +112,6 @@ function command(msg){
     case 'score':
       score(msg.which, msg.val);
       break;
-    case 'board':
-      if (msg.mode == "remove") {
-        $('#board li:eq('+msg.remove+')').remove();
-
-        var output = $('#output').html();
-        output+= 'remove '+msg.remove+"<br>";
-
-      } else if (msg.mode == "add") {
-        var newli = "<li>" + msg.name + " " + msg.wins + " "+msg.losses+"</li>";
-        $('#board').append(newli);
-
-        var output = $('#output').html();
-        output+= 'add '+msg.name+"<br>";
-
-      } else if (msg.mode == "win") {
-        // wins would only increment when the winner is index 0
-        $('#board li:eq(0)').html(msg.name+" "+msg.wins+" "+msg.losses);
-      }
-      break;
     default: break;
   }
 }
@@ -152,42 +133,42 @@ var delay = 50; // ms between updates
 // paddle position is calculated locally and sent to server
 // need to convert to fractions
 function movePaddles() {
-	var readout = "";
+  var readout = "";
   // get mouse position relative to court in pixels
   var targetY = mouseY - court.offset().top;
-	readout += "paddle: "+paddle.position().top;
-	readout += "<br>mouseY: "+mouseY;
-	readout += "<br>court.offset().top: "+court.offset().top;
-	readout += "<br>targetY: "+targetY;
+  readout += "paddle: "+paddle.position().top;
+  readout += "<br>mouseY: "+mouseY;
+  readout += "<br>court.offset().top: "+court.offset().top;
+  readout += "<br>targetY: "+targetY;
   // THROTTLE PADDLE SPEED
   // get abs of distance since last update, measured from paddle center
   // below is from center
   var delta = paddle.position().top + paddle.height()/2 - targetY;
-	readout += "<br>delta: "+delta;
+  readout += "<br>delta: "+delta;
 
   // convert to fracion and compare to speed limit
   delta1 = Math.abs(delta)/court.height();
-	readout += "<br>delta1: "+delta1;
+  readout += "<br>delta1: "+delta1;
   delta1 = Math.min(paddleLimit, delta1);
-	readout += "<br>delta1: "+delta1;
+  readout += "<br>delta1: "+delta1;
 
   // minimum movement = 2%
   if (delta1 < .02) return false;
   // set delta1 to sign of delta
   delta1 *= (delta < 0 ? -1 : 1);
-	readout += "<br>delta1: "+delta1;
+  readout += "<br>delta1: "+delta1;
   // calculate new fractional position
   targetY = (paddle.position().top/court.height() - delta1);
-	readout += "<br>targetY: "+targetY;
+  readout += "<br>targetY: "+targetY;
   // keep in court
   targetY = Math.min(targetY, (court.height()-paddle.height())/court.height());
-	readout += "<br>paddle.height(): "+String((court.height()-paddle.height())/court.height());
+  readout += "<br>paddle.height(): "+String((court.height()-paddle.height())/court.height());
   targetY = Math.max(targetY, 0);
 
-	readout += "<br>targetY: "+targetY;
+  readout += "<br>targetY: "+targetY;
   sendY = targetY*100;
-	readout += "<br>sendY: "+sendY;
-	readout += "<br>court.height(): "+court.height();
+  readout += "<br>sendY: "+sendY;
+  readout += "<br>court.height(): "+court.height();
   socket.send({type:'move', which:playing, y:sendY});
   //$("#readout").html(readout);
 }

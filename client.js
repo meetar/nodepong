@@ -35,6 +35,7 @@ score('score2', 0);
 
 var p1 = $("#p1"), p2 = $("#p2"), ball = $("#ball"), court = $("#court");
 var displayText;
+var flashDelay = 1300;
 
 // this command is triggered by the server's "broadcast"
 function command(msg){
@@ -60,13 +61,13 @@ function command(msg){
       clearTimeout(displayText); // if there's a timeout already, override
       $('#alert').html(msg.alert);
       $('#alert').css('opacity', 1);
-      setTimeout( function() {$('#alert').css('opacity', 0)}, 1000);
-      setTimeout( function() {$('#alert').css('opacity', 1)}, 1050);
-      setTimeout( function() {$('#alert').css('opacity', 0)}, 1100);
-      setTimeout( function() {$('#alert').css('opacity', 1)}, 1150);
-      setTimeout( function() {$('#alert').css('opacity', 0)}, 1200);
-      setTimeout( function() {$('#alert').css('opacity', 1)}, 1250);
-      setTimeout( function() {$('#alert').css('opacity', 0)}, 1300);
+      setTimeout( function() {$('#alert').css('opacity', 0)}, flashDelay);
+      setTimeout( function() {$('#alert').css('opacity', 1)}, flashDelay+50);
+      setTimeout( function() {$('#alert').css('opacity', 0)}, flashDelay+100);
+      setTimeout( function() {$('#alert').css('opacity', 1)}, flashDelay+150);
+      setTimeout( function() {$('#alert').css('opacity', 0)}, flashDelay+200);
+      setTimeout( function() {$('#alert').css('opacity', 1)}, flashDelay+250);
+      setTimeout( function() {$('#alert').css('opacity', 0)}, flashDelay+300);
       //displayText = setTimeout( function() {
       //  $('#alert').animate({opacity: 0}, 500);
       //  }, 900);
@@ -140,42 +141,42 @@ var delay = 50; // ms between updates
 // paddle position is calculated locally and sent to server
 // need to convert to fractions
 function movePaddles() {
-  var readout = "";
+  //var readout = "";
   // get mouse position relative to court in pixels
   var targetY = mouseY - court.offset().top;
-  readout += "paddle: "+paddle.position().top;
-  readout += "<br>mouseY: "+mouseY;
-  readout += "<br>court.offset().top: "+court.offset().top;
-  readout += "<br>targetY: "+targetY;
+  //readout += "paddle: "+paddle.position().top;
+  //readout += "<br>mouseY: "+mouseY;
+  //readout += "<br>court.offset().top: "+court.offset().top;
+  //readout += "<br>targetY: "+targetY;
   // THROTTLE PADDLE SPEED
   // get abs of distance since last update, measured from paddle center
   // below is from center
   var delta = paddle.position().top + paddle.height()/2 - targetY;
-  readout += "<br>delta: "+delta;
+  //readout += "<br>delta: "+delta;
 
   // convert to fracion and compare to speed limit
   delta1 = Math.abs(delta)/court.height();
-  readout += "<br>delta1: "+delta1;
+  //readout += "<br>delta1: "+delta1;
   delta1 = Math.min(paddleLimit, delta1);
-  readout += "<br>delta1: "+delta1;
+  //readout += "<br>delta1: "+delta1;
 
   // minimum movement = 2%
   if (delta1 < .02) return false;
   // set delta1 to sign of delta
   delta1 *= (delta < 0 ? -1 : 1);
-  readout += "<br>delta1: "+delta1;
+  //readout += "<br>delta1: "+delta1;
   // calculate new fractional position
   targetY = (paddle.position().top/court.height() - delta1);
-  readout += "<br>targetY: "+targetY;
+  //readout += "<br>targetY: "+targetY;
   // keep in court
   targetY = Math.min(targetY, (court.height()-paddle.height())/court.height());
-  readout += "<br>paddle.height(): "+String((court.height()-paddle.height())/court.height());
+  //readout += "<br>paddle.height(): "+String((court.height()-paddle.height())/court.height());
   targetY = Math.max(targetY, 0);
 
-  readout += "<br>targetY: "+targetY;
+  //readout += "<br>targetY: "+targetY;
   sendY = targetY*100;
-  readout += "<br>sendY: "+sendY;
-  readout += "<br>court.height(): "+court.height();
+  //readout += "<br>sendY: "+sendY;
+  //readout += "<br>court.height(): "+court.height();
   socket.send({type:'move', which:playing, y:sendY});
   //$("#readout").html(readout);
 }
@@ -252,11 +253,11 @@ var timer = 0;
 function playLoop(delay) {
   timer++;
   if (playing) {
+    setTimeout(playLoop, delay);
+    socket.send({type:'heartBeat'});
     movePaddles();
     if (colliding) {collisionDetection();}
-    setTimeout(playLoop, delay);
     // respond to server
-    socket.send({type:'heartBeat'});
   }
 }
 

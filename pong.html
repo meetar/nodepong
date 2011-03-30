@@ -2,6 +2,7 @@
   <head>
     <title>NodePong</title>
     <!--meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=yes"-->
+    <meta name="viewport" content="width=device-width;" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <script type="text/javascript"  src="http://code.jquery.com/jquery-1.5.min.js"></script>
     <script type="text/javascript"  src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
@@ -41,7 +42,7 @@
       position:relative;
       //outline: 2px solid blue;
       max-width:20em;
-      min-width:240px;
+      min-width:320 px;
       width:70%;
       margin-left:auto;
       margin-right:auto;
@@ -176,14 +177,14 @@
       position:absolute;
       top:0%;
       left: 15%;
-      z-index:50;
+      z-index:30;
     }
 
     #player2 {
       position:absolute;
       top:0%;
       right: 15%;
-      z-index:50;
+      z-index:100;
     }
 
     #vs{
@@ -204,7 +205,7 @@
       text-align:center;
       color:red;
       font-size: 1em;
-      z-index:100;
+      z-index:0;
       background-color: #333;
     }
 
@@ -218,6 +219,15 @@
       text-align:center;
       background-color: #ccc;
       z-index:1000;}
+
+    #entername {
+      width: 35%;
+      font-size: .9 em;
+    }
+
+    #go {
+      font-size: .9 em;
+    }
 
     #status {
       background-color: #333;
@@ -283,17 +293,21 @@
       color: #38f
     }
 
-    @media all and (max-width: 380px) {
+
+    /******* MEDIA QUERIES *******/
+
+    @media (max-width: 380px) {
       body { font-size:1em; }
       #s2 {height:45%;}
       #s3 {left:80%; top:0; height:45%;}
       #s6 {left:80%; top:37.5%; height:61.25%;}
       #centermask {margin-left:49%;}
-
+      #court {min-width:280px;}
+      .center {width:100%; min-width:280px;}
       #footer { font-size: 8px; }
     }
 
-    @media all and (min-width: 381px) and (max-width: 480px) {
+    @media (min-width: 381px) and (max-width: 512px) {
       body { font-size:1.20em; }
       #s3 {left:80%; top:0; height:45%;}
       #s6 {left:80%; top:37.5%; height:61.25%;}
@@ -301,7 +315,7 @@
       #centermask {margin-left:49%;}
     }
 
-    @media all and (min-width: 481px) and (max-width: 640px) {
+    @media (min-width: 512px) and (max-width: 690px) {
       body {
         font-size:1.5em;
       }
@@ -310,17 +324,36 @@
       #footer { font-size: 13px; }
     }
 
-    @media all and (orientation: 90) or (orientation: -90) {
+    @media (orientation: landscape) {
+      #center {
+        width:70%;
+        background-color:blue;
+      }
       body {
-        font-size:1.5em;
+        //font-size:1.5em;
       }
     }
 
-    @media all and (min-width: 641px) {
+    @media (min-width: 691px) {
       body {
         font-size:2em;
       }
     }
+
+
+    @media (max-width: 380px) and (orientation: landscape) {
+      body {
+        //font-size:1.5em;
+      }
+      #court {
+        width:70%;
+        background-color:red;
+      }
+      #welcome {
+        font-size: 1em;
+      }
+    }
+
     </style>
   </head>
 <body>

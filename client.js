@@ -60,9 +60,16 @@ function command(msg){
       clearTimeout(displayText); // if there's a timeout already, override
       $('#alert').html(msg.alert);
       $('#alert').css('opacity', 1);
-      displayText = setTimeout( function() {
-        $('#alert').animate({opacity: 0}, 500);
-        }, 900);
+      setTimeout( function() {$('#alert').css('opacity', 0)}, 1000);
+      setTimeout( function() {$('#alert').css('opacity', 1)}, 1050);
+      setTimeout( function() {$('#alert').css('opacity', 0)}, 1100);
+      setTimeout( function() {$('#alert').css('opacity', 1)}, 1150);
+      setTimeout( function() {$('#alert').css('opacity', 0)}, 1200);
+      setTimeout( function() {$('#alert').css('opacity', 1)}, 1250);
+      setTimeout( function() {$('#alert').css('opacity', 0)}, 1300);
+      //displayText = setTimeout( function() {
+      //  $('#alert').animate({opacity: 0}, 500);
+      //  }, 900);
       break;
     case 'size':
       var which = '#'+msg.which;
@@ -84,8 +91,8 @@ function command(msg){
       if (msg.paddle == "p1" || msg.paddle == "p2") {
         playing = msg.paddle;
         paddle = $("#"+msg.paddle);
-        paddle.css('background-color', 'black');
-        ball.css('background-color', 'black');
+        paddle.css('background-color', 'white');
+        ball.css('background-color', 'white');
         lastPaddleY = paddle.position().top;
         lastBallX = $('#ball').position().left;
         lastBallY = $('#ball').position().top;
@@ -230,7 +237,7 @@ function ready() {
   // turn on mouse tracking
   $(document).mousemove(function(e){ mouseY = e.pageY; });
 
-  // turn on toch tracking
+  // turn on touch tracking
   $("#court").bind('touchstart touchmove', function(event) {
     var e = event.originalEvent;
     mouseY = e.touches[0].pageY;

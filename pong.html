@@ -20,58 +20,83 @@
       width: 100%;
       padding: 0px;
       margin: 0px;
-      background-color: darkgrey;
+      color: white;
+      text-align: center;
+      background-color: #aaa;
     }
 
     #readout {
       position:absolute;
-      top:0px;
-      left:0px;
-      z-index:1000;
       color:blue;
-      background-color:lightblue;
+      background-color: lightblue;
       font-size:50%;
-      margin-left:auto;
-      margin-right:auto;
+      z-index:1;
+    }
+
+    .shrinker {
+      width:100%;
     }
 
     .center {
-      position:absolute;
-      outline: 2px solid blue;
-      width:100%;
-      background-color: lightgreen;
+      position:relative;
+      //outline: 2px solid blue;
+      max-width:20em;
+      min-width:240px;
+      width:70%;
+      margin-left:auto;
+      margin-right:auto;
+      text-align: center;
     }
 
     #court {
       position:relative;
-      width:95%;
-      max-width:20em;
-      min-width:240px;
-      height:auto;
-      outline:2px solid green;
+      width: 100%;
+      height: auto;
+      //outline: 2px solid red;
       text-align: center;
       margin-left:auto;
       margin-right:auto;
-      margin-top:2%;
-      background-color: lightgreen;
+      margin-top:1%;
+      background-color: #333;
     }
 
     #court.portrait {
       width:95%;
-      background-color: grey;
     }
 
     #court.landscape {
       width:70%;
-      background-color: grey;
     }
+
+    #centerline {
+      position:absolute;
+      top: 15%;
+      height: 75%;
+      width: 0%;
+      border: dashed white .15em;
+      margin-left:49.8%;
+      margin-right:50.2%;
+      z-index: 0;
+    }
+
+    #centermask {
+      position:absolute;
+      top: 15%;
+      height: 75%;
+      width: 0%;
+      border: solid #333 .15em;
+      margin-left:50.5%;
+      margin-right:49.5%;
+      z-index: 1;
+    }
+
     #xgif {
       width:100%;
-      visible:hidden;
+      visibility:hidden;
     }
 
     #p1 {
-      background-color:grey;
+      background-color: grey;
       position:absolute;
       left:6.4%;
       top:50%;
@@ -81,7 +106,7 @@
     }
 
     #p2 {
-      background-color:grey;
+      background-color: grey;
       position:absolute;
       left:90.625%;
       top:50%;
@@ -98,11 +123,10 @@
       left:50%;
       top:50%;
       visibility:hidden;
+      z-index:50;
     }
 
     #scores {
-      outline: green dashed 0
-      px;
       position:absolute;
       width:100%;
       height:16.66666%;
@@ -110,17 +134,16 @@
     }
 
     #score1 {
-      outline: 0px solid green;
       position:absolute;
-      top:2.08333%;
-      left:4.5875%;
+      top:10%;
+      left:5%;
       width:6.25%;
       height:100%;}
 
     #score2 {
       position:absolute;
-      top:2.08333%;
-      left:89.0625%;
+      top:10%;
+      left:88.75%;
       width:6.25%;
       height:100%;
     }
@@ -128,8 +151,8 @@
     .s {position:absolute;
       width:25%;
       height:12.5%;
-      background-color: black;
-      outline:solid green 0px;}
+      background-color: white;
+    }
 
     #s1 {left:0; top:0; width:100%;}
     #s2 {left:0; top:0; height:45%;}
@@ -150,17 +173,17 @@
 */
 
     #player1 {
-      outline: green dashed 0px;
       position:absolute;
       top:0%;
       left: 15%;
+      z-index:50;
     }
 
     #player2 {
-      outline: green dashed 0px;
       position:absolute;
       top:0%;
       right: 15%;
+      z-index:50;
     }
 
     #vs{
@@ -173,41 +196,52 @@
     #alert {
       position:absolute;
       left:0;
-      top:50%;
+      top:40%;
       width:100%;
-      font-size: 100%;
+      margin-left:auto;
+      margin-right:auto;
+      padding: 3% 0%;
+      text-align:center;
       color:red;
-      text-align:center}
+      font-size: 1em;
+      z-index:100;
+      background-color: #333;
+    }
 
     #welcome {
       position:absolute;
-      left:0;
+      left:4%;
       top:40%;
-      width:100%;
-      font-size: 100%;
+      width:89%;
+      padding:2%;
       color:red;
       text-align:center;
-      outline:0px solid red;
-      background-color: lightgrey;
-      z-index:1;}
+      background-color: #ccc;
+      z-index:1000;}
+
+    #status {
+      background-color: #333;
+      margin-top: 2%;
+      padding:1%;
+    }
 
     #leaderboard {
       position:relative;
       width:100%;
-      outline: 0px solid purple;
-      margin-left:auto;
-      margin-right:auto;
-      margin-top: 2%;
-      margin-bottom: 10%;
+      max-width:20em;
+      min-width:240px;
+      //outline: 2px solid purple;
       text-align: center;
+      margin: 2% auto;
+      padding-top:2%;
       font-size: 1em;
-      background-color: lavender;
+      background-color: #333;
     }
 
     #scoretable {
-      outline: solid 0px red;
+      //outline: solid 0px red;
       width: 60%;
-      padding: 0%;
+      padding: 2% 0% 5% 0%;
       margin: 0%;
       margin-left:15%;
       margin-right:25%;
@@ -233,15 +267,20 @@
     #footer {
       position:relative;
       //width:100%;
-      outline:2px solid green;
+      //outline: 2px solid green;
       text-align: center;
       font-size: 50%;
-      padding:5%;
       margin-left:auto;
       margin-right:auto;
       margin-top: 2%;
-      margin-bottom: 10%;
-      background-color: lightorange;
+      margin-bottom: 20%;
+      padding: 1%;
+      padding-bottom: 10%;
+      background-color: #333;
+    }
+
+    a {
+      color: #38f
     }
 
     @media all and (max-width: 380px) {
@@ -249,23 +288,22 @@
       #s2 {height:45%;}
       #s3 {left:80%; top:0; height:45%;}
       #s6 {left:80%; top:37.5%; height:61.25%;}
+      #centermask {margin-left:49%;}
+
       #footer { font-size: 8px; }
     }
 
     @media all and (min-width: 381px) and (max-width: 480px) {
       body { font-size:1.20em; }
-      #court { width:70%; }
       #s3 {left:80%; top:0; height:45%;}
       #s6 {left:80%; top:37.5%; height:61.25%;}
       #footer { font-size: 10px; }
+      #centermask {margin-left:49%;}
     }
 
     @media all and (min-width: 481px) and (max-width: 640px) {
       body {
         font-size:1.5em;
-      }
-      #court {
-        width:70%;
       }
       #s3 {left:80%; top:0; height:45%;}
       #s6 {left:80%; top:37.5%; height:61.25%;}
@@ -276,9 +314,6 @@
       body {
         font-size:1.5em;
       }
-      #court {
-        width:70%;
-      }
     }
 
     @media all and (min-width: 641px) {
@@ -287,21 +322,21 @@
       }
     }
     </style>
-
   </head>
 <body>
-
-
 <div id="readout">READOUT</div>
 
 <div class="center">
   <div id="court">
     <img id="xgif" src="x.gif" />
+
     <div id="welcome">
       WHAT YOUR PONG NAME<br>
-      <form id="nameform"><input type="text" id="entername" />
+      <form id="nameform"><input type="text" id="entername" maxlength=5 />
       <input type="submit" id="go" value="Go" onClick="ready();return false;" /></form>
     </div>
+    <div id="centerline">&nbsp;</div>
+    <div id="centermask">&nbsp;</div>
 
     <h1 id="alert"></h1>
 
@@ -333,13 +368,11 @@
         <div id = "s6" class="s"></div>
         <div id = "s7" class="s"></div>
       </div>
-    <div>
+    </div>
+
+
+  <!-- end court -->
   </div>
-
-</div>
-
-<div class="center">
-  <!-- leaderboard -->
 
   <div id="status"></div>
 
@@ -371,16 +404,13 @@
 
 function makeid() {
     var txt = "";
-    //var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     var consonants = "BCDFGHJKLMNPQRSTVWXYZ";
     var vowels = "AEIOUY";
+    for (x=0;x<2;x++) {
+      txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
+      txt += vowels.charAt(Math.floor(Math.random() * vowels.length));
+    }
     txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
-    txt += vowels.charAt(Math.floor(Math.random() * vowels.length));
-    txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
-    txt += vowels.charAt(Math.floor(Math.random() * vowels.length));
-    txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
-    //for (x in [1,2,3,4,5]) { txt += possible.charAt(Math.floor(Math.random() * possible.length)); }
     return txt;
 }
 

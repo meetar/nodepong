@@ -46,14 +46,16 @@ function command(msg){
       $('#player2').html(msg.player2);
       p1.css('visibility', 'visible');
       p2.css('visibility', 'visible');
+      centerline.css('visibility', 'visible');
       break;
     case 'endgame':
       colliding = false;
       playing = false;
       paddle = '';
       ball.css('visibility', 'hidden');
-      p1.css('background-color', 'grey');
-      p2.css('background-color', 'grey');
+      centerline.css('visibility', 'hidden');
+      p1.css('background-color', 'gray');
+      p2.css('background-color', 'gray');
       p1.css('visibility', 'hidden');
       p2.css('visibility', 'hidden');
       break;
@@ -239,7 +241,7 @@ function ready() {
   $(document).mousemove(function(e){ mouseY = e.pageY; });
 
   // turn on touch tracking
-  $('#toucharea').bind('touchstart touchmove', function(event) {
+  $('#toucharea, #court').bind('touchstart touchmove', function(event) {
     var e = event.originalEvent;
     mouseY = e.touches[0].pageY;
     return false;

@@ -81,7 +81,7 @@ function updateDisplayedPositions() {
         log("updating queue["+x+"]: "+queue[x]+": "+queue[x].name +": "+getOrdinal(y));
         var statusmsg = queue[x].name+ " - "+getOrdinal(y) + " IN LINE";
       }
-      send(queue[x].id, {type:'html', id:135, which:"status", html:statusmsg});
+      send(queue[x].id, {type:'html', which:"status", html:statusmsg});
     }
   }
 }
@@ -129,10 +129,10 @@ io.on('connection', function(client){
       if (queue.length == 1) { // lonely player1...
         setTimeout(function() {send(client.sessionId, {type:"display", alert:"WAITING FOR CHALLENGER"})}, 2000);
         var statusmsg = player.name + " - WAITING FOR CHALLENGER";
-        send(client.sessionId, {type:'html', id:117, which:"status", html:statusmsg});
+        send(client.sessionId, {type:'html', which:"status", html:statusmsg});
       } else if (queue.length == 2) {
-        var statusmsg = player.name+ " - READY TO PLAY";
-        send(client.sessionId, {type:'html', id:122, which:"status", html:statusmsg});
+        var statusmsg = player.name+ " - READY";
+        send(client.sessionId, {type:'html', which:"status", html:statusmsg});
       } else {
         updateDisplayedPositions();
       }
@@ -154,6 +154,7 @@ io.on('connection', function(client){
         send(client.sessionId, {type:'css', which:'p2', property:'visibility', value:'visible'});
         if (playing) {
           send(client.sessionId, {type:'css', which:'ball', property:'visibility', value:'visible'});
+          send(client.sessionId, {type:'css', which:'centerline', property:'visibility', value:'visible'});
         }
       }
     }
@@ -236,18 +237,11 @@ function hasAttr(obj, id, val) {
 // all values are percentages of their parents' dimensions, mostly of court
 // most heights are percentages of courtheight, most widths of courtwidth
 var courtWidth = 100, courtHeight = 100;
-io.broadcast({type:'size', which:'court', width:courtWidth, height:courtHeight});
 
+// not actually using paddleHeight or Width
 var paddleHeight = 8.333, paddleWidth = 3.125, ballWidth = 1.5625, ballHeight = 2.08333;
 var p1pos = courtHeight/2, p2pos = courtHeight/2;
-io.broadcast({type:'size', which:'p1', height:paddleHeight, width:paddleWidth});
-io.broadcast({type:'size', which:'p2', height:paddleHeight, width:paddleWidth});
-io.broadcast({type:'size', which:'ball', height:ballHeight, width:ballWidth});
 
-var courtleft = 0, courttop = 0;
-var minx = courtleft;
-var miny = courttop;
-//io.broadcast({type:'move', which:'court', y:courttop, x:courtleft});
 var maxx = courtWidth-(ballWidth*2);
 var maxy = courtHeight-(ballHeight*2);
 
@@ -290,34 +284,27 @@ function updateScores() {
 var leaderboard = "";
 
 function updateLeaderboard() {
-  log("updating leaderboard, queue length: "+queue.length);
   leaders = queue.slice(0); // make a copy of the queue
-  // sort by wins
-  leaders.sort(function(a, b){
-   return b.wins-a.wins;
-  })
+  leaders.sort(function(a, b){ return b.wins-a.wins; }) // sort by wins
 
-  // trim to top 10
-  leaders = leaders.slice(0,10);
+  leaders = leaders.slice(0,10); // trim to top 10
   blanks = 10 - leaders.length; // how many blank lines?
 
   var scores = "";
-  for (x in leaders) {
+  for (x in leaders) { // assemble leaderboard table
     scores += "<tr><td class='rank'>"+String(parseInt(x)+1)+".</td><td class='name'>"+leaders[x].name+"</td><td class='scor'>"+leaders[x].wins+"</td></tr>\n"
   }
-  for (x=0;x<blanks;x++) {
+  for (x=0;x<blanks;x++) { // if < 10 players, fill rest with blanks
     scores += "<tr><td class='rank'>"+String(leaders.length+x+1)+".</td><td class='name'>...</td><td class='scor'>...</td></tr>\n"
   }
   leaderboard = scores;
-  //log("leaderboard:"+leaderboard);
-
 }
 
-function log(x) {
+function log(x) { // shortcut function
   console.log(x);
 }
 
-function report(list) {
+function report(list) { // helper function
   msg = ''
   for (x in list) {
     msg += list[x]+': '+eval(list[x])+' | ';
@@ -373,9 +360,9 @@ function newgame(id) {
 
   io.broadcast({type:"newgame", player1:player1.name, player2:player2.name});
   var statusmsg = player1.name + " - PLAYING";
-  send(player1.id, {type:'html', id:352, which:"status", html:statusmsg});
+  send(player1.id, {type:'html', which:"status", html:statusmsg});
   var statusmsg = player2.name + " - PLAYING";
-  send(player2.id, {type:'html', id:354, which:"status", html:statusmsg});
+  send(player2.id, {type:'html', which:"status", html:statusmsg});
 
   updateDisplayedPositions();
 
@@ -488,11 +475,11 @@ function gameover(type, which) {
   if (type == 'win') {
     winner = which;
     loser = (which == player1) ? player2 : player1;
-    log(winner.name + " WINS");
-    send(winner.id, {type:'display', alert:"YOU WIN"});
-    send(loser.id, {type:'display', alert:"YOU LOSE"});
+    log(winner.name + ' WINS');
+    send(winner.id, {type:'display', alert:'YOU WIN'});
+    send(loser.id, {type:'display', alert:'YOU LOSE'});
     // broadcast to everybody except [winner, loser]
-    io.broadcast({type:'display', alert:winner.name+" WINS", id:0}, [winner.id, loser.id]);
+    io.broadcast({type:'display', alert:winner.name+' WINS', id:0}, [winner.id, loser.id]);
 
     // increment wins/losses
     winner.wins++;
@@ -500,13 +487,13 @@ function gameover(type, which) {
 
     // move loser to end of queue line
     var idx = queue.indexOf(loser);
-    //log("loser idx:"+idx);
+    //log('loser idx:'+idx);
     if (idx != -1) {
       queue.splice(idx,1);
       queue.push(loser);
-      var qmsg = "";
-      for (x in queue) qmsg += " "+queue[x].name;
-      //log(queue.length+" in queue:"+qmsg);
+      var qmsg = '';
+      for (x in queue) qmsg += ' '+queue[x].name;
+      //log(queue.length+' in queue:'+qmsg);
     }
 
     // tag losing player slot for reassignment
@@ -517,8 +504,8 @@ function gameover(type, which) {
     loser = which;
     winner = (which == player1) ? player2 : player1;
 
-    log("FORFEIT: "+loser.id + ": "+loser.name);
-    io.broadcast({type:'display', alert:loser.name+" FORFEITS"});
+    log('FORFEIT: '+loser.id + ': '+loser.name);
+    io.broadcast({type:'display', alert:loser.name+' FORFEITS'});
 
     winner.wins ++;
 
@@ -527,15 +514,15 @@ function gameover(type, which) {
     if (idx != -1) {
       log('removing from queue');
       queue.splice(idx,1);
-      io.broadcast({type:"board", mode:"remove", remove:idx});
-    } else {log("not in queue - can't remove");}
+      io.broadcast({type:'board', mode:'remove', remove:idx});
+    } else {log('not in queue - can\'t remove');}
     var idx = sessions.indexOf(loser.id);
     if (idx != -1) sessions.splice(idx, 1);
 
     // tag losing player slot for reassignment
     if (loser == player1) player1 = 0; else player2 = 0;
 
-    report(["sessions", "queue"]);
+    report(['sessions', 'queue']);
   }
 
   updateLeaderboard();
@@ -543,26 +530,26 @@ function gameover(type, which) {
 
 
   if (queue.length > 1) {
-    //log('queue.length: '+queue.length+": "+queue);
+    //log('queue.length: '+queue.length+': '+queue);
     if (!newgameID) newgameID = setTimeout(function() {newgame(1)}, newgameDelay );
     else log('PROB: already newgame');
   }
 }
 
 function reset() {
-  //log("\n*RESET* ");
+  //log('\n*RESET* ');
   if (playing || !gameOn || !newgame) {
-    log(" false reset: playing: "+playing+", gameOn: "+gameOn);
+    log(' false reset: playing: '+playing+', gameOn: '+gameOn);
     return false;
   }
   if (queue.length < 2) {
-    log("Awaiting another player...");
+    log('Awaiting another player...');
     return 0;
   }
 
   // determine who won coin toss/game/volley
-  if (justScored == "p1") deltax = Math.abs(deltax);
-  if (justScored == "p2") deltax = Math.abs(deltax) * -1;
+  if (justScored == 'p1') deltax = Math.abs(deltax);
+  if (justScored == 'p2') deltax = Math.abs(deltax) * -1;
 
   if (deltax < 0) { // p2 is serving
     send(player1.id, {type:'collide', value:true});
@@ -606,11 +593,11 @@ function moveDivs() {
   var scoringOn = true;
 
   if (ballx == maxx && scoringOn) { // P1 point
-    justScored = "p1";
+    justScored = 'p1';
     score1 ++;
     score();
-  } else if (ballx == minx && scoringOn ) { // P2 point
-    justScored = "p2";
+  } else if (ballx == 0 && scoringOn ) { // P2 point
+    justScored = 'p2';
     score2 ++;
     score();
   }

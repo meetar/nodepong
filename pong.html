@@ -55,9 +55,7 @@
       height: auto;
       //outline: 2px solid red;
       text-align: center;
-      margin-left:auto;
-      margin-right:auto;
-      margin-top:1%;
+      margin: 1% auto;
       background-color: #333;
     }
 
@@ -229,9 +227,9 @@
       font-size: .9 em;
     }
 
-    #status {
+    #status, #numberOfPlayers {
       background-color: #333;
-      margin-top: 2%;
+      margin-top: 1%;
       padding:1%;
     }
 
@@ -242,7 +240,7 @@
       min-width:240px;
       //outline: 2px solid purple;
       text-align: center;
-      margin: 2% auto;
+      margin: 1% auto;
       padding-top:2%;
       font-size: 1em;
       background-color: #333;
@@ -280,11 +278,8 @@
       //outline: 2px solid green;
       text-align: center;
       font-size: 50%;
-      margin-left:auto;
-      margin-right:auto;
-      margin-top: 2%;
-      margin-bottom: 20%;
-      padding: 1%;
+      margin: 1% auto;
+      padding: 2%;
       padding-bottom: 10%;
       background-color: #333;
     }
@@ -365,6 +360,7 @@
 
     <div id="welcome">
       WHAT YOUR PONG NAME<br>
+      <!-- todo: check names for existing -->
       <form id="nameform"><input type="text" id="entername" maxlength=5 />
       <input type="submit" id="go" value="Go" onClick="ready();return false;" /></form>
     </div>
@@ -408,6 +404,7 @@
   </div>
 
   <div id="status"></div>
+	<div id="numberOfPlayers"></div>
 
   <div id="leaderboard">
     NODEPONG TOP 10<br>
@@ -425,6 +422,7 @@
     </table>
 
   </div>
+    
   <div id="footer">
     Footer text here.<br>
     For more information check out this <a href="#">about page</a>.

@@ -123,7 +123,10 @@ io.on('connection', function(client){
         if (queue.length < 10) {
           updateLeaderboard();
           io.broadcast({type:'html', which:'scoretable', html:leaderboard});
-        }
+        } 
+        
+        updatePlayerCount();
+				
       }
 
       if (queue.length == 1) { // lonely player1...
@@ -292,6 +295,9 @@ var leaderboard = "";
 function updateLeaderboard() {
   log("updating leaderboard, queue length: "+queue.length);
   leaders = queue.slice(0); // make a copy of the queue
+  
+  // new leaders should merge queue with leaders so disconnected players' scores still show up in leaderboard
+  
   // sort by wins
   leaders.sort(function(a, b){
    return b.wins-a.wins;
@@ -311,6 +317,11 @@ function updateLeaderboard() {
   leaderboard = scores;
   //log("leaderboard:"+leaderboard);
 
+}
+
+function updatePlayerCount() {
+	var numString = queue.length + " player" + (queue.length > 1 ? 's' : '') + ' connected';
+	io.broadcast({type:'html', which:'numberOfPlayers', html:numString});
 }
 
 function log(x) {
@@ -540,6 +551,7 @@ function gameover(type, which) {
 
   updateLeaderboard();
   io.broadcast({type:'html', which:'scoretable', html:leaderboard});
+  updatePlayerCount();
 
 
   if (queue.length > 1) {

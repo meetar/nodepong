@@ -33,27 +33,29 @@ function score(which, val) {
 score('score1', 0);
 score('score2', 0);
 
-var p1 = $("#p1"), p2 = $("#p2"), ball = $("#ball"), court = $("#court");
+var p1 = $('#p1'), p2 = $('#p2'), ball = $('#ball'), court = $('#court');
 var displayText;
 var flashDelay = 1300;
 
-// this command is triggered by the server's "broadcast"
+// this command is triggered by the server's 'broadcast'
 function command(msg){
 
   switch(msg.type) {
-    case "newgame":
-      $("#player1").html(msg.player1);
-      $("#player2").html(msg.player2);
+    case 'newgame':
+      $('#player1').html(msg.player1);
+      $('#player2').html(msg.player2);
       p1.css('visibility', 'visible');
       p2.css('visibility', 'visible');
+      centerline.css('visibility', 'visible');
       break;
-    case "endgame":
+    case 'endgame':
       colliding = false;
       playing = false;
       paddle = '';
       ball.css('visibility', 'hidden');
-      p1.css('background-color', 'grey');
-      p2.css('background-color', 'grey');
+      centerline.css('visibility', 'hidden');
+      p1.css('background-color', 'gray');
+      p2.css('background-color', 'gray');
       p1.css('visibility', 'hidden');
       p2.css('visibility', 'hidden');
       break;
@@ -74,7 +76,7 @@ function command(msg){
       break;
     case 'size':
       var which = '#'+msg.which;
-      $(which).css({width:msg.width+"%", height:msg.height+"%"});
+      $(which).css({width:msg.width+'%', height:msg.height+'%'});
       break;
     case 'css':
       var which = '#'+msg.which;
@@ -89,9 +91,9 @@ function command(msg){
       $('#position').html(msg.position);
       break;
     case 'playing':
-      if (msg.paddle == "p1" || msg.paddle == "p2") {
+      if (msg.paddle == 'p1' || msg.paddle == 'p2') {
         playing = msg.paddle;
-        paddle = $("#"+msg.paddle);
+        paddle = $('#'+msg.paddle);
         paddle.css('background-color', 'white');
         ball.css('background-color', 'white');
         lastPaddleY = paddle.position().top;
@@ -104,8 +106,8 @@ function command(msg){
       deltax = $('#ball').position().left - lastBallX;
       lastBallX = $('#ball').position().left;
       lastBallY = $('#ball').position().top;
-      colliding = ((playing == "p1" && deltax < 0) ||
-                   (playing == "p2" && deltax > 0)) ? true : false;
+      colliding = ((playing == 'p1' && deltax < 0) ||
+                   (playing == 'p2' && deltax > 0)) ? true : false;
 
       $('#ball').css({'top': msg.bally+'%', 'left': msg.ballx+'%'});
       $('#p1').css({'top': msg.p1pos+'%'});
@@ -141,44 +143,44 @@ var delay = 50; // ms between updates
 // paddle position is calculated locally and sent to server
 // need to convert to fractions
 function movePaddles() {
-  //var readout = "";
+  //var readout = '';
   // get mouse position relative to court in pixels
   var targetY = mouseY - court.offset().top;
-  //readout += "paddle: "+paddle.position().top;
-  //readout += "<br>mouseY: "+mouseY;
-  //readout += "<br>court.offset().top: "+court.offset().top;
-  //readout += "<br>targetY: "+targetY;
+  //readout += 'paddle: '+paddle.position().top;
+  //readout += '<br>mouseY: '+mouseY;
+  //readout += '<br>court.offset().top: '+court.offset().top;
+  //readout += '<br>targetY: '+targetY;
   // THROTTLE PADDLE SPEED
   // get abs of distance since last update, measured from paddle center
   // below is from center
   var delta = paddle.position().top + paddle.height()/2 - targetY;
-  //readout += "<br>delta: "+delta;
+  //readout += '<br>delta: '+delta;
 
   // convert to fracion and compare to speed limit
   delta1 = Math.abs(delta)/court.height();
-  //readout += "<br>delta1: "+delta1;
+  //readout += '<br>delta1: '+delta1;
   delta1 = Math.min(paddleLimit, delta1);
-  //readout += "<br>delta1: "+delta1;
+  //readout += '<br>delta1: '+delta1;
 
   // minimum movement = 2%
   if (delta1 < .02) return false;
   // set delta1 to sign of delta
   delta1 *= (delta < 0 ? -1 : 1);
-  //readout += "<br>delta1: "+delta1;
+  //readout += '<br>delta1: '+delta1;
   // calculate new fractional position
   targetY = (paddle.position().top/court.height() - delta1);
-  //readout += "<br>targetY: "+targetY;
+  //readout += '<br>targetY: '+targetY;
   // keep in court
   targetY = Math.min(targetY, (court.height()-paddle.height())/court.height());
-  //readout += "<br>paddle.height(): "+String((court.height()-paddle.height())/court.height());
+  //readout += '<br>paddle.height(): '+String((court.height()-paddle.height())/court.height());
   targetY = Math.max(targetY, 0);
 
-  //readout += "<br>targetY: "+targetY;
+  //readout += '<br>targetY: '+targetY;
   sendY = targetY*100;
-  //readout += "<br>sendY: "+sendY;
-  //readout += "<br>court.height(): "+court.height();
+  //readout += '<br>sendY: '+sendY;
+  //readout += '<br>court.height(): '+court.height();
   socket.send({type:'move', which:playing, y:sendY});
-  //$("#readout").html(readout);
+  //$('#readout').html(readout);
 }
 
 // returns ball at an angle based on point of contact with paddle
@@ -234,18 +236,18 @@ function collisionDetection() {
 }
 
 function ready() {
-  $("#welcome").css("visibility","hidden");
+  $('#welcome').css('visibility','hidden');
   // turn on mouse tracking
   $(document).mousemove(function(e){ mouseY = e.pageY; });
 
   // turn on touch tracking
-  $("#court").bind('touchstart touchmove', function(event) {
+  $('#court').bind('touchstart touchmove', function(event) {
     var e = event.originalEvent;
     mouseY = e.touches[0].pageY;
     return false;
   });
 
-  socket.send({type:'ready', name:$("#entername").val()});
+  socket.send({type:'ready', name:$('#entername').val()});
 }
 
 var timer = 0;

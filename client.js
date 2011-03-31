@@ -1,3 +1,34 @@
+function makeid() {
+    var txt = '';
+    var consonants = 'BCDFGHJKLMNPQRSTVWXYZ';
+    var vowels = 'AEIOUY';
+    for (x=0;x<2;x++) {
+      txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
+      txt += vowels.charAt(Math.floor(Math.random() * vowels.length));
+    }
+    txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
+    return txt;
+}
+
+function scrollWindow() {
+  /mobile/i.test(navigator.userAgent) && !location.hash && window.scrollTo(0, 1);
+}
+
+$(document).ready(function() {
+  //scrollWindow();
+  window.onorientationchange = scrollWindow;
+
+  $('#entername').val(makeid());
+  $('#entername').select();
+  $('#entername').onfocus = '$(\'#entername\').value = \'\';';
+
+
+  //ready();
+
+  $('.typekit-badge').css('display', 'none');
+
+});
+
 var playing = false; // are we sending mousemoves to the server?
 var colliding = false;
 var paddle = '';
@@ -21,11 +52,11 @@ var scores = {
 
 function score(which, val) {
   for (x in [1,2,3,4,5,6,7,8,9]) {
-    element = '#'+which+' #s'+x;
+    element = '#'+which+' .s'+x;
     $(element).css('visibility', 'hidden');
   }
   for (x in scores[val]) {
-    element = '#'+which+' #s'+scores[val][x];
+    element = '#'+which+' .s'+scores[val][x];
     $(element).css('visibility', 'visible');
   }
 }
@@ -188,19 +219,21 @@ function movePaddles() {
 
 // returns ball at an angle based on point of contact with paddle
 function english(yval) {
-  yval /= paddle.height() / 100; // percentage up from bottom
-  if (yval < 10) deltay = -2;
-  else if (yval < 20) deltay = -1.666;
-  else if (yval < 30) deltay = -1.25;
-  else if (yval < 40) deltay = -.8333;
-  else if (yval < 50) deltay = -.41666;
-  else if (yval < 60) deltay = 0;
-  else if (yval < 70) deltay = .41666;
-  else if (yval < 80) deltay = .83333;
-  else if (yval < 90) deltay = 1.25;
-  else if (yval < 100) deltay = 1.6666;
-  else deltay = 2;
-  ///deltay *= Math.abs(deltax/10); // not sure what this was doing
+  var yfac = 1.5; // angle extremeness tuner
+  yval *= 100;
+  if (yval < 0) deltay = -1 * yfac;
+  else if (yval < 10) deltay = -3 * yfac;
+  else if (yval < 20) deltay = -1.25 * yfac;
+  else if (yval < 30) deltay = -.8333 * yfac;
+  else if (yval < 40) deltay = -.41666 * yfac;
+  else if (yval < 49) deltay = -.1 * yfac;
+  else if (yval < 52) deltay = 0;
+  else if (yval < 60) deltay = .1 * yfac;
+  else if (yval < 70) deltay = .41666 * yfac;
+  else if (yval < 80) deltay = .83333 * yfac;
+  else if (yval < 90) deltay = 1.25 * yfac;
+  else if (yval < 100) deltay = 3 * yfac;
+  else deltay = 1 * yfac;
 }
 
 function collisionDetection() {
@@ -228,10 +261,16 @@ function collisionDetection() {
 
   if (ix1 <= px2 && ix2 >= px1 && iy1 <= py2 && iy2 >= py1) {
     // successful return
-
+    var rdmsg = "";
     // calculate english based on current relative positions
-    var relativeY = ball.position().top+(ball.width()/2) - paddle.position().top;
-    english(relativeY);
+    var relativeY = ( ball.position().top+(ball.height()/2) - paddle.position().top ) / paddle.height();
+    rdmsg += "ball.position().top: "+ball.position().top+"<br>";
+    rdmsg += "ball.height(): "+ball.height()+"<br>";
+    rdmsg += "paddle.position().top: "+paddle.position().top+"<br>";
+    rdmsg += "paddle.height(): "+paddle.height()+"<br>";
+    rdmsg += "relativeY: "+relativeY;
+    //$("#readout").html(rdmsg);
+    english((relativeY+.5)/2);
     colliding = false;
 
     socket.send({type:'return', which:playing, english:deltay});

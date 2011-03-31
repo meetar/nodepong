@@ -37,7 +37,7 @@
     }
 
     #readout {
-      display:none;
+      display:inline;
       position:absolute;
       color:blue;
       background-color: aqua;
@@ -158,28 +158,28 @@
       height:100%;
     }
 
-    .s {position:absolute;
+    .s1, .s2, .s3, .s4, .s5, .s6, .s7 {position:absolute;
       width:25%;
       height:12.5%;
       background-color: white;
     }
 
-    #s1 {left:0; top:0; width:100%;}
-    #s2 {left:0; top:0; height:45%;}
-    #s3 {left:77%; top:0; height:45%;}
-    #s4 {left:0; top:37.5%; width:100%; visibility: hidden;}
-    #s5 {left:0; top:37.5%; height:61.25%;}
-    #s6 {left:77%; top:37.5%; height:61.25%;}
-    #s7 {left:0; top:90%; width:100%;}
+    .s1 {left:0; top:0; width:100%;}
+    .s2 {left:0; top:0; height:45%;}
+    .s3 {left:77%; top:0; height:45%;}
+    .s4 {left:0; top:37.5%; width:100%; visibility: hidden;}
+    .s5 {left:0; top:37.5%; height:61.25%;}
+    .s6 {left:77%; top:37.5%; height:61.25%;}
+    .s7 {left:0; top:90%; width:100%;}
 
 /* for testing number div placement
-    #s1 {background-color:pink;}
-    #s2 {background-color:blue;}
-    #s3 {background-color:purple;}
-    #s4 {background-color:green;}
-    #s5 {background-color:gray;}
-    #s6 {background-color:red;}
-    #s7 {background-color:pink;}
+    .s1 {background-color:pink;}
+    .s2 {background-color:blue;}
+    .s3 {background-color:purple;}
+    .s4 {background-color:green;}
+    .s5 {background-color:gray;}
+    .s6 {background-color:red;}
+    .s7 {background-color:pink;}
 */
 
     /* scores */
@@ -378,6 +378,7 @@
     }
 
     </style>
+
   </head>
 <body>
   <div id="readout">READOUT</div>
@@ -386,15 +387,15 @@
 
     <div id="toucharea"></div>
 
-    <!----- COURT ----->
+    <!-- COURT -->
     <div id="court">
-      <img id="xgif" src="x.gif" />
+      <img id="xgif" src="x.gif" alt="4x3 spacer gif" />
 
       <div id="welcome">
-        WHAT YOUR PONG NAME<br>
+        WHAT YOUR PONG NAME<br/>
         <!-- todo: check names for existing -->
-        <form id="nameform"><input type="text" id="entername" maxlength=5 />
-        <input type="submit" id="go" value="Go" onClick="ready();return false;" /></form>
+        <form id="nameform" method="post" action="#"><input type="text" id="entername" maxlength="5" />
+        <input type="submit" id="go" value="Go" onclick="ready();return false;" /></form>
       </div>
       <div id="centerline">&nbsp;</div>
       <div id="centermask">&nbsp;</div>
@@ -407,13 +408,13 @@
 
       <div id="scores">
         <div id="score1">
-          <div id = "s1" class="s"></div>
-          <div id = "s2" class="s"></div>
-          <div id = "s3" class="s"></div>
-          <div id = "s4" class="s"></div>
-          <div id = "s5" class="s"></div>
-          <div id = "s6" class="s"></div>
-          <div id = "s7" class="s"></div>
+          <div class="s1"></div>
+          <div class="s2"></div>
+          <div class="s3"></div>
+          <div class="s4"></div>
+          <div class="s5"></div>
+          <div class="s6"></div>
+          <div class="s7"></div>
         </div>
 
         <div id="player1"></div>
@@ -421,20 +422,20 @@
         <div id="player2"></div>
 
         <div id="score2">
-          <div id = "s1" class="s"></div>
-          <div id = "s2" class="s"></div>
-          <div id = "s3" class="s"></div>
-          <div id = "s4" class="s"></div>
-          <div id = "s5" class="s"></div>
-          <div id = "s6" class="s"></div>
-          <div id = "s7" class="s"></div>
+          <div class="s1"></div>
+          <div class="s2"></div>
+          <div class="s3"></div>
+          <div class="s4"></div>
+          <div class="s5"></div>
+          <div class="s6"></div>
+          <div class="s7"></div>
         </div>
 
       </div>
 
     </div> <!-- end court -->
 
-    <!----- INFO SCREEN ----->
+    <!-- INFO SCREEN -->
     <div id="info">
 
       <div id="status"></div>
@@ -442,7 +443,7 @@
       <div id="rotate">rotate for fullscreen</div>
 
       <div id="leaderboard">
-        NODEPONG TOP 10<br>
+        NODEPONG TOP 10<br/>
         <table id="scoretable">
         <tr><td class="rank">1.</td><td class="name">...</td><td class="scor">...</td></tr>
         <tr><td class="rank">2.</td><td class="name">...</td><td class="scor">...</td></tr>
@@ -460,8 +461,8 @@
       <div id="footer">
         <p>This multi-player game was made using node.js, socket.io, jquery, and css3. Learn <a href="#">the seven ways it is cool</a>.</p>
         <p>Thanks for playing!</p>
-        <p>NodePong version 1.0<br>
-        by <a href="meetar.net">meetar</a><br>
+        <p>NodePong version 1.0<br/>
+        by <a href="meetar.net">meetar</a><br/>
         <a href="https://github.com/meetar/NodePong">github repo</a></p>
       </div>
 
@@ -469,44 +470,9 @@
 
   </div>  <!-- end center -->
 
-</body>
-
-<script type='text/javascript'>
-
-function makeid() {
-    var txt = '';
-    var consonants = 'BCDFGHJKLMNPQRSTVWXYZ';
-    var vowels = 'AEIOUY';
-    for (x=0;x<2;x++) {
-      txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
-      txt += vowels.charAt(Math.floor(Math.random() * vowels.length));
-    }
-    txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
-    return txt;
-}
-
-function scrollWindow() {
-  /mobile/i.test(navigator.userAgent) && !location.hash && window.scrollTo(0, 1);
-}
-
-$(document).ready(function() {
-  //scrollWindow();
-  window.onorientationchange = scrollWindow;
-
-  $('#entername').val(makeid());
-  $('#entername').select();
-  $('#entername').onfocus = '$(\'#entername\').value = \'\';';
-
-
-  //ready();
-
-  $('.typekit-badge').css('display', 'none');
-
-});
-
-</script>
-
 <script type="text/javascript" src="/client.js"></script>
+
+</body>
 
 
 </html>

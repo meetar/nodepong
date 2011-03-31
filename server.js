@@ -150,6 +150,11 @@ io.on('connection', function(client){
       if (queue.length > 1 && !gameOn && !newgameID) {
         log(' connect NEWGAME');
         newgameID = setTimeout(function() {newgame(2)}, newgameDelay );
+      } else {
+          setTimeout(function() { // give it 3 newgameDelays
+            if (newgameID) newgame(3); // if newgameID still not reset, start new game anyway
+            else log('PROB NEWGAMEID STUCK');
+          }, newgameDelay*3 );
       }
 
       if (gameOn) { // reveal game already underway
@@ -555,7 +560,7 @@ function gameover(type, which) {
     //log('queue.length: '+queue.length+': '+queue);
     if (!newgameID) newgameID = setTimeout(function() {newgame(1)}, newgameDelay );
     else log('PROB: already newgame');
-  } else {
+  } else if (queue.length == 1){
     var statusMsg = queue[0].name + ' - WAITING FOR CHALLENGER';
     send(queue[0].id, {type:'html', which:'status', html:statusMsg});
   }

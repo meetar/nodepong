@@ -1,5 +1,9 @@
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>NodePong</title>
     <!--meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=yes"-->
     <meta name="viewport" content="width=device-width;" />
@@ -14,7 +18,7 @@
     <script type="text/javascript" src="http://use.typekit.com/lmg8kpk.js"></script>
     <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
 
-    <style>
+    <style type="text/css">
 
     html, body {
       height: 100%;
@@ -389,7 +393,7 @@
       <div id="welcome">
         WHAT YOUR PONG NAME<br>
         <!-- todo: check names for existing -->
-        <form id="nameform"><input type="text" id="entername" maxlength=5 onFocus="this.value = '';" />
+        <form id="nameform"><input type="text" id="entername" maxlength=5 />
         <input type="submit" id="go" value="Go" onClick="ready();return false;" /></form>
       </div>
       <div id="centerline">&nbsp;</div>
@@ -434,7 +438,7 @@
     <div id="info">
 
       <div id="status"></div>
-      <div id="numberOfPlayers"></div>
+      <div id="numberOfPlayers">0 players connected</div>
       <div id="rotate">rotate for fullscreen</div>
 
       <div id="leaderboard">
@@ -454,8 +458,11 @@
       </div>
 
       <div id="footer">
-        Footer text here.<br>
-        For more information check out this <a href="#">about page</a>.
+        <p>This multi-player game was made using node.js, socket.io, jquery, and css3. Learn <a href="#">the seven ways it is cool</a>.</p>
+        <p>Thanks for playing!</p>
+        <p>NodePong version 1.0<br>
+        by <a href="meetar.net">meetar</a><br>
+        <a href="https://github.com/meetar/NodePong">github repo</a></p>
       </div>
 
     </div> <!-- end info -->
@@ -467,9 +474,9 @@
 <script type='text/javascript'>
 
 function makeid() {
-    var txt = "";
-    var consonants = "BCDFGHJKLMNPQRSTVWXYZ";
-    var vowels = "AEIOUY";
+    var txt = '';
+    var consonants = 'BCDFGHJKLMNPQRSTVWXYZ';
+    var vowels = 'AEIOUY';
     for (x=0;x<2;x++) {
       txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
       txt += vowels.charAt(Math.floor(Math.random() * vowels.length));
@@ -486,11 +493,14 @@ $(document).ready(function() {
   //scrollWindow();
   window.onorientationchange = scrollWindow;
 
-  $("#entername").val(makeid());
-  //$("#entername").select();
+  $('#entername').val(makeid());
+  $('#entername').select();
+  $('#entername').onfocus = '$(\'#entername\').value = \'\';';
+
+
   //ready();
 
-  $(".typekit-badge").css("display", "none");
+  $('.typekit-badge').css('display', 'none');
 
 });
 

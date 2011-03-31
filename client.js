@@ -135,7 +135,7 @@ socket.on('message', function(obj){
   } else command(obj);
 });
 
-var mouseY = 0;
+var mouseY = 0, lastY = 0;
 
 var paddleLimit = .05; // max percent per update
 var delay = 50; // ms between updates
@@ -146,13 +146,13 @@ function movePaddles() {
   //var readout = '';
   // get mouse position relative to court in pixels
   var targetY = mouseY - court.offset().top;
+  if (Math.abs(targetY - lastY) < 2) return false; // too small to bother
   //readout += 'paddle: '+paddle.position().top;
   //readout += '<br>mouseY: '+mouseY;
   //readout += '<br>court.offset().top: '+court.offset().top;
   //readout += '<br>targetY: '+targetY;
   // THROTTLE PADDLE SPEED
   // get abs of distance since last update, measured from paddle center
-  // below is from center
   var delta = paddle.position().top + paddle.height()/2 - targetY;
   //readout += '<br>delta: '+delta;
 
@@ -174,11 +174,14 @@ function movePaddles() {
   targetY = Math.min(targetY, (court.height()-paddle.height())/court.height());
   //readout += '<br>paddle.height(): '+String((court.height()-paddle.height())/court.height());
   targetY = Math.max(targetY, 0);
+  lastY = targetY;
 
   //readout += '<br>targetY: '+targetY;
+  // convert to fraction
   sendY = targetY*100;
   //readout += '<br>sendY: '+sendY;
   //readout += '<br>court.height(): '+court.height();
+  //socket.broadcast({type:'move', which:playing, y:sendY});
   socket.send({type:'move', which:playing, y:sendY});
   //$('#readout').html(readout);
 }

@@ -126,6 +126,7 @@ io.on('connection', function(client){
         }
 
         updatePlayerCount();
+        updateSpectatorCount();
 
       }
 
@@ -144,19 +145,17 @@ io.on('connection', function(client){
       log('queue length: '+queue.length);
 
       // second player! start new game!
-      // newgameID is getting set erroneously - is it necessary? i think it might be, so the timer knows what timer to cancel - when is cancelling necessary? not sure
-      // could a newgame trigger time be set instead? and if it was longer ago than the setTimeout, something failed, so cancel the old one and make a new one?
-      // convoluted - debug
       if (queue.length > 1 && !gameOn && !newgameID) {
         log(' connect NEWGAME');
         newgameID = setTimeout(function() {newgame(2)}, newgameDelay );
-      } else {
+      } else if (queue.length > 1 && !gameOn && newgame) { // claims game already triggered?
           setTimeout(function() { // give it 3 newgameDelays
-            if (newgameID) newgame(3); // if newgameID still not reset, start new game anyway
+            if (newgameID) newgame(3); // if newgameID still not reset, try to start a new game anyway
             else log('PROB NEWGAMEID STUCK');
           }, newgameDelay*3 );
       }
 
+      /* possibly unnecessary - testing
       if (gameOn) { // reveal game already underway
         send(client.sessionId, {type:'css', which:'p1', property:'visibility', value:'visible'});
         send(client.sessionId, {type:'css', which:'p2', property:'visibility', value:'visible'});
@@ -165,6 +164,11 @@ io.on('connection', function(client){
           send(client.sessionId, {type:'css', which:'centerline', property:'visibility', value:'visible'});
         }
       }
+      */
+    }
+
+    if (msg.type == 'watching') {
+      updateSpectatorCount();
     }
 
     if (msg.type == 'return') {
@@ -322,6 +326,14 @@ function updateLeaderboard() {
 function updatePlayerCount() {
   var numString = queue.length + ' player' + (queue.length > 1 ? 's' : '') + ' connected';
   io.broadcast({type:'html', which:'numberOfPlayers', html:numString});
+}
+
+function updateSpectatorCount() {
+  var spectators = sessions.length - queue.length;
+  report(['sessions.length', 'queue.length']);
+  log('spectators: '+spectators);
+  var numString = spectators + ' spectator' + (spectators > 1 ? 's' : '') + ' watching';
+  io.broadcast({type:'html', which:'numberOfSpectators', html:numString});
 }
 
 function log(x) { // shortcut function

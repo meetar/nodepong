@@ -15,377 +15,51 @@
 
     <script type="text/javascript" src="http://cdn.socket.io/stable/socket.io.js"></script>
 
-    <script type="text/javascript" src="http://use.typekit.com/lmg8kpk.js"></script>
+    <link rel="stylesheet" href="http://meyerweb.com/eric/tools/css/reset/reset.css" type="text/css" media="screen">
+
+    <!-- TypeKit support -->
+    <script type="text/javascript" src="http://use.typekit.com/fhn8jqe.js"></script>
     <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
 
-    <style type="text/css">
-
-    html, body {
-      height: 100%;
-      width: 100%;
-      padding: 0px;
-      margin: 0px;
-      color: white;
-      text-align: center;
-      background-color: #aaa;
-    }
-
-    /***** PLAY SCREEN *****/
-
-    #play {
-      visibility:visible;
-    }
-
-    #readout {
-      display:inline;
-      position:absolute;
-      color:blue;
-      background-color: aqua;
-      font-size:50%;
-      z-index:1;
-    }
-
-    #toucharea {
-      margin:0px;
-      padding:0px;
-      position:absolute;
-      width:100%;
-      height:100%;
-      border: 2px solid green;
-      display:none;
-      z-index:80;
-    }
-
-    .center {
-      position:relative;
-      max-width:20em;
-      min-width:320px;
-      width:70%;
-      margin-left:auto;
-      margin-right:auto;
-      text-align: center;
-    }
-
-    #court {
-      position:relative;
-      width: 100%;
-      height: auto;
-      text-align: center;
-      margin: 1% auto;
-      background-color: #333;
-    }
-
-    #centerline {
-      position:absolute;
-      top: 15%;
-      height: 75%;
-      width: 0%;
-      border: dashed white .15em;
-      margin-left:49.8%;
-      margin-right:50.2%;
-      z-index: 0;
-      visibility: hidden;
-    }
-
-    #centermask {
-      position:absolute;
-      top: 15%;
-      height: 75%;
-      width: 0%;
-      border: solid #333 .15em;
-      margin-left:50.5%;
-      margin-right:49.5%;
-      z-index: 1;
-    }
-
-    #xgif {
-      width:100%;
-      visibility:hidden;
-    }
-
-    #p1 {
-      background-color: gray;
-      position:absolute;
-      left:6.4%;
-      top:50%;
-      height:8.3333%;
-      width:3.125%;
-      visibility:hidden;
-      z-index: 100;
-    }
-
-    #p2 {
-      background-color: gray;
-      position:absolute;
-      left:90.625%;
-      top:50%;
-      height:8.3333%;
-      width:3.125%;
-      visibility:hidden;
-      z-index: 100;
-    }
-
-    #ball {
-      width:3.125%;
-      height:4.16666%;
-      background-color:gray;
-      position:absolute;
-      left:50%;
-      top:50%;
-      visibility:hidden;
-      z-index:50;
-    }
-
-    #scores {
-      position:absolute;
-      width:100%;
-      height:16.66666%;
-      top:2%;
-    }
-
-    #score1 {
-      position:absolute;
-      top:10%;
-      left:5%;
-      width:6.25%;
-      height:100%;}
-
-    #score2 {
-      position:absolute;
-      top:10%;
-      left:88.75%;
-      width:6.25%;
-      height:100%;
-    }
-
-    .s1, .s2, .s3, .s4, .s5, .s6, .s7 {position:absolute;
-      width:25%;
-      height:12.5%;
-      background-color: white;
-    }
-
-    .s1 {left:0; top:0; width:100%;}
-    .s2 {left:0; top:0; height:45%;}
-    .s3 {left:77%; top:0; height:45%;}
-    .s4 {left:0; top:37.5%; width:100%; visibility: hidden;}
-    .s5 {left:0; top:37.5%; height:61.25%;}
-    .s6 {left:77%; top:37.5%; height:61.25%;}
-    .s7 {left:0; top:90%; width:100%;}
-
-/* for testing number div placement
-    .s1 {background-color:pink;}
-    .s2 {background-color:blue;}
-    .s3 {background-color:purple;}
-    .s4 {background-color:green;}
-    .s5 {background-color:gray;}
-    .s6 {background-color:red;}
-    .s7 {background-color:pink;}
-*/
-
-    /* scores */
-    #player1 {
-      position:absolute;
-      top:0%;
-      left: 15%;
-    }
-
-    #player2 {
-      position:absolute;
-      top:0%;
-      right: 15%;
-    }
-
-    #vs{
-      text-align: center;
-      font-size:80%;
-      position:relative;
-      top:5%;
-    }
-
-    #alert {
-      position:absolute;
-      left:0;
-      top:40%;
-      width:100%;
-      margin-left:auto;
-      margin-right:auto;
-      padding: 3% 0%;
-      text-align:center;
-      color:red;
-      font-size: 1em;
-      z-index:1;
-      background-color: #333;
-    }
-
-    #welcome {
-      position:absolute;
-      left:4%;
-      top:40%;
-      width:89%;
-      padding:2%;
-      color:red;
-      text-align:center;
-      background-color: #ccc;
-      z-index:1000;}
-
-    #entername {
-      width: 35%;
-      font-size: .9em;
-    }
-
-    #go {
-      font-size: .9em;
-    }
-
-    /***** INFO SCREEN *****/
-
-    #status, #numberOfPlayers {
-      background-color: #333;
-      margin-top: 1%;
-      padding:1%;
-    }
-
-    #rotate {
-      display: none;
-      background-color: #666;
-      margin-top: 2%;
-      padding: 1%;
-    }
-
-    #leaderboard {
-      position:relative;
-      width:100%;
-      max-width:20em;
-      min-width:240px;
-      text-align: center;
-      margin: 1% auto;
-      padding-top:2%;
-      font-size: 1em;
-      background-color: #666;
-    }
-
-    #scoretable {
-      width: 60%;
-      padding: 2% 0% 5% 0%;
-      margin: 0%;
-      margin-left:15%;
-      margin-right:25%;
-      font-size: 100%;
-    }
-
-    .rank {
-      text-align: right;
-      padding-right: 10%;
-      width: 30%;
-    }
-
-    .name {
-      text-align: center;
-      width: 30%;
-    }
-
-    .scor {
-      text-align: right;
-      width: 30%;
-    }
-
-    #footer {
-      position:relative;
-      text-align: center;
-      font-size: 50%;
-      margin: 1% auto;
-      padding: 2%;
-      padding-bottom: 10%;
-      background-color: #333;
-    }
-
-    a {
-      color: #38f
-    }
-
-
-    /******* MEDIA QUERIES *******/
-
-    @media (max-width: 380px) {
-      body { font-size:1em; }
-      #s2 {height:45%;}
-      #s3 {left:80%; top:0; height:45%;}
-      #s6 {left:80%; top:37.5%; height:61.25%;}
-      #centermask {margin-left:49%;}
-      .center {width:100%; min-width:280px;}
-      #footer { font-size: 8px; }
-    }
-
-    @media (min-width: 381px) and (max-width: 512px) {
-      body { font-size:1.20em; }
-      #s3 {left:80%; top:0; height:45%;}
-      #s6 {left:80%; top:37.5%; height:61.25%;}
-      #footer { font-size: 10px; }
-      #centermask {margin-left:49%;}
-    }
-
-    @media (min-width: 512px) and (max-width: 690px) {
-      body {
-        font-size:1.5em;
-      }
-      #s3 {left:80%; top:0; height:45%;}
-      #s6 {left:80%; top:37.5%; height:61.25%;}
-      #footer { font-size: 13px; }
-    }
-
-    @media (min-width: 691px) {
-      body {
-        font-size:2em;
-      }
-    }
-
-    /* iphone portrait mode */
-    @media (max-width: 320px) and (max-height: 480px) and (orientation: portrait) {
-      #rotate {
-        display: inline;
-      }
-    }
-
-    /* iphone landscape mode */
-    @media (max-width: 320px) and (max-height: 320px) and (orientation: landscape) {
-      .center {
-        //width:75%;
-        margin-top:0;
-      }
-
-      #court {
-        width:75%;
-        margin-top:0;
-      }
-
-      #toucharea {
-        visibility: visible;
-        display:inline;
-      }
-
-      #welcome {
-        font-size: .9em;
-      }
-
-      #info {
-        display:none;
-      }
-
-      .typekit-badge {
-        display:none;
-      }
-
-    }
-
-    </style>
+    <link rel="stylesheet" href="nodepong.css" type="text/css" media="screen">
 
   </head>
+
+
+
+
+
+
+
+
 <body>
   <div id="readout">READOUT</div>
 
-  <div class="center">
+  <!-- SPLASH SCREEN -->
+  <div id="splash">
+    <p id="nodepong">NODEPONG</p>
+    <p>A multiplayer game for <a href="http://en.wikipedia.org/wiki/Webkit">webkit</a> browsers.</p>
+    <p id="browsers"><img src="chrome.gif" height="8px" width="8px" alt="chrome logo" />CHROME <img src="safari.gif" height="8px" width="8px" alt="safari logo" />SAFARI</p>
+    <p class="small">MOVE MOUSE OR TOUCH SCREEN TO MOVE YOUR PADDLE</p>
+    <div id="play" onClick="javascript:insertcoin()">
+      <div id="coinslot"><img src="slot_front.gif" id="slotfront" height="88px" width="44px" /><img src="coin.gif" id="coin" height="52px" width="44px" /><img src="slot_back.gif" id="slotback" height="88px" width="60px" /></div>
+      <p><a href="javascript:insertcoin()">PLAY</a></p>
+    </div>
+    <div id="watch">
+      <p class="small"><a href="javascript:spectate()">WATCH</a></p>
+    </div>
+  </div>
+
+  <div class="center"><div id="hide">
 
     <div id="toucharea"></div>
+
+
+
+
+
+
+
 
     <!-- COURT -->
     <div id="court">
@@ -396,6 +70,7 @@
         <!-- todo: check names for existing -->
         <form id="nameform" method="post" action="#"><input type="text" id="entername" maxlength="5" />
         <input type="submit" id="go" value="Go" onclick="ready();return false;" /></form>
+        <input type="submit" id="cancel" value="cancel" onclick="spectate();return false;" /></form>
       </div>
       <div id="centerline">&nbsp;</div>
       <div id="centermask">&nbsp;</div>
@@ -435,11 +110,18 @@
 
     </div> <!-- end court -->
 
+
+
+
+
+
     <!-- INFO SCREEN -->
     <div id="info">
 
+      <div id="insertcoin"><a href="javascript:insertcoin()">CLICK HERE TO PLAY</a></div>
       <div id="status"></div>
       <div id="numberOfPlayers">0 players connected</div>
+      <div id="numberOfSpectators">0 spectators</div>
       <div id="rotate">rotate for fullscreen</div>
 
       <div id="leaderboard">
@@ -468,7 +150,7 @@
 
     </div> <!-- end info -->
 
-  </div>  <!-- end center -->
+  </div></div>  <!-- end center -->
 
 <script type="text/javascript" src="/client.js"></script>
 

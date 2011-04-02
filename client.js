@@ -174,47 +174,32 @@ var delay = 50; // ms between updates
 // paddle position is calculated locally and sent to server
 // very slow - optimize, maybe offload to server somehow
 function movePaddles() {
-  //var readout = '';
   // get mouse position relative to court in pixels
   var targetY = mouseY - court.offset().top;
   if (Math.abs(targetY - lastY) < 2) return false; // too small to bother
-  //readout += 'paddle: '+paddle.position().top;
-  //readout += '<br>mouseY: '+mouseY;
-  //readout += '<br>court.offset().top: '+court.offset().top;
-  //readout += '<br>targetY: '+targetY;
   // THROTTLE PADDLE SPEED
   // get abs of distance since last update, measured from paddle center
   var delta = paddle.position().top + paddle.height()/2 - targetY;
-  //readout += '<br>delta: '+delta;
 
   // convert to fracion and compare to speed limit
   delta1 = Math.abs(delta)/court.height();
-  //readout += '<br>delta1: '+delta1;
   delta1 = Math.min(paddleLimit, delta1);
-  //readout += '<br>delta1: '+delta1;
 
   // minimum movement = 2%
   if (delta1 < .02) return false;
   // set delta1 to sign of delta
   delta1 *= (delta < 0 ? -1 : 1);
-  //readout += '<br>delta1: '+delta1;
   // calculate new fractional position
   targetY = (paddle.position().top/court.height() - delta1);
-  //readout += '<br>targetY: '+targetY;
   // keep in court
   targetY = Math.min(targetY, (court.height()-paddle.height())/court.height());
-  //readout += '<br>paddle.height(): '+String((court.height()-paddle.height())/court.height());
   targetY = Math.max(targetY, 0);
   lastY = targetY;
 
-  //readout += '<br>targetY: '+targetY;
   // convert to fraction
   sendY = targetY*100;
-  //readout += '<br>sendY: '+sendY;
-  //readout += '<br>court.height(): '+court.height();
   //socket.broadcast({type:'move', which:playing, y:sendY});
   socket.send({type:'move', which:playing, y:sendY});
-  //$('#readout').html(readout);
 }
 
 // returns ball at an angle based on point of contact with paddle
@@ -264,12 +249,14 @@ function collisionDetection() {
     var rdmsg = "";
     // calculate english based on current relative positions
     var relativeY = ( ball.position().top+(ball.height()/2) - paddle.position().top ) / paddle.height();
+/*
     rdmsg += "ball.position().top: "+ball.position().top+"<br>";
     rdmsg += "ball.height(): "+ball.height()+"<br>";
     rdmsg += "paddle.position().top: "+paddle.position().top+"<br>";
     rdmsg += "paddle.height(): "+paddle.height()+"<br>";
     rdmsg += "relativeY: "+relativeY;
-    //$("#readout").html(rdmsg);
+    $("#readout").html(rdmsg);
+*/
     english((relativeY+.5)/2);
     colliding = false;
 
@@ -279,6 +266,8 @@ function collisionDetection() {
 
 function ready() {
   $('#welcome').css('visibility','hidden');
+  //$('.center').css('display','none');
+  $('#insertcoin').css('display','none');
   // turn on mouse tracking
   $(document).mousemove(function(e){ mouseY = e.pageY; });
 
@@ -315,3 +304,71 @@ function contains(a, obj) {
   }
   return false;
 }
+
+// no thanks, just browsing
+function spectate() {
+  $("#coin").animate({
+    right: '0'
+  }, 250, function() {
+    $('#splash').css('display', 'none');
+    $('#insertcoin').css('display', 'inline');
+    $('#hide').css('display', 'inline');
+    //$('#hide').css('top', '0');
+    $('#welcome').css('display', 'none');
+
+    socket.send({type:'watching'});
+  });
+}
+
+var coinBounce = false, starting = false;
+
+function bounceCoin() {
+  $("#coin").animate({ top: '-.1em' }, 50);
+  setTimeout( function() {
+    $("#coin").animate({ top: '+.1em' }, 50);
+  }, 50);
+  setTimeout( function () {
+    if (coinBounce) bounceCoin();
+  }, 100);
+}
+
+function coinLeft() {
+  $("#coin").animate({ right: '.33em' }, 100);
+  coinBounce = true;
+  bounceCoin();
+}
+
+function coinRight() {
+  if (!starting) {
+    coinBounce = false;
+    $("#coin").animate({ right: '0em', top: '0' }, 100);
+  }
+}
+
+function insertcoin() {
+  coinBounce = false;
+  starting = true;
+  $("#coin").animate({
+    right: '+=.25em'
+  }, 100, 'linear', function() {
+    $("#coin").animate({
+      right: '2.1em'
+    }, 250, 'linear', function() {
+      setTimeout(function() {
+        $('#splash').css('display', 'none');
+        $('#insertcoin').css('display', 'none');
+        $('#hide').css('display', 'inline');
+        //$('#hide').css('top', '0');
+        $('#welcome').css('display', 'inline');
+      }, 500);
+    });
+  });
+}
+
+$("#play").hover(function() {
+    coinLeft();
+  }, function() {
+    coinRight()
+});
+
+jQuery.fx.interval = 50;

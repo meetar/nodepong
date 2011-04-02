@@ -75,20 +75,16 @@ function command(msg){
     case 'newgame':
       $('#player1').html(msg.player1);
       $('#player2').html(msg.player2);
-      p1.css('visibility', 'visible');
-      p2.css('visibility', 'visible');
-      centerline.css('visibility', 'visible');
+      $('#playerhide').css('visibility', 'visible');
       break;
     case 'endgame':
       colliding = false;
       playing = false;
       paddle = '';
       ball.css('visibility', 'hidden');
-      centerline.css('visibility', 'hidden');
+      $('#playerhide').css('visibility', 'hidden');
       p1.css('background-color', 'gray');
       p2.css('background-color', 'gray');
-      p1.css('visibility', 'hidden');
-      p2.css('visibility', 'hidden');
       break;
     case 'display':
       clearTimeout(displayText); // if there's a timeout already, override

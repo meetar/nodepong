@@ -159,7 +159,6 @@ a {
   margin-left:49.8%;
   margin-right:50.2%;
   z-index: 0;
-  visibility: hidden;
 }
 
 #centermask {
@@ -185,7 +184,6 @@ a {
   top:50%;
   height:8.3333%;
   width:3.125%;
-  visibility:hidden;
   z-index: 100;
 }
 
@@ -196,7 +194,6 @@ a {
   top:50%;
   height:8.3333%;
   width:3.125%;
-  visibility:hidden;
   z-index: 100;
 }
 

@@ -324,10 +324,10 @@ var coinBounce = false, starting = false;
 
 function bounceCoin() {
   $("#coin").animate({ top: '-.1em' }, 50);
-  setTimeout( function() {
+  if (coinBounce) setTimeout( function() {
     $("#coin").animate({ top: '+.1em' }, 50);
   }, 50);
-  setTimeout( function () {
+  if (coinBounce) setTimeout( function () {
     if (coinBounce) bounceCoin();
   }, 100);
 }
@@ -345,8 +345,17 @@ function coinRight() {
   }
 }
 
+function logIn() {
+	$('#splash').css('display', 'none');
+	$('#insertcoin').css('display', 'none');
+	$('#hide').css('display', 'inline');
+	//$('#hide').css('top', '0');
+	$('#welcome').css('display', 'inline');
+}
+
 function insertcoin() {
   coinBounce = false;
+  $("#play").css('color', 'red');
   starting = true;
   $("#coin").animate({
     right: '+=.25em'
@@ -354,13 +363,7 @@ function insertcoin() {
     $("#coin").animate({
       right: '2.1em'
     }, 250, 'linear', function() {
-      setTimeout(function() {
-        $('#splash').css('display', 'none');
-        $('#insertcoin').css('display', 'none');
-        $('#hide').css('display', 'inline');
-        //$('#hide').css('top', '0');
-        $('#welcome').css('display', 'inline');
-      }, 500);
+      setTimeout(logIn(), 500);
     });
   });
 }

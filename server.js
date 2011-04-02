@@ -71,7 +71,8 @@ function getOrdinal(number) {
   return ordinal;
 }
 
-function updateDisplayedPositions() {
+// updates "4th in line" display
+function updateQueuePosition() {
   for (x in queue) {
     if (x != 0 && x != 1) { // don't update status of the current players
       if (x == 2) {
@@ -138,7 +139,7 @@ io.on('connection', function(client){
         var statusmsg = player.name+ ' - READY TO PLAY';
         send(client.sessionId, {type:'html', which:'status', html:statusmsg});
       } else {
-        updateDisplayedPositions();
+        updateQueuePosition();
       }
 
       report(['gameOn', 'playing', 'newgameID']);
@@ -220,7 +221,7 @@ io.on('connection', function(client){
     if (idx != -1) {
       queue.splice(idx, 1);
       // update everyone's place in line
-      updateDisplayedPositions();
+      updateQueuePosition();
     }
     var idx = sessions.indexOf(client.sessionId);
     if (idx != -1) sessions.splice(idx, 1);
@@ -330,9 +331,16 @@ function updatePlayerCount() {
 
 function updateSpectatorCount() {
   var spectators = sessions.length - queue.length;
+  var numString = ''
   report(['sessions.length', 'queue.length']);
   log('spectators: '+spectators);
-  var numString = spectators + ' spectator' + (spectators > 1 ? 's' : '') + ' watching';
+  if (spectators > 0) {
+    log('specs!');
+		numString = spectators + ' spectator' + (spectators > 1 ? 's' : '');
+	} else {
+    log('no specs.');
+		numString = 'no spectators';
+}
   io.broadcast({type:'html', which:'numberOfSpectators', html:numString});
 }
 
@@ -400,7 +408,7 @@ function newgame(id) {
   var statusmsg = player2.name + ' - PLAYING';
   send(player2.id, {type:'html', which:'status', html:statusmsg});
 
-  updateDisplayedPositions();
+  updateQueuePosition();
 
 
   volleys = 0;

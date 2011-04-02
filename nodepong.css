@@ -135,11 +135,10 @@ a {
   width:70%;
   margin-left:auto;
   margin-right:auto;
-  text-align: center;
 }
 
 #hide {
-  position:absolute;
+  position:relative;
   display:none;
 }
 
@@ -147,7 +146,6 @@ a {
   position:relative;
   width: 100%;
   height: auto;
-  text-align: center;
   margin: 1% auto;
   background-color: #333;
 }
@@ -374,6 +372,11 @@ a {
   padding-bottom: 10%;
   background-color: #333;
 }
+
+#footer p {
+	margin-bottom: .75em;
+}
+
 
 a {
   color: #38f

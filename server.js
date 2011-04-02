@@ -1,3 +1,5 @@
+#!/usr/local/bin/node
+
 var http = require('http')
   , url = require('url')
   , fs = require('fs')
@@ -123,7 +125,6 @@ io.on('connection', function(client){
         // populate leaderboard
         if (queue.length < 10) {
           updateLeaderboard();
-          io.broadcast({type:'html', which:'scoretable', html:leaderboard});
         }
 
         updatePlayerCount();
@@ -299,19 +300,63 @@ function updateScores() {
   io.broadcast({type:'score', which:'score2', val:score2});
 }
 
-var leaderboard = '';
+var leaderboard;
+var leaderboardHTML = '';
+var leaders;
+
+function eliminateDuplicates(arr) {
+	log('arr.length: '+arr.length);
+  log('elimdupe arr:');
+  for (x in arr) { log(' '+arr[x].name); }
+  var out=[],
+      obj={};
+  for (x in arr) {
+    obj[arr[x]]=0;
+  }
+  for (i in obj) {
+    out.push(i);
+  }
+  log("elimdupe leaders 2:");
+  for (x in leaders) { log(' '+leaders[x].name); }
+  return out;
+}
 
 function updateLeaderboard() {
+  // combine queue with leaderboard
   leaders = queue.slice(0); // make a copy of the queue
-
-  // new leaders should merge queue with leaders so disconnected players' scores still show up in leaderboard
-
+  log("update leaders:");
+  for (x in leaders) { log('leaders['+x+']: '+leaders[x].name); }
+  log("update leaderboard:");
+  for (x in leaderboard) { log('lb['+x+']: '+leaderboard[x].name); }
+	leaders2 = leaders.concat(leaderboard);
+  log("concat leaders:");
+  for (x in leaders2) { log('leaders2['+x+']: '+leaders2[x].name); }
+	
+	// remove duplicates
+	leaders = eliminateDuplicates(leaders);
+	
   // sort by wins
   leaders.sort(function(a, b){
    return b.wins-a.wins;
   })
 
+  log("leaders:");
+	for (x in leaders) {
+		log(leaders[x].name);
+	}
+  log("leaderboard:");
+	for (x in leaderboard) {
+		log(leaderboard[x].name);
+	}
+	
   leaders = leaders.slice(0,10); // trim to top 10
+  leaderboard = leaders.slice(0); // copy array for storage
+  log("leaderboard new:");
+	for (x in leaderboard) {
+		log(leaderboard[x].name);
+	}
+
+	// generate leaderboard HTML and broadcast
   blanks = 10 - leaders.length; // how many blank lines?
 
   var scores = '';
@@ -321,7 +366,8 @@ function updateLeaderboard() {
   for (x=0;x<blanks;x++) {
     scores += '<tr><td class=\'rank\'>'+String(leaders.length+x+1)+'.</td><td class=\'name\'>...</td><td class=\'scor\'>...</td></tr>\n'
   }
-  leaderboard = scores;
+  leaderboardHTML = scores;
+	io.broadcast({type:'html', which:'scoretable', html:leaderboardHTML});
 }
 
 function updatePlayerCount() {
@@ -355,7 +401,6 @@ function report(list) { // helper function
   }
   log(msg);
 }
-
 
 // ***** NEW GAME ***** //
 
@@ -572,7 +617,6 @@ function gameover(type, which) {
   }
 
   updateLeaderboard();
-  io.broadcast({type:'html', which:'scoretable', html:leaderboard});
   updatePlayerCount();
 
 

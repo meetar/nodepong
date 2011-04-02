@@ -22,8 +22,10 @@ $(document).ready(function() {
   $('#entername').select();
   $('#entername').onfocus = '$(\'#entername\').value = \'\';';
 
-
-  //ready();
+	// click play and accept default name for fast testing
+	insertcoin();
+  ready();  
+  //
 
   $('.typekit-badge').css('display', 'none');
 

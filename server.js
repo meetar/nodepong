@@ -300,74 +300,63 @@ function updateScores() {
   io.broadcast({type:'score', which:'score2', val:score2});
 }
 
-var leaderboard;
+var leaderboard = [];
 var leaderboardHTML = '';
 var leaders;
 
-function eliminateDuplicates(arr) {
-	log('arr.length: '+arr.length);
-  log('elimdupe arr:');
-  for (x in arr) { log(' '+arr[x].name); }
-  var out=[],
-      obj={};
-  for (x in arr) {
-    obj[arr[x]]=0;
+function eliminateDuplicates(array) {
+  var newArray=new Array();
+
+  label:for(var i=0; i<array.length;i++ ) {
+    for(var j=0; j<newArray.length;j++ ) {
+      if(newArray[j]==array[i]) continue label;
+    }
+    newArray[newArray.length] = array[i];
   }
-  for (i in obj) {
-    out.push(i);
+  return newArray;
+}
+
+function contains(arr, i) {
+  for(x in arr) {
+    if(arr[x] === i){
+      return true;
+    }
   }
-  log("elimdupe leaders 2:");
-  for (x in leaders) { log(' '+leaders[x].name); }
-  return out;
+  return false;
 }
 
 function updateLeaderboard() {
   // combine queue with leaderboard
   leaders = queue.slice(0); // make a copy of the queue
-  log("update leaders:");
-  for (x in leaders) { log('leaders['+x+']: '+leaders[x].name); }
-  log("update leaderboard:");
-  for (x in leaderboard) { log('lb['+x+']: '+leaderboard[x].name); }
-	leaders2 = leaders.concat(leaderboard);
-  log("concat leaders:");
-  for (x in leaders2) { log('leaders2['+x+']: '+leaders2[x].name); }
-	
-	// remove duplicates
-	leaders = eliminateDuplicates(leaders);
-	
+  if (leaderboard.length != 0) leaders = leaders.concat(leaderboard);
+
+  // remove duplicates
+  leaders = eliminateDuplicates(leaders);
+
   // sort by wins
   leaders.sort(function(a, b){
    return b.wins-a.wins;
   })
 
-  log("leaders:");
-	for (x in leaders) {
-		log(leaders[x].name);
-	}
-  log("leaderboard:");
-	for (x in leaderboard) {
-		log(leaderboard[x].name);
-	}
-	
   leaders = leaders.slice(0,10); // trim to top 10
   leaderboard = leaders.slice(0); // copy array for storage
-  log("leaderboard new:");
-	for (x in leaderboard) {
-		log(leaderboard[x].name);
-	}
 
-	// generate leaderboard HTML and broadcast
+  // generate leaderboard HTML and broadcast
   blanks = 10 - leaders.length; // how many blank lines?
 
   var scores = '';
-  for (x in leaders) { // assemble leaderboard table
-    scores += '<tr><td class=\'rank\'>'+String(parseInt(x)+1)+'.</td><td class=\'name\'>'+leaders[x].name+'</td><td class=\'scor\'>'+leaders[x].wins+'</td></tr>\n'
+
+  for (var x=0; x<leaders.length; x++) { // assemble leaderboard table
+    class = (contains(sessions, leaders[x].id)) ? '\'name\'' : '\'disconame\'';
+    scoreline = '<tr><td class=\'rank\'>'+String(parseInt(x)+1)+'.</td><td class='+class+'>'+leaders[x].name+'</td><td class=\'scor\'>'+leaders[x].wins+'</td></tr>\n'
+    scores += scoreline;
   }
   for (x=0;x<blanks;x++) {
-    scores += '<tr><td class=\'rank\'>'+String(leaders.length+x+1)+'.</td><td class=\'name\'>...</td><td class=\'scor\'>...</td></tr>\n'
+    blank = '<tr><td class=\'rank\'>'+String(leaders.length+x+1)+'.</td><td class=\'name\'>...</td><td class=\'scor\'>...</td></tr>\n'
+    scores += blank;
   }
   leaderboardHTML = scores;
-	io.broadcast({type:'html', which:'scoretable', html:leaderboardHTML});
+  io.broadcast({type:'html', which:'scoretable', html:leaderboardHTML});
 }
 
 function updatePlayerCount() {
@@ -378,14 +367,10 @@ function updatePlayerCount() {
 function updateSpectatorCount() {
   var spectators = sessions.length - queue.length;
   var numString = ''
-  report(['sessions.length', 'queue.length']);
-  log('spectators: '+spectators);
   if (spectators > 0) {
-    log('specs!');
-		numString = spectators + ' spectator' + (spectators > 1 ? 's' : '');
-	} else {
-    log('no specs.');
-		numString = 'no spectators';
+    numString = spectators + ' spectator' + (spectators > 1 ? 's' : '');
+  } else {
+    numString = 'no spectators';
 }
   io.broadcast({type:'html', which:'numberOfSpectators', html:numString});
 }
@@ -405,7 +390,6 @@ function report(list) { // helper function
 // ***** NEW GAME ***** //
 
 function newgame(id) {
-  log('\n*NEWGAME* '+id);
   if (sessions.length < 2 || queue.length < 2) {
     log(' false start- sessions.length:'+sessions.length+', queue.length:'+queue.length);
     return false;
@@ -426,7 +410,7 @@ function newgame(id) {
     }
   }
 
-  log(' PLAYERS: p1: '+player1.name+', p2: '+player2.name);
+  log('\n*NEWGAME* '+id+' / PLAYERS: p1: '+player1.name+', p2: '+player2.name);
 
   if (contains(sessions, player1.id)) {
     send(player1.id, { type:'playing', paddle:'p1', delay:delay });

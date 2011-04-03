@@ -12,22 +12,21 @@ function makeid() {
 
 function scrollWindow() {
   /mobile/i.test(navigator.userAgent) && !location.hash && window.scrollTo(0, 1);
+  //$("#readout").html(String($(window).width()));
 }
 
 $(document).ready(function() {
-  //scrollWindow();
+  scrollWindow();
   window.onorientationchange = scrollWindow;
 
   $('#entername').val(makeid());
   $('#entername').select();
   $('#entername').onfocus = '$(\'#entername\').value = \'\';';
 
-	// click play and accept default name for fast testing
-	insertcoin();
-  ready();  
+  // click play and accept default name for fast testing
+  insertcoin();
+  ready();
   //
-
-  $('.typekit-badge').css('display', 'none');
 
 });
 
@@ -68,7 +67,6 @@ score('score2', 0);
 
 var p1 = $('#p1'), p2 = $('#p2'), ball = $('#ball'), court = $('#court');
 var displayText;
-var flashDelay = 1300;
 
 // this command is triggered by the server's 'broadcast'
 function command(msg){
@@ -91,17 +89,10 @@ function command(msg){
     case 'display':
       clearTimeout(displayText); // if there's a timeout already, override
       $('#alert').html(msg.alert);
-      $('#alert').css('opacity', 1);
-      setTimeout( function() {$('#alert').css('opacity', 0)}, flashDelay);
-      setTimeout( function() {$('#alert').css('opacity', 1)}, flashDelay+50);
-      setTimeout( function() {$('#alert').css('opacity', 0)}, flashDelay+100);
-      setTimeout( function() {$('#alert').css('opacity', 1)}, flashDelay+150);
-      setTimeout( function() {$('#alert').css('opacity', 0)}, flashDelay+200);
-      setTimeout( function() {$('#alert').css('opacity', 1)}, flashDelay+250);
-      setTimeout( function() {$('#alert').css('opacity', 0)}, flashDelay+300);
-      //displayText = setTimeout( function() {
-      //  $('#alert').animate({opacity: 0}, 500);
-      //  }, 900);
+      $('#alert').css('visibility', 'visible');
+      displayText = setTimeout( function() {
+        $('#alert').css('visibility', 'hidden');
+      }, 1000);
       break;
     case 'size':
       var which = '#'+msg.which;
@@ -270,7 +261,8 @@ function ready() {
   $(document).mousemove(function(e){ mouseY = e.pageY; });
 
   // turn on touch tracking
-  $('#toucharea, #court').bind('touchstart touchmove', function(event) {
+  //$('#toucharea, #court').bind('touchstart touchmove', function(event) {
+  $('#toucharea').bind('touchstart touchmove', function(event) {
     var e = event.originalEvent;
     mouseY = e.touches[0].pageY;
     return false;
@@ -344,11 +336,11 @@ function coinRight() {
 }
 
 function logIn() {
-	$('#splash').css('display', 'none');
-	$('#insertcoin').css('display', 'none');
-	$('#hide').css('display', 'inline');
-	//$('#hide').css('top', '0');
-	$('#welcome').css('display', 'inline');
+  $('#splash').css('display', 'none');
+  $('#insertcoin').css('display', 'none');
+  $('.hide').css('display', 'inline');
+  //$('#hide').css('top', '0');
+  $('#welcome').css('display', 'inline');
 }
 
 function insertcoin() {
@@ -361,7 +353,7 @@ function insertcoin() {
     $("#coin").animate({
       right: '2.1em'
     }, 250, 'linear', function() {
-      setTimeout(logIn(), 500);
+      setTimeout('logIn()', 500);
     });
   });
 }

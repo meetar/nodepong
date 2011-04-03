@@ -3,14 +3,13 @@ html, body {
   width: 100%;
   padding: 0;
   margin: 0;
-  border: 0;
+  outline: 0px dotted green;
   color: white;
   text-align: center;
   background-color: #aaa;
   font-size: 100%;
   font: "silkscreen-1", Verdana, sans-serif;
   vertical-align: middle;
-
 }
 
 .small {
@@ -29,7 +28,7 @@ a {
   max-width:20em;
   min-width:240px;
   width:70%;
-  margin: 0 auto;
+  margin: 2px auto;
   padding:0;
   top:0;
   outline: 2px solid black;
@@ -108,24 +107,25 @@ a {
 /***** PLAY SCREEN *****/
 
 #readout {
-  display:none;
+  display:inline;
   position:absolute;
   color:blue;
   background-color: aqua;
   font-size:50%;
-  z-index:1;
+  z-index:2000;
   left: 0;
 }
 
 #toucharea {
-  margin:0px;
-  padding:0px;
-  position:absolute;
+  position:relative;
   width:100%;
   height:100%;
-  border: 2px solid green;
-  display:none;
+  margin:0px;
+  padding:0px;
+  outline: 2px solid green;
+  visibility:visible;
   z-index:80;
+  display:inline;
 }
 
 .center {
@@ -135,9 +135,10 @@ a {
   width:70%;
   margin-left:auto;
   margin-right:auto;
+  outline: 0px solid green;
 }
 
-#hide {
+.hide {
   position:relative;
   display:none;
 }
@@ -155,7 +156,7 @@ a {
   top: 15%;
   height: 75%;
   width: 0%;
-  border: dashed white .15em;
+  outline: dashed white .15em;
   margin-left:49.8%;
   margin-right:50.2%;
   z-index: 0;
@@ -166,7 +167,7 @@ a {
   top: 15%;
   height: 75%;
   width: 0%;
-  border: solid #333 .15em;
+  outline: solid #333 .15em;
   margin-left:50.5%;
   margin-right:49.5%;
   z-index: 1;
@@ -276,7 +277,7 @@ a {
   text-align:center;
   color:red;
   font-size: 1em;
-  z-index:1;
+  z-index:100;
   background-color: #333;
 }
 
@@ -338,9 +339,7 @@ a {
 #scoretable {
   width: 60%;
   padding: 2% 0% 5% 0%;
-  margin: 0%;
-  margin-left:15%;
-  margin-right:25%;
+  margin: 2% 24% 5% 16%;
   font-size: 100%;
 }
 
@@ -350,11 +349,14 @@ a {
   width: 30%;
 }
 
-.name {
+.name, .disconame {
   text-align: center;
   width: 30%;
 }
 
+.disconame {
+  color: #888;
+}
 .scor {
   text-align: right;
   width: 30%;
@@ -371,7 +373,7 @@ a {
 }
 
 #footer p {
-	margin-bottom: .75em;
+  margin-bottom: .75em;
 }
 
 
@@ -391,19 +393,25 @@ a {
 /******* MEDIA QUERIES *******/
 
 @media (max-width: 380px) {
-  body { font-size:1em; }
-  #s2 {height:45%;}
-  #s3 {left:80%; top:0; height:45%;}
-  #s6 {left:80%; top:37.5%; height:61.25%;}
+  body { font-size:1em;
+  outline:0px solid red;
+  height:100%;
+  }
+  .s2 {height:45%;}
+  .s3 {left:80%; top:0; height:45%;}
+  .s6 {left:80%; top:37.5%; height:61.25%;}
   #centermask {margin-left:49%;}
   .center {width:100%; min-width:280px;}
   #footer { font-size: 8px; }
 }
 
 @media (min-width: 381px) and (max-width: 512px) {
-  body { font-size:1.20em; }
-  #s3 {left:80%; top:0; height:45%;}
-  #s6 {left:80%; top:37.5%; height:61.25%;}
+  body { font-size:1.20em;
+  outline:0px solid orange;
+
+  }
+  .s3 {left:80%; top:0; height:45%;}
+  .s6 {left:80%; top:37.5%; height:61.25%;}
   #footer { font-size: 10px; }
   #centermask {margin-left:49%;}
 }
@@ -411,26 +419,29 @@ a {
 @media (min-width: 512px) and (max-width: 820px) {
   body {
     font-size:1.5em;
+  outline:0px solid yellow;
   }
-  #s3 {left:80%; top:0; height:45%;}
-  #s6 {left:80%; top:37.5%; height:61.25%;}
+  .s3 {left:80%; top:0; height:45%;}
+  .s6 {left:80%; top:37.5%; height:61.25%;}
   #footer { font-size: 13px; }
 }
 
 @media (min-width: 820px) {
   body {
     font-size:2em;
+  outline:0px solid green;
   }
 }
 
 /* iphone portrait mode */
 @media (max-width: 320px) and (max-height: 480px) and (orientation: portrait) {
-
+  body {
+  outline:0px solid blue;
+  }
   #splash {
     width:100%;
     height:100%;
   }
-
   #rotate {
     display: inline;
   }
@@ -438,33 +449,36 @@ a {
 
 /* iphone landscape mode */
 @media (max-width: 320px) and (max-height: 320px) and (orientation: landscape) {
-
+  body {
+  outline:0px solid purple;
+  }
   #splash {
     width:80%;
     height:180px;
     font-size:.8em;
   }
-
   .center {
     margin-top:0;
   }
-
   #court {
     width:75%;
     margin-top:0;
   }
-
   #toucharea {
-    visibility: visible;
+    outline:10px solid blue;
+    background-color:blue;
+    width:100%;
+    height:100%;
     display:inline;
+    visibility:visible;
+    z-index:10000;
   }
-
+  .s3 {left:85%; top:0; height:45%;}
+  .s6 {left:85%; top:37.5%; height:61.25%;}
   #welcome {
     font-size: .9em;
   }
-
   #info {
     display:none;
   }
-
 }

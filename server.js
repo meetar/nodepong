@@ -667,7 +667,7 @@ function moveDivs() {
 
   // Test for wall collision
 
-  // var to enable scoring - useful for testing touch
+  // var to enable scoring - turn off to test movement
   var scoringOn = true;
 
   if (ballx == maxx && scoringOn) { // P1 point

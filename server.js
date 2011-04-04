@@ -184,14 +184,14 @@ io.on('connection', function(client){
         return 0;
       }
 
-      if (msg.which == 'p1') { // p1 return, tell p2 to detect collisions
+      if (msg.which == 'p1') { // p1 return
         deltax = Math.abs(deltax);
-        send(player1.id, {type:'collide', value:false});
-        send(player2.id, {type:'collide', value:true});
-      } else { // p2 return, tell p1 to detect collisions
+        //send(player1.id, {type:'collide', value:false});
+        //send(player2.id, {type:'collide', value:true});
+      } else { // p2 return
         deltax = Math.abs(deltax) * -1;
-        send(player1.id, {type:'collide', value:true});
-        send(player2.id, {type:'collide', value:false});
+        //send(player1.id, {type:'collide', value:true});
+        //send(player2.id, {type:'collide', value:false});
       }
 
       var increase = 1.1; // normal: 1.1
@@ -206,6 +206,10 @@ io.on('connection', function(client){
       //log('heartbeat:'+client.sessionId+', p1.id:'+player1.id+', p2.id:'+player2.id);
       if (client.sessionId == player1.id) p1heartBeat = true;
       else if (client.sessionId == player2.id) p2heartBeat = true;
+    }
+
+    if (msg.type == 'log') {
+      log(client.sessionId+': '+msg.what);
     }
   });
 
@@ -275,12 +279,12 @@ var score1 = 0, score2 = 0;
 var justScored = '';
 
 // game settings
-var delay = 50; // ms between updates
+var delay = 50; // ms between updates (50)
 var startSpeed = 1;
 var maxScore = 2;
-var flatline = 25; // maximum allowable number of skipped heartBeats
-var resetDelay = 2000 // delay between volleys - normal: 1000
-var newgameDelay = 2000 // delay between games - normal: 2000
+var flatline = 5; // maximum allowable number of skipped heartBeats (25)
+var resetDelay = 2000 // delay between volleys (1000)
+var newgameDelay = 2000 // delay between games (2000)
 
 // flip a coin to see who serves
 var deltax = (Math.random() < .5 ? -1 * startSpeed : startSpeed) * delay/50;

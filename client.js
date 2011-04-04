@@ -1,3 +1,7 @@
+var foo = new Date();
+var bar = new Date();
+var baz = new Date();
+
 function makeid() {
     var txt = '';
     var consonants = 'BCDFGHJKLMNPQRSTVWXYZ';
@@ -94,15 +98,8 @@ function command(msg){
         $('#alert').css('visibility', 'hidden');
       }, 1000);
       break;
-    case 'size':
-      var which = '#'+msg.which;
-      $(which).css({width:msg.width+'%', height:msg.height+'%'});
-      break;
     case 'css':
-      var which = '#'+msg.which;
-      var property = msg.property;
-      var value = msg.value;
-      $(which).css(property,value);
+      $('#'+msg.which).css(msg.property, msg.value);
       break;
     case 'html': // change the html of 'which' div
       $('#'+msg.which).html(msg.html);
@@ -119,7 +116,7 @@ function command(msg){
         lastPaddleY = paddle.position().top;
         lastBallX = $('#ball').position().left;
         lastBallY = $('#ball').position().top;
-        playLoop(msg.delay);
+        playLoop(msg.delay*.8); // seems to reduce lag
       }
       break;
     case 'move':  // time to move the divs
@@ -133,11 +130,16 @@ function command(msg){
       $('#p1').css({'top': msg.p1pos+'%'});
       $('#p2').css({'top': msg.p2pos+'%'});
       if (playing) lastPaddleY = paddle.position().top;
-      break;
-    case 'collide':
-      if (msg.value != undefined) {
-        colliding = msg.value;
-      } // else { $('#output2').html('collide malformed'); }
+      if (playing == 'p2' && msg.p2pos == sendY) {
+        fooReset = true;
+        //paddle.html(sendY);
+      }
+      if (playing == 'p2' && msg.p2pos != sendY) {
+        bar = new Date();
+        baz = new Date();
+        baz.setTime(bar.getTime() - foo.getTime());
+        //paddle.html(baz.getMilliseconds());
+      }
       break;
     case 'score':
       score(msg.which, msg.val);
@@ -158,36 +160,46 @@ socket.on('message', function(obj){
 var mouseY = 0, lastY = 0;
 
 var paddleLimit = .05; // max percent per update
-var delay = 50; // ms between updates
+
+var counter = 0;
+var fooReset = false;
 
 // paddle position is calculated locally and sent to server
 // very slow - optimize, maybe offload to server somehow
 function movePaddles() {
-  // get mouse position relative to court in pixels
-  var targetY = mouseY - court.offset().top;
-  if (Math.abs(targetY - lastY) < 2) return false; // too small to bother
-  // THROTTLE PADDLE SPEED
-  // get abs of distance since last update, measured from paddle center
-  var delta = paddle.position().top + paddle.height()/2 - targetY;
+  if (fooReset) { foo = new Date(); }
+  cHeight = court.height();
 
-  // convert to fracion and compare to speed limit
-  delta1 = Math.abs(delta)/court.height();
-  delta1 = Math.min(paddleLimit, delta1);
+  // get mouse position relative to court height as fraction
+  var targetY = (mouseY - court.offset().top) / cHeight;
+  // get abs of distance since last update
+  var delta = lastY - targetY;
+  // minimum movement = 1%
+  if (Math.abs(delta) < .01) {
+    return false;
+  }
 
-  // minimum movement = 2%
-  if (delta1 < .02) return false;
+  // speed limit: 4%
+  var delta1 = Math.min(.04, Math.abs(delta));
+
   // set delta1 to sign of delta
   delta1 *= (delta < 0 ? -1 : 1);
   // calculate new fractional position
-  targetY = (paddle.position().top/court.height() - delta1);
+  targetY = lastY - delta1;
+
   // keep in court
-  targetY = Math.min(targetY, (court.height()-paddle.height())/court.height());
+  targetY = Math.min(targetY, (cHeight-paddle.height())/cHeight);
   targetY = Math.max(targetY, 0);
+
+  //if (playing == 'p2') socket.send({type:'log', what:targetY});
+
+
+
+  // record for posterity
   lastY = targetY;
 
-  // convert to fraction
+  // convert to percent and send
   sendY = targetY*100;
-  //socket.broadcast({type:'move', which:playing, y:sendY});
   socket.send({type:'move', which:playing, y:sendY});
 }
 
@@ -195,8 +207,8 @@ function movePaddles() {
 function english(yval) {
   var yfac = 1.5; // angle extremeness tuner
   yval *= 100;
-  if (yval < 0) deltay = -1 * yfac;
-  else if (yval < 10) deltay = -3 * yfac;
+  if (yval < 0) deltay = -1 * yfac; // edge not as good as corner
+  else if (yval < 10) deltay = -3 * yfac; // corner better than edge
   else if (yval < 20) deltay = -1.25 * yfac;
   else if (yval < 30) deltay = -.8333 * yfac;
   else if (yval < 40) deltay = -.41666 * yfac;
@@ -212,24 +224,31 @@ function english(yval) {
 
 function collisionDetection() {
 /*
-      y1
-      __
-  x1 |  | x2
-     |__|
-      y2
+     y1
+     __
+  x1|  |x2
+    |__|
+     y2
 */
 
+  var bwidth = ball.width();
+  var bheight = ball.height();
+  var bleft = ball.position().left;
+  var btop = ball.position().top;
 
   // swept volume collision detection
-  var ix1 = Math.min(ball.position().left, lastBallX);
-  var ix2 = Math.max((ball.position().left + ball.width()), (lastBallX + ball.width()));
-  var iy1 = Math.min(ball.position().top, lastBallY);
-  var iy2 = Math.max((ball.position().top + ball.height()), (lastBallY + ball.height()));
+  var ix1 = Math.min(bleft, lastBallX);
+  var ix2 = Math.max((bleft + bwidth), (lastBallX + bwidth));
+  var iy1 = Math.min(btop, lastBallY);
+  var iy2 = Math.max((btop + bheight), (lastBallY + bheight));
+
+  var ptop = paddle.position().top;
+  var pheight = paddle.height();
 
   var px1 = paddle.position().left;
   var px2 = px1 + paddle.width();
-  var py1 = Math.min(paddle.position().top, lastPaddleY);
-  var py2 = Math.max(paddle.position().top + paddle.height(), lastPaddleY + paddle.height());
+  var py1 = Math.min(ptop, lastPaddleY);
+  var py2 = Math.max(ptop + pheight, lastPaddleY + pheight);
 
   var result = '';
 
@@ -237,16 +256,16 @@ function collisionDetection() {
     // successful return
     var rdmsg = "";
     // calculate english based on current relative positions
-    var relativeY = ( ball.position().top+(ball.height()/2) - paddle.position().top ) / paddle.height();
+    var relativeY = ( btop+(bheight/2) - ptop ) / pheight;
 /*
-    rdmsg += "ball.position().top: "+ball.position().top+"<br>";
-    rdmsg += "ball.height(): "+ball.height()+"<br>";
-    rdmsg += "paddle.position().top: "+paddle.position().top+"<br>";
-    rdmsg += "paddle.height(): "+paddle.height()+"<br>";
+    rdmsg += "btop: "+btop+"<br>";
+    rdmsg += "bheight: "+bheight+"<br>";
+    rdmsg += "ptop: "+ptop+"<br>";
+    rdmsg += "pheight: "+pheight+"<br>";
     rdmsg += "relativeY: "+relativeY;
     $("#readout").html(rdmsg);
 */
-    english((relativeY+.5)/2);
+    english((relativeY+.5)/2); // .5/2 is tweak - angle is off
     colliding = false;
 
     socket.send({type:'return', which:playing, english:deltay});
@@ -271,16 +290,12 @@ function ready() {
   socket.send({type:'ready', name:$('#entername').val()});
 }
 
-var timer = 0;
-
-function playLoop(delay) {
-  timer++;
+function playLoop(arg) {
   if (playing) {
-    setTimeout(playLoop, delay);
+    setTimeout('playLoop('+arg+')', arg);
     socket.send({type:'heartBeat'});
     movePaddles();
     if (colliding) {collisionDetection();}
-    // respond to server
   }
 }
 

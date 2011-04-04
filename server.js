@@ -91,6 +91,12 @@ function updateQueuePosition() {
 
 // ***** CLIENT CONNECT ***** //
 
+// start paddles off at midcourt
+var p1TargetY = .5,
+    p1LastY = .5,
+    p2TargetY = .5,
+    p2LastY = .5;
+
 io.on('connection', function(client){
   if (!contains(sessions, client.sessionId)) { // prevent double connections
     sessions.push(client.sessionId);
@@ -105,8 +111,13 @@ io.on('connection', function(client){
 
     // receive player's position and prepare for broadcast
     if (msg.type == 'move') {
-      if (msg.which == 'p1') p1pos = msg.y;
-      else if (msg.which == 'p2') p2pos = msg.y;
+      if (msg.which == 'p1') {
+
+        p1TargetY = msg.y;
+      } else if (msg.which == 'p2') {
+
+        p2TargetY = msg.y;
+      }
     }
 
     // session announces readiness to play
@@ -655,6 +666,45 @@ function reset() {
   //log(' reset END');
 }
 
+// calculate paddle position based on last and goal positions
+function movePaddles(which, targetY, lastY) {
+
+  // get abs of distance since last update
+  var delta = lastY - targetY;
+
+  // minimum movement: 1%
+  if (Math.abs(delta) < .01) {
+    return false;
+  }
+
+  // speed limit: 4%
+  var delta1 = Math.min(.04, Math.abs(delta));
+
+  // using a second delta so we can keep the sign
+  // now set delta1 to sign of delta
+  delta1 *= (delta < 0 ? -1 : 1);
+  // calculate new fractional position
+  targetY = lastY - delta1;
+
+  // keep in court
+  targetY = Math.min(targetY, .92);
+  targetY = Math.max(targetY, 0);
+
+  // record for posterity
+  lastY = targetY;
+
+  // convert to percent and send
+  sendY = targetY*100;
+
+  if (which == 'p1') {
+    p1pos = sendY;
+    p1LastY = lastY;
+  } else {
+    p2pos = sendY;
+    p2LastY = lastY;
+  }
+}
+
 function moveDivs() {
   ballx += deltax;
   bally += deltay;
@@ -667,9 +717,10 @@ function moveDivs() {
   // bounce off y walls
   if ( bally == 0 || bally == maxy ) deltay *= -1;
 
-  io.broadcast({type:'move', p1pos:p1pos, p2pos:p2pos, bally:bally, ballx:ballx});
+  movePaddles('p1', p1TargetY, p1LastY);
+  movePaddles('p2', p2TargetY, p2LastY);
 
-  // Test for wall collision
+  io.broadcast({type:'move', p1pos:p1pos, p2pos:p2pos, bally:bally, ballx:ballx});
 
   // var to enable scoring - turn off to test movement
   var scoringOn = true;

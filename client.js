@@ -1,7 +1,3 @@
-var foo = new Date();
-var bar = new Date();
-var baz = new Date();
-
 function makeid() {
     var txt = '';
     var consonants = 'BCDFGHJKLMNPQRSTVWXYZ';
@@ -30,7 +26,6 @@ $(document).ready(function() {
   // click play and accept default name for fast testing
   insertcoin();
   ready();
-  //
 
 });
 
@@ -114,32 +109,23 @@ function command(msg){
         paddle.css('background-color', 'white');
         ball.css('background-color', 'white');
         lastPaddleY = paddle.position().top;
-        lastBallX = $('#ball').position().left;
-        lastBallY = $('#ball').position().top;
-        playLoop(msg.delay*.8); // seems to reduce lag
+        lastBallX = ball.position().left;
+        lastBallY = ball.position().top;
+        playLoop(msg.delay*1); // .8 seems to reduce lag?
       }
       break;
     case 'move':  // time to move the divs
-      deltax = $('#ball').position().left - lastBallX;
-      lastBallX = $('#ball').position().left;
-      lastBallY = $('#ball').position().top;
+      deltax = ball.position().left - lastBallX;
+      lastBallX = ball.position().left;
+      lastBallY = ball.position().top;
       colliding = ((playing == 'p1' && deltax < 0) ||
                    (playing == 'p2' && deltax > 0)) ? true : false;
 
-      $('#ball').css({'top': msg.bally+'%', 'left': msg.ballx+'%'});
-      $('#p1').css({'top': msg.p1pos+'%'});
-      $('#p2').css({'top': msg.p2pos+'%'});
+      ball.css({'top': msg.bally+'%', 'left': msg.ballx+'%'});
+      p1.css({'top': msg.p1pos+'%'});
+      p2.css({'top': msg.p2pos+'%'});
       if (playing) lastPaddleY = paddle.position().top;
-      if (playing == 'p2' && msg.p2pos == sendY) {
-        fooReset = true;
-        //paddle.html(sendY);
-      }
-      if (playing == 'p2' && msg.p2pos != sendY) {
-        bar = new Date();
-        baz = new Date();
-        baz.setTime(bar.getTime() - foo.getTime());
-        //paddle.html(baz.getMilliseconds());
-      }
+
       break;
     case 'score':
       score(msg.which, msg.val);
@@ -150,6 +136,7 @@ function command(msg){
 
 var socket = new io.Socket(null, {port: 9980, rememberTransport: false});
 socket.connect();
+
 // sends message to 'command' function
 socket.on('message', function(obj){
   if ('buffer' in obj){
@@ -159,48 +146,13 @@ socket.on('message', function(obj){
 
 var mouseY = 0, lastY = 0;
 
-var paddleLimit = .05; // max percent per update
-
-var counter = 0;
-var fooReset = false;
-
-// paddle position is calculated locally and sent to server
-// very slow - optimize, maybe offload to server somehow
 function movePaddles() {
-  if (fooReset) { foo = new Date(); }
-  cHeight = court.height();
-
   // get mouse position relative to court height as fraction
-  var targetY = (mouseY - court.offset().top) / cHeight;
-  // get abs of distance since last update
-  var delta = lastY - targetY;
-  // minimum movement = 1%
-  if (Math.abs(delta) < .01) {
-    return false;
-  }
+  var targetY = (mouseY - court.offset().top) / court.height();
 
-  // speed limit: 4%
-  var delta1 = Math.min(.04, Math.abs(delta));
-
-  // set delta1 to sign of delta
-  delta1 *= (delta < 0 ? -1 : 1);
-  // calculate new fractional position
-  targetY = lastY - delta1;
-
-  // keep in court
-  targetY = Math.min(targetY, (cHeight-paddle.height())/cHeight);
-  targetY = Math.max(targetY, 0);
-
-  //if (playing == 'p2') socket.send({type:'log', what:targetY});
-
-
-
-  // record for posterity
+  // if mouse has moved, send new position to server
+  if (lastY != targetY) socket.send({type:'move', which:playing, y:targetY});
   lastY = targetY;
-
-  // convert to percent and send
-  sendY = targetY*100;
-  socket.send({type:'move', which:playing, y:sendY});
 }
 
 // returns ball at an angle based on point of contact with paddle
@@ -222,6 +174,8 @@ function english(yval) {
   else deltay = 1 * yfac;
 }
 
+// a bit slow - possible to offload this to server too?
+// maybe send all vars to server on resize()
 function collisionDetection() {
 /*
      y1
@@ -257,15 +211,8 @@ function collisionDetection() {
     var rdmsg = "";
     // calculate english based on current relative positions
     var relativeY = ( btop+(bheight/2) - ptop ) / pheight;
-/*
-    rdmsg += "btop: "+btop+"<br>";
-    rdmsg += "bheight: "+bheight+"<br>";
-    rdmsg += "ptop: "+ptop+"<br>";
-    rdmsg += "pheight: "+pheight+"<br>";
-    rdmsg += "relativeY: "+relativeY;
-    $("#readout").html(rdmsg);
-*/
-    english((relativeY+.5)/2); // .5/2 is tweak - angle is off
+
+    english((relativeY+.5)/2); // .5/2 is tweak - angle is a bit off
     colliding = false;
 
     socket.send({type:'return', which:playing, english:deltay});

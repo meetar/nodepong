@@ -723,7 +723,7 @@ function moveDivs() {
   io.broadcast({type:'move', p1pos:p1pos, p2pos:p2pos, bally:bally, ballx:ballx});
 
   // var to enable scoring - turn off to test movement
-  var scoringOn = false;
+  var scoringOn = true;
 
   if (ballx == maxx && scoringOn) { // P1 point
     justScored = 'p1';

@@ -118,8 +118,8 @@ function command(msg){
       deltax = ball.position().left - lastBallX;
       lastBallX = ball.position().left;
       lastBallY = ball.position().top;
-      colliding = ((playing == 'p1' && deltax < 0) ||
-                   (playing == 'p2' && deltax > 0)) ? true : false;
+      //colliding = ((playing == 'p1' && deltax < 0) ||
+      //             (playing == 'p2' && deltax > 0)) ? true : false;
 
       ball.css({'top': msg.bally+'%', 'left': msg.ballx+'%'});
       p1.css({'top': msg.p1pos+'%'});

@@ -105,9 +105,9 @@ io.on('connection', function(client){
 
   client.on('message', function(msg){
     // to log all messages from clients:
-    //var logmsg = 'msg: ';
-    //for (i in msg) { logmsg += (i+':'+msg[i]+' '); }
-    //log(logmsg);
+    var logmsg = 'msg: ';
+    for (i in msg) { logmsg += (i+':'+msg[i]+' '); }
+    log(logmsg);
 
     // receive player's position and prepare for broadcast
     if (msg.type == 'move') {
@@ -490,6 +490,7 @@ function setcss(which, property, value){
   io.broadcast({type:'css', which:which, property:property, value:value});
 }
 
+// master event loop
 function playLoop(caller) {
   // make sure players are still connected and haven't lagged out --
   // sometimes takes awhile for disconnect to be triggered
@@ -507,6 +508,7 @@ function playLoop(caller) {
   p1heartBeat = false;
   p2heartBeat = false;
 
+	/*
   if (p1skippedBeat == flatline) {
     log('player 1 FLATLINE');
     gameover('forfeit', player1);
@@ -517,7 +519,8 @@ function playLoop(caller) {
     gameover('forfeit', player2);
     return false;
   }
-
+	*/
+	
   if (playing) {
     moveDivs();
   } else if (getSet) {
@@ -540,6 +543,7 @@ function playLoop(caller) {
   }
 
   if (gameOn) {
+		// repeat
     playLoopID = setTimeout(playLoop, delay, 'gameOn');
   } else {
     log('gameOn false: killing playLoop');

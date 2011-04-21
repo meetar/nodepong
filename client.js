@@ -240,7 +240,7 @@ function ready() {
 function playLoop(arg) {
   if (playing) {
     setTimeout('playLoop('+arg+')', arg);
-    socket.send({type:'heartBeat'});
+    // socket.send({type:'heartBeat'});
     movePaddles();
     if (colliding) {collisionDetection();}
   }

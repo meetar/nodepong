@@ -146,6 +146,7 @@ socket.on('message', function(obj){
 
 var mouseY = 0, lastY = 0;
 
+// move paddles incrementally to the target position
 function movePaddles() {
   // get mouse position relative to court height as fraction
   var targetY = (mouseY - court.offset().top) / court.height();
@@ -242,7 +243,8 @@ function playLoop(arg) {
     setTimeout('playLoop('+arg+')', arg);
     // socket.send({type:'heartBeat'});
     movePaddles();
-    if (colliding) {collisionDetection();}
+    // testing: moved collision detection to the server
+    //if (colliding) {collisionDetection();}
   }
 }
 

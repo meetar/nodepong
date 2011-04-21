@@ -105,9 +105,9 @@ io.on('connection', function(client){
 
   client.on('message', function(msg){
     // to log all messages from clients:
-    var logmsg = 'msg: ';
-    for (i in msg) { logmsg += (i+':'+msg[i]+' '); }
-    log(logmsg);
+    //var logmsg = 'msg: ';
+    //for (i in msg) { logmsg += (i+':'+msg[i]+' '); }
+    //log(logmsg);
 
     // receive player's position and prepare for broadcast
     if (msg.type == 'move') {
@@ -728,14 +728,76 @@ function moveDivs() {
 
   // var to enable scoring - turn off to test movement
   var scoringOn = true;
+  
+	// collision detection
+	// should all be detectable from the positions now that everything's in percentages
 
-  if (ballx == maxx && scoringOn) { // P1 point
+	var returned = 0;
+	var diff = 100;
+	
+	if (deltax < 0 && ballx < 10 && ballx > 4) {
+		log("bally: "+bally+", ballx: "+Math.round(ballx*1000)/1000);
+		log(" p1pos: "+Math.round(p1pos*1000)/1000);
+		var diff = bally - p1pos;
+		log("  diff: "+Math.round(diff*1000)/1000);
+	} else if (deltax > 0 && ballx > 88 && ballx < 94) {
+		log("bally: "+bally+", ballx: "+Math.round(ballx*1000)/1000);
+		log(" p2pos: "+Math.round(p2pos*1000)/1000);
+		var diff = bally - p2pos;
+		log("  diff: "+Math.round(diff*1000)/1000);
+	}
+
+	diff -= 2; // -2 accounts for, uh, things
+
+	if (Math.abs(diff) < 6) {
+		log(": "+diff);
+		returned = 1;
+	}
+	
+	if (returned) { //
+		deltax *= -1.1; // normal increase = 1.1
+		
+		// keep under speed limit
+		var maxSpeed = 15; // normal: 15
+		deltax = Math.min(deltax, maxSpeed);
+		deltax = Math.max(deltax, -1 * maxSpeed);
+		
+		// not right - fix
+		deltay = english(diff);
+
+	} else if (ballx == maxx && scoringOn) { // P1 point
     justScored = 'p1';
     score1 ++;
     score();
+
   } else if (ballx == 0 && scoringOn ) { // P2 point
     justScored = 'p2';
     score2 ++;
     score();
   }
+
+}
+
+// returns ball at an angle based on point of contact with paddle
+function english(yval) {
+  var yfac = 1.5; // angle extremeness tuner
+
+	// convert from -5.6..5.6 range to 0..100
+  yval += 5.6; // now 0..11.2
+  yval *= 8.92; // done
+
+  if (yval < 0) deltay = -1 * yfac; // edge not as good as corner
+  else if (yval < 10) deltay = -3 * yfac; // corner better than edge
+  else if (yval < 20) deltay = -1.25 * yfac;
+  else if (yval < 30) deltay = -.8333 * yfac;
+  else if (yval < 40) deltay = -.41666 * yfac;
+  else if (yval < 49) deltay = -.1 * yfac;
+  else if (yval < 52) deltay = 0;
+  else if (yval < 60) deltay = .1 * yfac;
+  else if (yval < 70) deltay = .41666 * yfac;
+  else if (yval < 80) deltay = .83333 * yfac;
+  else if (yval < 90) deltay = 1.25 * yfac;
+  else if (yval < 100) deltay = 3 * yfac;
+  else deltay = 1 * yfac;
+  return deltay;
 }

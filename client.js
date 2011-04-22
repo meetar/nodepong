@@ -114,7 +114,7 @@ function command(msg){
         lastPaddleY = paddle.position().top;
         lastBallX = ball.position().left;
         lastBallY = ball.position().top;
-        playLoop(msg.delay*.5); // normally 1 - .8 seems to reduce lag?
+        playLoop(msg.delay*.9); // normally 1 - .8 seems to reduce lag?
       }
       break;
     case 'move':  // time to move the divs

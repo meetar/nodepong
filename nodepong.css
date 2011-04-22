@@ -173,9 +173,9 @@ a {
   top: 15%;
   height: 75%;
   width: 0%;
-  outline-left: dashed white .15em;
-  margin-left:49.8%;
-  margin-right:50.2%;
+  border-left: dashed white .15em;
+  margin-left:50%;
+  margin-right:50%;
   z-index: 0;
 }
 

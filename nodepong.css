@@ -1,14 +1,31 @@
+/* Cribbed (as with 90% of the internet) from:
+	 http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+	 Thanks, Eric!
+*/
+
+html, body, div, span,
+p, a, em, img, small, 
+center, ol, ul, li,
+form, table, tr, th, td
+
+{
+	margin: 0;
+	padding: 0;
+	border: 0;
+	line-height: 1;
+}
+
 html, body {
   height: 100%;
   width: 100%;
-  padding: 0;
-  margin: 0;
-  outline: 0px dotted green;
-  color: white;
-  text-align: center;
   background-color: #aaa;
-  font-size: 100%;
+  outline: 0px dotted green;
+  text-align: center;
+	font-size: 100%;
   font: "silkscreen-1", Verdana, sans-serif;
+  color: white;
   vertical-align: middle;
 }
 
@@ -31,7 +48,7 @@ a {
   margin: 2px auto;
   padding:0;
   top:0;
-  outline: 2px solid black;
+  outline: 0px solid black;
   background-color: #333;
   text-align: center;
   z-index: 1000;
@@ -156,7 +173,7 @@ a {
   top: 15%;
   height: 75%;
   width: 0%;
-  outline: dashed white .15em;
+  outline-left: dashed white .15em;
   margin-left:49.8%;
   margin-right:50.2%;
   z-index: 0;

@@ -8,17 +8,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes"/>
     <meta name="viewport" content="width=device-width;" />
 
-
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
 
     <script type="text/javascript"  src="http://code.jquery.com/jquery-1.5.min.js"></script>
     <script type="text/javascript"  src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
-    <!-- don't remember why jquery ui is in here -->
-    <script type="text/javascript"  src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
-
-    <!--script type="text/javascript" src="http://cdn.socket.io/stable/socket.io.js"></script-->
-    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
-
-    <link rel="stylesheet" href="http://meyerweb.com/eric/tools/css/reset/reset.css" type="text/css" media="screen">
 
     <!-- TypeKit support -->
     <script type="text/javascript" src="http://use.typekit.com/fhn8jqe.js"></script>
@@ -79,7 +72,6 @@
 
       <div id="playerhide">
         <div id="centerline">&nbsp;</div>
-        <div id="centermask">&nbsp;</div>
         <div id="p1"></div>
         <div id="p2"></div>
       </div>
@@ -135,7 +127,7 @@
 
       <div id="leaderboard">
         NODEPONG TOP 10<br/>
-        <table id="scoretable">
+        <table id="scoretable"> <!-- YES A TABLE I USE IT FOR TABULAR DATA -->
         <tr><td class="rank">1.</td><td class="name">...</td><td class="scor">...</td></tr>
         <tr><td class="rank">2.</td><td class="name">...</td><td class="scor">...</td></tr>
         <tr><td class="rank">3.</td><td class="name">...</td><td class="scor">...</td></tr>
@@ -150,18 +142,19 @@
       </div>
 
       <div id="footer">
-        <p>Made using node.js, socket.io, jquery, and css3.</p>
+        <p>Made using Node.js, Socket.IO, jQuery, and CSS3.</p>
         <p>Thanks for playing!</p>
         <p>NodePong version 0.1<br/>
         <a href="https://github.com/meetar/NodePong">github repo</a></p>
         <p>by <a href="http://meetar.net">meetar</a></p>
+        <p>Want to know more? <a href="about.html">Right this way, sir and/or madame.</a></p>
       </div>
 
     </div> <!-- end info -->
 
   </div></div><!-- end hide and center -->
 
-<script type="text/javascript" src="/client.js"></script>
+  <script type="text/javascript" src="/client.js"></script>
 
 </body>
 

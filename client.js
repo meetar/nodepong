@@ -30,7 +30,7 @@ $(document).ready(function() {
 });
 
 var playing = false; // are we sending mousemoves to the server?
-var colliding = false;
+//var colliding = false;
 var paddle = '';
 var lastBallX = 0, lastBallY = 0;
 var lastPaddleY = 0;
@@ -70,6 +70,9 @@ var displayText;
 // this command is triggered by the server's 'broadcast'
 function command(msg){
 
+  socket.send({type:'heartBeat'});
+
+	// should go through the server code and make sure these are all needed
   switch(msg.type) {
     case 'newgame':
       $('#player1').html(msg.player1);
@@ -77,7 +80,7 @@ function command(msg){
       $('#playerhide').css('visibility', 'visible');
       break;
     case 'endgame':
-      colliding = false;
+      //colliding = false;
       playing = false;
       paddle = '';
       ball.css('visibility', 'hidden');
@@ -118,13 +121,13 @@ function command(msg){
       deltax = ball.position().left - lastBallX;
       lastBallX = ball.position().left;
       lastBallY = ball.position().top;
-      colliding = ((playing == 'p1' && deltax < 0) ||
-                   (playing == 'p2' && deltax > 0)) ? true : false;
+      //colliding = ((playing == 'p1' && deltax < 0) ||
+      //             (playing == 'p2' && deltax > 0)) ? true : false;
 
       ball.css({'top': msg.bally+'%', 'left': msg.ballx+'%'});
       p1.css({'top': msg.p1pos+'%'});
       p2.css({'top': msg.p2pos+'%'});
-      if (playing) lastPaddleY = paddle.position().top;
+      //if (playing) lastPaddleY = paddle.position().top;
 
       break;
     case 'score':
@@ -146,7 +149,7 @@ socket.on('message', function(obj){
 
 var mouseY = 0, lastY = 0;
 
-// move paddles incrementally to the target position
+// send mouse position to the server
 function movePaddles() {
   // get mouse position relative to court height as fraction
   var targetY = (mouseY - court.offset().top) / court.height();
@@ -154,70 +157,6 @@ function movePaddles() {
   // if mouse has moved, send new position to server
   if (lastY != targetY) socket.send({type:'move', which:playing, y:targetY});
   lastY = targetY;
-}
-
-// returns ball at an angle based on point of contact with paddle
-function english(yval) {
-  var yfac = 1.5; // angle extremeness tuner
-  yval *= 100;
-  if (yval < 0) deltay = -1 * yfac; // edge not as good as corner
-  else if (yval < 10) deltay = -3 * yfac; // corner better than edge
-  else if (yval < 20) deltay = -1.25 * yfac;
-  else if (yval < 30) deltay = -.8333 * yfac;
-  else if (yval < 40) deltay = -.41666 * yfac;
-  else if (yval < 49) deltay = -.1 * yfac;
-  else if (yval < 52) deltay = 0;
-  else if (yval < 60) deltay = .1 * yfac;
-  else if (yval < 70) deltay = .41666 * yfac;
-  else if (yval < 80) deltay = .83333 * yfac;
-  else if (yval < 90) deltay = 1.25 * yfac;
-  else if (yval < 100) deltay = 3 * yfac;
-  else deltay = 1 * yfac;
-}
-
-// a bit slow - possible to offload this to server too?
-// maybe send all vars to server on resize()
-function collisionDetection() {
-/*
-     y1
-     __
-  x1|  |x2
-    |__|
-     y2
-*/
-
-  var bwidth = ball.width();
-  var bheight = ball.height();
-  var bleft = ball.position().left;
-  var btop = ball.position().top;
-
-  // swept volume collision detection
-  var ix1 = Math.min(bleft, lastBallX);
-  var ix2 = Math.max((bleft + bwidth), (lastBallX + bwidth));
-  var iy1 = Math.min(btop, lastBallY);
-  var iy2 = Math.max((btop + bheight), (lastBallY + bheight));
-
-  var ptop = paddle.position().top;
-  var pheight = paddle.height();
-
-  var px1 = paddle.position().left;
-  var px2 = px1 + paddle.width();
-  var py1 = Math.min(ptop, lastPaddleY);
-  var py2 = Math.max(ptop + pheight, lastPaddleY + pheight);
-
-  var result = '';
-
-  if (ix1 <= px2 && ix2 >= px1 && iy1 <= py2 && iy2 >= py1) {
-    // successful return
-    var rdmsg = "";
-    // calculate english based on current relative positions
-    var relativeY = ( btop+(bheight/2) - ptop ) / pheight;
-
-    english((relativeY+.5)/2); // .5/2 is tweak - angle is a bit off
-    colliding = false;
-
-    socket.send({type:'return', which:playing, english:deltay});
-  }
 }
 
 function ready() {
@@ -243,20 +182,7 @@ function playLoop(arg) {
     setTimeout('playLoop('+arg+')', arg);
     // socket.send({type:'heartBeat'});
     movePaddles();
-    // testing: moved collision detection to the server
-    //if (colliding) {collisionDetection();}
   }
-}
-
-// helper function
-function contains(a, obj) {
-  var i = a.length;
-  while (i--) {
-    if (a[i] === obj) {
-      return true;
-    }
-  }
-  return false;
 }
 
 // no thanks, just browsing
@@ -328,4 +254,6 @@ $("#play").hover(function() {
     coinRight()
 });
 
+// set animation speed: delay between updates in milliseconds
+// equivalent to 20 frames per second
 jQuery.fx.interval = 50;

@@ -7,6 +7,7 @@ var http = require('http')
   , sys = require(process.binding('natives').util ? 'util' : 'sys')
   , server;
 
+// Hi my name is Node.js, I'll be your server today
 server = http.createServer(function(req, res){
   var path = url.parse(req.url).pathname;
 
@@ -14,7 +15,6 @@ server = http.createServer(function(req, res){
     if (err) return send404(res);
 
     var doctype = path.split('.');
-    //log (path+' doctype: '+doctype);
     doctype = doctype[doctype.length-1];
 
     var contentType = 'text/plain';
@@ -23,10 +23,7 @@ server = http.createServer(function(req, res){
     else if (doctype == 'js') contentType = 'text/javascript';
     else if (doctype == 'css') contentType = 'text/css';
 
-    //log ('contype: '+contentType);
-
-    //res.writeHead(200, {'contentType': contentType})
-    res.writeHead(200, {'contentType': 'text/plain'})
+    res.writeHead(200, {'contentType': contentType})
     res.write(data, 'utf8');
     res.end();
   });
@@ -38,9 +35,9 @@ send404 = function(res){
   res.end();
 };
 
-server.listen(9980); // duostack's experimental websockets port
+server.listen(9980); // 9980: duostack's experimental websockets port
 
-// socket.io, I choose you
+// Socket.IO, I choose you
 var io = io.listen(server);
 
 sessions = []; // list of all sessions
@@ -54,6 +51,8 @@ function send(client, message){
 }
 
 // extend Object to show number of objects within
+// necessary?
+/*
 Object.size = function(obj) {
   var size = 0, key;
   for (key in obj) {
@@ -61,6 +60,7 @@ Object.size = function(obj) {
   }
   return size;
 };
+*/
 
 // gets ordinal for number
 function getOrdinal(number) {
@@ -184,15 +184,19 @@ io.on('connection', function(client){
       updateSpectatorCount();
     }
 
+		// this msg.type won't happen anymore now that it's server-side
+		/*
     if (msg.type == 'return') {
       if (!playing) {
         //log(' false return: not playing');
         return 0; // sometimes return is sent after score
+        // does this ever happen anymore?
       }
       //report(['ballx']);;
       if (Math.abs(ballx - 50) < 35) {
         //log(' false return: ball not at edge');
         return 0;
+        // does this ever happen anymore?
       }
 
       if (msg.which == 'p1') { // p1 return
@@ -212,6 +216,7 @@ io.on('connection', function(client){
 
       deltay = msg.english;
     }
+    */
 
     if (msg.type == 'heartBeat') { // player not timing out, all's well
       //log('heartbeat:'+client.sessionId+', p1.id:'+player1.id+', p2.id:'+player2.id);
@@ -255,6 +260,16 @@ function contains(a, obj) {
   while (i--) { if (a[i] == obj) return true; }
   return false;
 }
+
+function oldCcontains(arr, i) {
+  for(x in arr) {
+    if(arr[x] === i){
+      return true;
+    }
+  }
+  return false;
+}
+
 
 // does obj contain a key with value val? if so return key
 function hasAttr(obj, id, val) {
@@ -329,15 +344,6 @@ function eliminateDuplicates(array) {
     newArray[newArray.length] = array[i];
   }
   return newArray;
-}
-
-function contains(arr, i) {
-  for(x in arr) {
-    if(arr[x] === i){
-      return true;
-    }
-  }
-  return false;
 }
 
 function updateLeaderboard() {
@@ -508,7 +514,6 @@ function playLoop(caller) {
   p1heartBeat = false;
   p2heartBeat = false;
 
-	/*
   if (p1skippedBeat == flatline) {
     log('player 1 FLATLINE');
     gameover('forfeit', player1);
@@ -519,11 +524,12 @@ function playLoop(caller) {
     gameover('forfeit', player2);
     return false;
   }
-	*/
 	
   if (playing) {
     moveDivs();
   } else if (getSet) {
+	  movePaddles('p1', p1TargetY, p1LastY);
+	  movePaddles('p2', p2TargetY, p2LastY);
     io.broadcast({type:'move', p1pos:p1pos, p2pos:p2pos, ballx:null, bally:null});
   } else {
     log('playLoop broke');
@@ -726,33 +732,35 @@ function moveDivs() {
 
   io.broadcast({type:'move', p1pos:p1pos, p2pos:p2pos, bally:bally, ballx:ballx});
 
-  // var to enable scoring - turn off to test movement
-  var scoringOn = true;
-  
-	// collision detection
-	// should all be detectable from the positions now that everything's in percentages
 
+	// COLLISION DETECTION
+	
 	var returned = 0;
 	var diff = 100;
 	
 	if (deltax < 0 && ballx < 10 && ballx > 4) {
-		log("bally: "+bally+", ballx: "+Math.round(ballx*1000)/1000);
-		log(" p1pos: "+Math.round(p1pos*1000)/1000);
+		//log("bally: "+bally+", ballx: "+Math.round(ballx*1000)/1000);
+		//log(" p1pos: "+Math.round(p1pos*1000)/1000);
 		var diff = bally - p1pos;
-		log("  diff: "+Math.round(diff*1000)/1000);
+		//log("  diff: "+Math.round(diff*1000)/1000);
 	} else if (deltax > 0 && ballx > 88 && ballx < 94) {
-		log("bally: "+bally+", ballx: "+Math.round(ballx*1000)/1000);
-		log(" p2pos: "+Math.round(p2pos*1000)/1000);
+		//log("bally: "+bally+", ballx: "+Math.round(ballx*1000)/1000);
+		//log(" p2pos: "+Math.round(p2pos*1000)/1000);
 		var diff = bally - p2pos;
-		log("  diff: "+Math.round(diff*1000)/1000);
+		//log("  diff: "+Math.round(diff*1000)/1000);
 	}
 
 	diff -= 2; // -2 accounts for, uh, things
+	// it changes the range of possible values from -4..8 to -6..6 which makes the next step simpler
+	// i think this is because the positions are from the top of the divs, which are of different heights
 
 	if (Math.abs(diff) < 6) {
-		log(": "+diff);
+		//log(": "+diff);
 		returned = 1;
 	}
+
+  // var to enable scoring - turn off to test movement
+  var scoringOn = true;
 	
 	if (returned) { //
 		deltax *= -1.1; // normal increase = 1.1
@@ -762,7 +770,6 @@ function moveDivs() {
 		deltax = Math.min(deltax, maxSpeed);
 		deltax = Math.max(deltax, -1 * maxSpeed);
 		
-		// not right - fix
 		deltay = english(diff);
 
 	} else if (ballx == maxx && scoringOn) { // P1 point

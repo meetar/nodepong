@@ -122,7 +122,7 @@ a {
   height:100%;
   margin:0px;
   padding:0px;
-  outline: 2px solid green;
+  outline: 0px solid green;
   visibility:visible;
   z-index:80;
   display:inline;

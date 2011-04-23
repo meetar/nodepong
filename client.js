@@ -117,7 +117,7 @@ function command(msg){
         playLoop(msg.delay*1); // normally 1 - .8 seems to reduce lag?
       }
       break;
-    case 'move':  // time to move the divs
+    case 'oldmove':  // time to move the divs
       deltax = ball.position().left - lastBallX;
       lastBallX = ball.position().left;
       lastBallY = ball.position().top;
@@ -133,6 +133,55 @@ function command(msg){
     case 'score':
       score(msg.which, msg.val);
       break;
+    case 'move':
+    
+			if ("poslist" in msg) {
+				$('#readout').html('poslist');
+				which = $('#'+msg.which);
+				$('#readout').html("which: "+which);
+				
+				which.css({
+					'left': msg.poslist[0] + "%",
+					'top':  msg.poslist[1] + "%"
+				});
+
+				var lastx = msg.poslist[0];
+				var lasty = msg.poslist[1];
+				var delays = 0;
+
+				var poscount = 0;
+				for (y in msg.poslist) {
+					poscount++;
+				}
+				$('#readout').html("poscount: "+poscount);
+
+				delay = 0;
+				distances = [];
+
+				for ( y = 2; y < poscount ;y+=2) {
+					//alert("poscount: "+poscount+", y: "+y+", x: "+msg.poslist[y]+", y: "+msg.poslist[y+1]);
+					distance = Math.sqrt(Math.pow(msg.poslist[y]-lastx, 2)+Math.pow(msg.poslist[y+1]-lasty, 2));
+					//alert((delay*y/2)-delay);
+					distances[y/2-1] = distance;
+					delay = msg.speed * distance;
+
+					setTimeout(
+						which.animate({
+							'left': msg.poslist[y]+"%",
+							'top':  msg.poslist[y+1]+"%",
+						}, delay, "linear"), delays
+					);
+
+					setTimeout(
+						"$('#readout').html('distance: '+distances["+(y/2-1)+"]);", delays
+					);
+
+					lastx = msg.poslist[y];
+					lasty = msg.poslist[y+1];
+					delays += delay;
+				}
+			}
+
     default: break;
   }
 }

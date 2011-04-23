@@ -50,18 +50,6 @@ function send(client, message){
   if (contains(sessions, client)) io.clients[client].send(message);
 }
 
-// extend Object to show number of objects within
-// necessary?
-/*
-Object.size = function(obj) {
-  var size = 0, key;
-  for (key in obj) {
-    if (obj.hasOwnProperty(key)) size++;
-  }
-  return size;
-};
-*/
-
 // gets ordinal for number
 function getOrdinal(number) {
   var ordinal = 'th';
@@ -109,13 +97,11 @@ io.on('connection', function(client){
     //for (i in msg) { logmsg += (i+':'+msg[i]+' '); }
     //log(logmsg);
 
-    // receive player's position and prepare for broadcast
+    // receive and store player's target position
     if (msg.type == 'move') {
       if (msg.which == 'p1') {
-
         p1TargetY = msg.y;
       } else if (msg.which == 'p2') {
-
         p2TargetY = msg.y;
       }
     }
@@ -168,55 +154,11 @@ io.on('connection', function(client){
           }, newgameDelay*3 );
       }
 
-      /* possibly unnecessary - testing
-      if (gameOn) { // reveal game already underway
-        send(client.sessionId, {type:'css', which:'p1', property:'visibility', value:'visible'});
-        send(client.sessionId, {type:'css', which:'p2', property:'visibility', value:'visible'});
-        if (playing) {
-          send(client.sessionId, {type:'css', which:'ball', property:'visibility', value:'visible'});
-          send(client.sessionId, {type:'css', which:'centerline', property:'visibility', value:'visible'});
-        }
-      }
-      */
     }
 
     if (msg.type == 'watching') {
       updateSpectatorCount();
     }
-
-		// this msg.type won't happen anymore now that it's server-side
-		/*
-    if (msg.type == 'return') {
-      if (!playing) {
-        //log(' false return: not playing');
-        return 0; // sometimes return is sent after score
-        // does this ever happen anymore?
-      }
-      //report(['ballx']);;
-      if (Math.abs(ballx - 50) < 35) {
-        //log(' false return: ball not at edge');
-        return 0;
-        // does this ever happen anymore?
-      }
-
-      if (msg.which == 'p1') { // p1 return
-        deltax = Math.abs(deltax);
-        //send(player1.id, {type:'collide', value:false});
-        //send(player2.id, {type:'collide', value:true});
-      } else { // p2 return
-        deltax = Math.abs(deltax) * -1;
-        //send(player1.id, {type:'collide', value:true});
-        //send(player2.id, {type:'collide', value:false});
-      }
-
-      var increase = 1.1; // normal: 1.1
-      var maxSpeed = 15; // normal: 15
-      if (deltax > 1) { deltax = Math.min(deltax * increase, maxSpeed); }
-      else { deltax = Math.max(deltax * increase, -1 * maxSpeed); }
-
-      deltay = msg.english;
-    }
-    */
 
     if (msg.type == 'heartBeat') { // player not timing out, all's well
       //log('heartbeat:'+client.sessionId+', p1.id:'+player1.id+', p2.id:'+player2.id);
@@ -314,6 +256,7 @@ var newgameDelay = 2000 // delay between games (2000)
 
 // flip a coin to see who serves
 var deltax = (Math.random() < .5 ? -1 * startSpeed : startSpeed) * delay/50;
+var speed = 10; //starting speed
 var deltay = 0;
 var ballx = 0, bally = 0;
 
@@ -525,9 +468,7 @@ function playLoop(caller) {
     return false;
   }
 	
-  if (playing) {
-    moveDivs();
-  } else if (getSet) {
+  if (playing || getSet) {
 	  movePaddles('p1', p1TargetY, p1LastY);
 	  movePaddles('p2', p2TargetY, p2LastY);
     io.broadcast({type:'move', p1pos:p1pos, p2pos:p2pos, ballx:null, bally:null});
@@ -640,7 +581,7 @@ function gameover(type, which) {
 }
 
 function reset() {
-  //log('\n*RESET* ');
+  log('\n*RESET* ');
   if (playing || !gameOn || !newgame) {
     log(' false reset: playing: '+playing+', gameOn: '+gameOn);
     return false;
@@ -665,9 +606,10 @@ function reset() {
   deltax /= Math.abs(deltax); // set to 1 while keeping sign
   deltax *= delay/50; // keep same velocity, accounting for delay
   deltay = 0;
-  ballx = courtWidth/2, bally = courtHeight/2;
-  io.broadcast({type:'move', which:'ball', bally:bally, ballx:ballx});
+  //ballx = courtWidth/2, bally = courtHeight/2;
+  //io.broadcast({type:'move', which:'ball', bally:bally, ballx:ballx});
   setcss('ball', 'visibility', 'visible');
+  io.broadcast({type:'move', which:'ball', poslist:[50,50,100,50]});
 
   volleys ++;
   getset = false;
@@ -715,6 +657,19 @@ function movePaddles(which, targetY, lastY) {
   }
 }
 
+function moveBall(ypos, angle) {
+	
+	for (x in count) {
+		posList += stepX;
+		posList += stepY;
+	}
+
+	io.broadcast({type:'move', which:'ball', count:moveCount,
+	poslist:[0, 0, Math.random()*500, Math.random()*500, Math.random()*500, Math.random()*500, Math.random()*500, Math.random()*500]});
+
+}
+
+// move divs
 function moveDivs() {
   ballx += deltax;
   bally += deltay;
@@ -730,7 +685,7 @@ function moveDivs() {
   movePaddles('p1', p1TargetY, p1LastY);
   movePaddles('p2', p2TargetY, p2LastY);
 
-  io.broadcast({type:'move', p1pos:p1pos, p2pos:p2pos, bally:bally, ballx:ballx});
+  //io.broadcast({type:'move', p1pos:p1pos, p2pos:p2pos, bally:bally, ballx:ballx});
 
 
 	// COLLISION DETECTION
@@ -764,6 +719,7 @@ function moveDivs() {
 	
 	if (returned) { //
 		deltax *= -1.1; // normal increase = 1.1
+		//speed *= 1.1; // normal increase = 1.1
 		
 		// keep under speed limit
 		var maxSpeed = 15; // normal: 15

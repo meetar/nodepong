@@ -106,6 +106,44 @@ io.on('connection', function(client){
       }
     }
 
+    if (msg.type == 'score') {
+      if (msg.which == 'p1' && p1scored == 0) {
+				p1scored = 1;
+				score1++;
+				score();
+      } else if (msg.which == 'p2' && p2scored == 0) {
+				p2scored = 1;
+				score2++;
+				score();
+      }
+    }
+
+		if (msg.type == 'return') {
+			if ( msg.which == 'p1' && p1returned == 0) {
+				p1returned = 1;
+				p2returned = 0;
+			} else if (msg.which == 'p2' && p2returned == 0) {
+				p2returned = 1;
+				p1returned = 0;
+			} else {
+				//log("FALSE RETURN");
+				return false;
+			}
+			startx = msg.startx;
+			starty = msg.starty;
+			log(msg.which+' RETURN - startx: '+Math.round(startx*100)/100+', starty: '+Math.round(starty*100)/100+', angle: '+Math.round(msg.angle*100)/100);
+
+			deltax *= -1.1; // switch directions and increase speed, normal: -1.1
+			
+			var maxSpeed = 15; // normal: 15
+			deltax = Math.min(deltax, maxSpeed);
+			deltax = Math.max(deltax, -1 * maxSpeed);
+
+			deltay = english(msg.angle);
+			moveBall();
+
+		}
+
     // session announces readiness to play
     if (msg.type == 'ready') {
       if (!hasAttr(queue, 'id', client.sessionId)) { // prevent double additions
@@ -116,7 +154,7 @@ io.on('connection', function(client){
 
         // add player to waiting list
         queue.push(player);
-        send(client.sessionId, {type:'position', position:queue.length});
+        send(client.sessionId, {type:'html', which:'position', html:queue.length});
         send(client.sessionId, {type:'display', alert:'WELCOME '+player.name});
 
         // populate leaderboard
@@ -169,6 +207,7 @@ io.on('connection', function(client){
     if (msg.type == 'log') {
       log(client.sessionId+': '+msg.what);
     }
+
   });
 
   client.on('disconnect', function(){
@@ -196,6 +235,13 @@ io.on('connection', function(client){
   });
 });
 
+// move ball
+function moveBall() {
+	log('  moveBall: startx: '+Math.round(startx*100)/100+', starty: '+Math.round(starty*100)/100+', deltax: '+Math.round(deltax*100)/100+', deltay: '+Math.round(deltay*100)/100);
+
+	io.broadcast({type:'moveBall', startx:startx, starty:starty, deltax:deltax, deltay:deltay});
+}
+
 // helper function to approximate python's 'is in'
 function contains(a, obj) {
   var i = a.length;
@@ -203,7 +249,7 @@ function contains(a, obj) {
   return false;
 }
 
-function oldCcontains(arr, i) {
+function oldContains(arr, i) {
   for(x in arr) {
     if(arr[x] === i){
       return true;
@@ -229,12 +275,7 @@ function hasAttr(obj, id, val) {
 // most heights are percentages of courtheight, most widths of courtwidth
 var courtWidth = 100, courtHeight = 100;
 
-// not actually using paddleHeight or Width
-var paddleHeight = 8.333, paddleWidth = 3.125, ballWidth = 1.5625, ballHeight = 2.08333;
-var p1pos = courtHeight/2, p2pos = courtHeight/2;
-
-var maxx = courtWidth-(ballWidth*2);
-var maxy = courtHeight-(ballHeight*2);
+var p1pos = 50, p2pos = 50;
 
 var p1heartBeat = false, p2heartBeat = false;
 var p1skippedBeat = 0, p2skippedBeat = 0;
@@ -242,27 +283,27 @@ var p1skippedBeat = 0, p2skippedBeat = 0;
 var getSet = false, gameOn = false, playing = false, point = false;
 var playLoopID = false, resetID = false, newgameID = false;
 
-var volleys = 0;
 var score1 = 0, score2 = 0;
-var justScored = '';
+var p1scored = 0, p2scored = 0;
 
 // game settings
 var delay = 50; // ms between updates (50)
-var startSpeed = 1;
 var maxScore = 2;
 var flatline = 25; // maximum allowable number of skipped heartBeats (25)
-var resetDelay = 2000 // delay between volleys (1000)
-var newgameDelay = 2000 // delay between games (2000)
+var resetDelay = 500 // delay between volleys (2000)
+var newgameDelay = 500 // delay between games (2000)
 
 // flip a coin to see who serves
-var deltax = (Math.random() < .5 ? -1 * startSpeed : startSpeed) * delay/50;
-var speed = 10; //starting speed
+var deltax = (Math.random() < .5 ? -1 : 1);
 var deltay = 0;
-var ballx = 0, bally = 0;
+
+var p1returned = 0;
+var p2returned = 0;
 
 updateScores();
 
 function score() {
+	log('score');
   point = true;
   playing = false;
   updateScores();
@@ -404,7 +445,6 @@ function newgame(id) {
   updateQueuePosition();
 
 
-  volleys = 0;
   score1 = 0;
   score2 = 0;
   // update scores
@@ -456,7 +496,7 @@ function playLoop(caller) {
 
   p1heartBeat = false;
   p2heartBeat = false;
-
+/*
   if (p1skippedBeat == flatline) {
     log('player 1 FLATLINE');
     gameover('forfeit', player1);
@@ -467,11 +507,9 @@ function playLoop(caller) {
     gameover('forfeit', player2);
     return false;
   }
-	
+*/
   if (playing || getSet) {
-	  movePaddles('p1', p1TargetY, p1LastY);
-	  movePaddles('p2', p2TargetY, p2LastY);
-    io.broadcast({type:'move', p1pos:p1pos, p2pos:p2pos, ballx:null, bally:null});
+		movePaddles();
   } else {
     log('playLoop broke');
   }
@@ -592,8 +630,10 @@ function reset() {
   }
 
   // determine who won coin toss/game/volley
-  if (justScored == 'p1') deltax = Math.abs(deltax);
-  if (justScored == 'p2') deltax = Math.abs(deltax) * -1;
+  if (p1scored) deltax = Math.abs(deltax) * -1;
+  if (p2scored) deltax = Math.abs(deltax);
+  p1scored = 0;
+  p2scored = 0;
 
   if (deltax < 0) { // p2 is serving
     send(player1.id, {type:'collide', value:true});
@@ -604,14 +644,13 @@ function reset() {
   }
 
   deltax /= Math.abs(deltax); // set to 1 while keeping sign
-  deltax *= delay/50; // keep same velocity, accounting for delay
   deltay = 0;
-  //ballx = courtWidth/2, bally = courtHeight/2;
-  //io.broadcast({type:'move', which:'ball', bally:bally, ballx:ballx});
-  setcss('ball', 'visibility', 'visible');
-  io.broadcast({type:'move', which:'ball', poslist:[50,50,100,50]});
+  startx = 50, starty = 50;
 
-  volleys ++;
+	log('serving');
+	// serve ball
+	moveBall();
+
   getset = false;
   playing = true;
   resetID = false;
@@ -619,7 +658,7 @@ function reset() {
 }
 
 // calculate paddle position based on last and goal positions
-function movePaddles(which, targetY, lastY) {
+function movePaddle(which, targetY, lastY) {
 
   // get abs of distance since last update
   var delta = lastY - targetY;
@@ -657,97 +696,24 @@ function movePaddles(which, targetY, lastY) {
   }
 }
 
-function moveBall(ypos, angle) {
-	
-	for (x in count) {
-		posList += stepX;
-		posList += stepY;
-	}
-
-	io.broadcast({type:'move', which:'ball', count:moveCount,
-	poslist:[0, 0, Math.random()*500, Math.random()*500, Math.random()*500, Math.random()*500, Math.random()*500, Math.random()*500]});
-
+function returnBall(which, angle) {
+	deltay = english(diff);
 }
 
-// move divs
-function moveDivs() {
-  ballx += deltax;
-  bally += deltay;
-  // keep ball in court
-  ballx = Math.min(ballx, maxx);
-  ballx = Math.max(ballx, 0);
-  bally = Math.min(bally, maxy);
-  bally = Math.max(bally, 0);
+function movePaddles() {
+  movePaddle('p1', p1TargetY, p1LastY);
+  movePaddle('p2', p2TargetY, p2LastY);
 
-  // bounce off y walls
-  if ( bally == 0 || bally == maxy ) deltay *= -1;
-
-  movePaddles('p1', p1TargetY, p1LastY);
-  movePaddles('p2', p2TargetY, p2LastY);
-
-  //io.broadcast({type:'move', p1pos:p1pos, p2pos:p2pos, bally:bally, ballx:ballx});
-
-
-	// COLLISION DETECTION
+  io.broadcast({type:'move', p1pos:p1pos, p2pos:p2pos});
 	
-	var returned = 0;
-	var diff = 100;
-	
-	if (deltax < 0 && ballx < 10 && ballx > 4) {
-		//log("bally: "+bally+", ballx: "+Math.round(ballx*1000)/1000);
-		//log(" p1pos: "+Math.round(p1pos*1000)/1000);
-		var diff = bally - p1pos;
-		//log("  diff: "+Math.round(diff*1000)/1000);
-	} else if (deltax > 0 && ballx > 88 && ballx < 94) {
-		//log("bally: "+bally+", ballx: "+Math.round(ballx*1000)/1000);
-		//log(" p2pos: "+Math.round(p2pos*1000)/1000);
-		var diff = bally - p2pos;
-		//log("  diff: "+Math.round(diff*1000)/1000);
-	}
-
-	diff -= 2; // -2 accounts for, uh, things
-	// it changes the range of possible values from -4..8 to -6..6 which makes the next step simpler
-	// i think this is because the positions are from the top of the divs, which are of different heights
-
-	if (Math.abs(diff) < 6) {
-		//log(": "+diff);
-		returned = 1;
-	}
-
-  // var to enable scoring - turn off to test movement
-  var scoringOn = true;
-	
-	if (returned) { //
-		deltax *= -1.1; // normal increase = 1.1
-		//speed *= 1.1; // normal increase = 1.1
-		
-		// keep under speed limit
-		var maxSpeed = 15; // normal: 15
-		deltax = Math.min(deltax, maxSpeed);
-		deltax = Math.max(deltax, -1 * maxSpeed);
-		
-		deltay = english(diff);
-
-	} else if (ballx == maxx && scoringOn) { // P1 point
-    justScored = 'p1';
-    score1 ++;
-    score();
-
-  } else if (ballx == 0 && scoringOn ) { // P2 point
-    justScored = 'p2';
-    score2 ++;
-    score();
-  }
-
 }
 
 // returns ball at an angle based on point of contact with paddle
 function english(yval) {
   var yfac = 1.5; // angle extremeness tuner
 
-	// convert from -5.6..5.6 range to 0..100
-  yval += 5.6; // now 0..11.2
-  yval *= 8.92; // done
+	// convert from 0..11.458 range to 0..100
+  yval *= 8.727;
 
   if (yval < 0) deltay = -1 * yfac; // edge not as good as corner
   else if (yval < 10) deltay = -3 * yfac; // corner better than edge

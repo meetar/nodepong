@@ -129,8 +129,22 @@ a {
   color:blue;
   background-color: aqua;
   font-size:50%;
+  text-align: left;
   z-index:2000;
   left: 0;
+  top: 500px;
+}
+
+#readout2 {
+  display:inline;
+  position:absolute;
+  color:blue;
+  background-color: aqua;
+  font-size:50%;
+  text-align: left;
+  z-index:2000;
+  left: 0;
+  top: 550px;
 }
 
 #toucharea {
@@ -198,7 +212,7 @@ a {
 #p1 {
   background-color: gray;
   position:absolute;
-  left:6.4%;
+  left:6.375%;
   top:50%;
   height:8.3333%;
   width:3.125%;
@@ -209,7 +223,7 @@ a {
 #p2 {
   background-color: gray;
   position:absolute;
-  left:90.625%;
+  left:90.5%;
   top:50%;
   height:8.3333%;
   width:3.125%;

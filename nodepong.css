@@ -185,7 +185,7 @@ a {
 #centerline {
   position:absolute;
   top: 15%;
-  height: 75%;
+  height: 70%;
   width: 0%;
   border-left: dashed white .15em;
   margin-left:50%;
@@ -193,17 +193,7 @@ a {
   z-index: 0;
 }
 
-#centermask {
-  position:absolute;
-  top: 15%;
-  height: 75%;
-  width: 0%;
-  outline: solid #333 .15em;
-  margin-left:50.5%;
-  margin-right:49.5%;
-  z-index: 1;
-}
-
+/* the 4:3 rectangle that allows the court to keep its shape */
 #xgif {
   width:100%;
   visibility:hidden;
@@ -212,28 +202,27 @@ a {
 #p1 {
   background-color: gray;
   position:absolute;
-  left:6.375%;
-  top:50%;
-  height:8.3333%;
-  width:3.125%;
+  left:6%;
+  width:3%;
+  top:46%;
+  height:8%;
   z-index: 100;
-  color:green;
 }
 
 #p2 {
   background-color: gray;
   position:absolute;
-  left:90.5%;
-  top:50%;
-  height:8.3333%;
-  width:3.125%;
+  left:91%;
+  width:3%;
+  top:46%;
+  height:8%;
   z-index: 100;
-  color:green;
 }
 
+// inside a 4:3 rectangle, a square is 3:4
 #ball {
-  width:3.125%;
-  height:4.16666%;
+  width:3%;
+  height:4%;
   background-color:gray;
   position:absolute;
   left:50%;

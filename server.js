@@ -552,6 +552,7 @@ function gameover(type, which) {
   if (type == 'win') {
     winner = which;
     loser = (which == player1) ? player2 : player1;
+    log(winner.name+": "+score1+" "+loser.name+": "+score2);
     log(winner.name + ' WINS');
     send(winner.id, {type:'display', alert:'YOU WIN'});
     send(loser.id, {type:'display', alert:'YOU LOSE'});
@@ -630,8 +631,8 @@ function reset() {
   }
 
   // determine who won coin toss/game/volley
-  if (p1scored) deltax = Math.abs(deltax) * -1;
-  if (p2scored) deltax = Math.abs(deltax);
+  if (p1scored) deltax = Math.abs(deltax);
+  if (p2scored) deltax = Math.abs(deltax) * -1;
   p1scored = 0;
   p2scored = 0;
 

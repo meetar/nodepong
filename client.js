@@ -159,7 +159,7 @@ var mouseY = 0, lastY = 0;
 // send mouse position to the server
 function movePaddles() {
   // get mouse position relative to court height as fraction
-  var targetY = (mouseY - court.offset().top) / court.height();
+  var targetY = (mouseY - p1.height()/2 - court.offset().top) / court.height();
 
   // if mouse has moved, send new position to server
   if (lastY != targetY) socket.send({type:'move', which:playing, y:targetY});
@@ -255,9 +255,9 @@ function insertcoin() {
 
 // detect collisions between ball and paddle
 function collisionDetection() {
-  ballx = Math.abs(	court.width()/2 - ball.position().left-( .5*ball.width() ) ) / court.width()*100;
+  //ballx = Math.abs(	court.width()/2 - ball.position().left-( .5*ball.width() ) ) / court.width()*100;
   //ballx = Math.abs(	court.width()/2 - ball.position().left ) / court.width()*100;
-	
+  ballx = ball.position().left;
   bally = ball.position().top;
   p1y = p1.position().top;
   p2y = p2.position().top;
@@ -268,11 +268,11 @@ function collisionDetection() {
 	//readout.html(out);
   //$('#readout').html('ballx: '+ballx+'<br>bally: '+bally+'<br>p1y: '+p1y+'<br>p2y: '+p2y+
   //		'<br>p2y - ball.height(): '+(p2y-ball.height())+'<br>p2y + p2.height(): '+(p2y+p2.height()));
-	readout.html('ballx: '+ballx);
-	// ball in right x zone? front edge of paddle..halfway off backside of paddle
+
+	// collision zones: front edge of paddle to halfway off backside of paddle
 	// prevents backedge returns, which feel cheaty
-  if (ballx >= 40.5 && ballx <= 45.1875) {
-		if (ball.position().left < court.width()/2) {
+  if ( (ballx >= 4.5 && ballx <= 9) || (ballx >= 85 && ballx <= 89.5)) { // 
+		if (ball.position().left < 50) { // ball on left side of court
       // ball in p1's y zone?
 			if ( bally >= p1y - ball.height() && bally <= p1y + p1.height() ) {
 				out = readout.html();
@@ -310,11 +310,11 @@ function collisionDetection() {
   if (ball.position().left < court.width()*.02) {
 		//testing
 		//readout.html('p1score');
-		socket.send({type:'score', which:'p1'});
+		socket.send({type:'score', which:'p2'});
 		ball.stop(true);
 	} else if  (ball.position().left > court.width()*.98) {
 		//readout.html('p2score');
-		socket.send({type:'score', which:'p2'});
+		socket.send({type:'score', which:'p1'});
 		ball.stop(true);
 	}
 }

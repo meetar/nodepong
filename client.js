@@ -31,6 +31,7 @@ $(document).ready(function() {
 
 var playing = false; // are we sending mousemoves to the server?
 var colliding = false; // only players check for collisions
+var returned = false;
 var paddle = '';
 var lastBallX = 0, lastBallY = 0;
 var deltax = 0, deltay = 0;
@@ -125,13 +126,17 @@ function command(msg){
     
     // move ball
     case 'moveBall':
-    	readout.html('MOVEBALL - startx: '+msg.startx+', starty: '+msg.starty+'<br>deltax: '+deltax+', deltay: '+deltay);
+    	//readout.html('MOVEBALL - startx: '+msg.startx+', starty: '+msg.starty+'<br>deltax: '+deltax+', deltay: '+deltay);
     	ball.stop(true, true);
     	ball.css('visibility', 'visible');
     	ball.css('left', msg.startx+"%" );
     	ball.css('top', msg.starty+"%" );
 			deltax = msg.deltax;
 			deltay = msg.deltay;
+			if ( (deltax > 0 && playing == "p2") ||
+			(deltax < 0 && playing == "p1") ) {
+				returned = false; // prepare to return
+			}
 			moveBall();
     	break;
       
@@ -190,28 +195,46 @@ function playLoop(arg) {
   }
 }
 
+moved = 1;
+
 function moveBall() {
-	ball.animate({left: '+='+deltax+"%", top: '+='+deltay+"%"}, {duration: 20, complete: function() {moveBall();} });
-	//alert(ball.position().left);
- 	readout2.html('deltax: '+Math.round(deltax*100)/100+', deltay: '+Math.round(deltay*100)/100+'<br>ballx: '+ball.position().left+', bally: '+ball.position().top);
+  readout.html("moveball");
+  moved++;
+  oldleft = parseFloat(ball.css('left'));
+  newleft = oldleft+deltax+"%";
+	ball.animate(
+		{left: '+='+deltax+"%", top: '+='+deltay+"%"},
+		{duration: 20, complete: function() {
+			moveBall();
+      readout.html(ball.css('left'));
+    }
+	});
+  //readout2.html(moved+" old: "+rnd(oldleft)+", new: "+rnd(newleft)+", actual: "+rnd(ball.css('left'))+"/"+rnd(ball.css('top')));
+  //alert(ball.position().left);
+  //readout.html("returned: "+returned+", colliding: "+colliding);
+ 	//readout.html('deltax: '+rnd(deltax)+', deltay: '+rnd(deltay)+'<br>ballx: '+rnd(ball.position().left)+', bally: '+rnd(ball.position().top));
 
 	// bounce off of walls
 	if (ball.position().top < 10) {
 		//ball.stop(true);
 		ball.css('top', 0);
-		deltay = Math.abs(deltay);
-   	readout.html('TOP - deltax: '+deltax+', deltay: '+deltay);
+		deltay = Math.abs(deltay); // downwards
+   	//readout.html('TOP - deltax: '+deltax+', deltay: '+deltay);
 		//moveBall();
 	}
 	else if (ball.position().top > court.height() - ball.height()*2) {
 		//ball.stop(true);
-		readout.html("BOTTOM");
+		//readout.html("BOTTOM");
 		ball.css('top', court.height() - ball.height());
-		deltay = Math.abs(deltay)*-1;
-   	readout.html('BOTTOM - deltax: '+deltax+', deltay: '+deltay);
+		deltay = Math.abs(deltay)*-1; // upwards
+   	//readout.html('BOTTOM - deltax: '+deltax+', deltay: '+deltay);
    	//moveBall();
 	}
-	if (colliding) collisionDetection();
+	//readout.html("moveBall 3");
+	if (colliding) {
+    //readout.html("moveBall 4");
+    collisionDetection();
+  }
 }
 
 // no thanks, just browsing
@@ -253,41 +276,46 @@ function insertcoin() {
   logIn();
 }
 
+function rnd(val) {
+	return Math.round(val*100)/100;
+}
+
 // detect collisions between ball and paddle
 function collisionDetection() {
+	if (returned) return false;
   //ballx = Math.abs(	court.width()/2 - ball.position().left-( .5*ball.width() ) ) / court.width()*100;
   //ballx = Math.abs(	court.width()/2 - ball.position().left ) / court.width()*100;
-  ballx = ball.position().left;
+  ballx = ball.position().left / court.width();
   bally = ball.position().top;
   p1y = p1.position().top;
   p2y = p2.position().top;
-	returned = 0;
+	//returned = false;
 
 	//out = readout.html();
 	//out += '<br>colliding';
 	//readout.html(out);
-  //$('#readout').html('ballx: '+ballx+'<br>bally: '+bally+'<br>p1y: '+p1y+'<br>p2y: '+p2y+
-  //		'<br>p2y - ball.height(): '+(p2y-ball.height())+'<br>p2y + p2.height(): '+(p2y+p2.height()));
+  //$('#readout').html('ballx: '+rnd(ballx)+'<br>bally: '+rnd(bally)+'<br>p1y: '+rnd(p1y)+'<br>p2y: '+rnd(p2y)+'<br>p2y - ball.height(): '+rnd(p2y-ball.height())+'<br>p2y + p2.height(): '+rnd(p2y+p2.height()));
 
 	// collision zones: front edge of paddle to halfway off backside of paddle
 	// prevents backedge returns, which feel cheaty
-  if ( (ballx >= 4.5 && ballx <= 9) || (ballx >= 85 && ballx <= 89.5)) { // 
-		if (ball.position().left < 50) { // ball on left side of court
-      // ball in p1's y zone?
-			if ( bally >= p1y - ball.height() && bally <= p1y + p1.height() ) {
-				out = readout.html();
-				out += '<br>COLLIDE P1';
-			  readout.html(out);
-				returned = 1;
-				which = 'p1';
-				//ball.stop();
-			} //else $('#readout').html('no collide left');
-		} else if (bally >= p2y - ball.height() && bally <= p2y + p2.height() ) {
-				out = $('#readout').html();
-				out += '<br>COLLIDE P2';
-			  $('#readout').html(out);
-				returned = 1;
-				which = 'p2';
+	if (deltax < 0 && ballx >= .045 && ballx <= .09 && !returned) {
+		// ball on left side heading left; in p1's hitzone?
+		if ( bally >= p1y - ball.height() && bally <= p1y + p1.height() ) {
+			out = readout.html();
+			out += '<br>COLLIDE P1';
+			readout.html(out);
+			returned = 'p1';
+			socket.send({what:"return", x:ballx, y:bally});
+			//ball.stop();
+		} //else $('#readout').html('no collide left');
+	} else if	(deltax > 0 && ballx >= .85 && ballx <= .895 && !returned) { // 	
+		// ball on right side heading right; in p2's hitzone?
+		if (bally >= p2y - ball.height() && bally <= p2y + p2.height() ) {
+			//out = $('#readout').html();
+			//out += '<br>COLLIDE P2';
+			//$('#readout').html(out);
+			returned = 'p2';
+			socket.send({what:"return", x:ballx, y:bally});
 		} //else $('#readout').html('no collide right');
 	}
 
@@ -300,20 +328,21 @@ function collisionDetection() {
     
     //readout.html('Return!<br>startx: '+(ball.position().left / court.width() * 100)+'startx: '+(ball.position().top / court.height() * 100)+'which: '+which+', angle: '+angle);
     socket.send({type: 'return',
-    						 startx: ball.position().left / court.width() * 100,
-    						 starty: ball.position().top / court.height() * 100,
-    						 which: which,
+    						 startx: ballx,
+    						 starty: bally,
+    						 which: returned,
     						 angle: angle});
   }
 
 	// GOOOOOOOOOOOOOOAL  
   if (ball.position().left < court.width()*.02) {
-		//testing
-		//readout.html('p1score');
+		// p2 scored
+		readout.html("P2 SCORED<br>ballx: "+rnd(ball.position().left)+", court.width*02: "+rnd(court.width()*.02));
 		socket.send({type:'score', which:'p2'});
 		ball.stop(true);
 	} else if  (ball.position().left > court.width()*.98) {
-		//readout.html('p2score');
+		// p1 scored
+		readout.html("P1 SCORED<br>ballx: "+rnd(ball.position().left)+", court.width*98: "+rnd(court.width()*.98));
 		socket.send({type:'score', which:'p1'});
 		ball.stop(true);
 	}

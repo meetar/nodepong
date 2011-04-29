@@ -10,6 +10,8 @@ var http = require('http')
 // Hi my name is Node.js, I'll be your server today
 server = http.createServer(function(req, res){
   var path = url.parse(req.url).pathname;
+  log(path);
+  if (path == "/") path = "/index.html";
 
   fs.readFile(__dirname + path, function(err, data){
     if (err) return send404(res);
@@ -85,6 +87,10 @@ var p1TargetY = .5,
     p2TargetY = .5,
     p2LastY = .5;
 
+function rnd(val) {
+	return Math.round(val*100)/100;
+}
+
 io.on('connection', function(client){
   if (!contains(sessions, client.sessionId)) { // prevent double connections
     sessions.push(client.sessionId);
@@ -119,6 +125,7 @@ io.on('connection', function(client){
     }
 
 		if (msg.type == 'return') {
+			log(Math.round(client.sessionId/100000)+": "+msg.which+' RETURN1 - startx: '+rnd(msg.startx)+', starty: '+rnd(msg.starty)+', angle: '+rnd(msg.angle)+", p1returned: "+p1returned+", p2returned: "+p2returned);	
 			if ( msg.which == 'p1' && p1returned == 0) {
 				p1returned = 1;
 				p2returned = 0;
@@ -126,12 +133,12 @@ io.on('connection', function(client){
 				p2returned = 1;
 				p1returned = 0;
 			} else {
-				//log("FALSE RETURN");
+				log("DOUBLE RETURN");
 				return false;
 			}
-			startx = msg.startx;
-			starty = msg.starty;
-			log(msg.which+' RETURN - startx: '+Math.round(startx*100)/100+', starty: '+Math.round(starty*100)/100+', angle: '+Math.round(msg.angle*100)/100);
+			startx = msg.startx*100;
+			starty = msg.starty*100;
+			log(Math.round(client.sessionId/100000)+": "+msg.which+' RETURN2 - startx: '+rnd(startx)+', starty: '+rnd(starty)+', angle: '+rnd(msg.angle));	
 
 			deltax *= -1.1; // switch directions and increase speed, normal: -1.1
 			
@@ -229,6 +236,8 @@ io.on('connection', function(client){
     if (idx != -1) sessions.splice(idx, 1);
 
     if (queue.length == 1) {
+    	playing = false;
+    	gameOn = false;
       var statusMsg = queue[0].name + ' - WAITING FOR CHALLENGER';
       send(queue[0].id, {type:'html', which:'status', html:statusMsg});
     }
@@ -237,7 +246,7 @@ io.on('connection', function(client){
 
 // move ball
 function moveBall() {
-	log('  moveBall: startx: '+Math.round(startx*100)/100+', starty: '+Math.round(starty*100)/100+', deltax: '+Math.round(deltax*100)/100+', deltay: '+Math.round(deltay*100)/100);
+	log('  moveBall: startx: '+rnd(startx)+', starty: '+rnd(starty)+', deltax: '+rnd(deltax)+', deltay: '+rnd(deltay));
 
 	io.broadcast({type:'moveBall', startx:startx, starty:starty, deltax:deltax, deltay:deltay});
 }
@@ -425,6 +434,7 @@ function newgame(id) {
     if (idx != -1) queue.splice(idx, 1);
     player1 = 0;
     newgame(0);
+    return false;
   }
   if (contains(sessions, player2.id)) {
     send(player2.id, { type:'playing', paddle:'p2', delay:delay });
@@ -434,6 +444,7 @@ function newgame(id) {
     if (idx != -1) queue.splice(idx, 1);
     player2 = 0;
     newgame(0);
+    return false;
   }
 
   io.broadcast({type:'newgame', player1:player1.name, player2:player2.name});
@@ -452,8 +463,11 @@ function newgame(id) {
 
   // start paddles
   if (!playing) {
+    log(' !PLAYING');
+
     getSet = true;
     if (!playLoopID) {
+	    log(' NO PLAYLOOP: starting');
       playLoopID = setTimeout(playLoop, delay, 'NEWGAME');
     } else log('PROB: playloop already going');
 
@@ -464,7 +478,7 @@ function newgame(id) {
     resetID = setTimeout( reset, resetDelay );
 
   } else {
-    //log(' PROB: already playing');
+    log(' PROB: already playing');
     report(['playing', 'gameOn', 'point', 'player1.id', 'player2.id']);
     //return false;
   }

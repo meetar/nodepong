@@ -219,7 +219,7 @@ a {
   z-index: 100;
 }
 
-// inside a 4:3 rectangle, a square is 3:4
+/* inside a 4:3 rectangle, a square is 3:4 */
 #ball {
   width:3%;
   height:4%;

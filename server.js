@@ -125,7 +125,8 @@ io.on('connection', function(client){
     }
 
 		if (msg.type == 'return') {
-			log(Math.round(client.sessionId/100000)+": "+msg.which+' RETURN1 - startx: '+rnd(msg.startx)+', starty: '+rnd(msg.starty)+', angle: '+rnd(msg.angle)+", p1returned: "+p1returned+", p2returned: "+p2returned);	
+			log(Math.round(client.sessionId/100000000000000)+": "+msg.which+" RETURN1");
+			log(' startx: '+rnd(msg.startx)+', starty: '+rnd(msg.starty)+', angle: '+rnd(msg.angle)+", p1returned: "+p1returned+", p2returned: "+p2returned);
 			if ( msg.which == 'p1' && p1returned == 0) {
 				p1returned = 1;
 				p2returned = 0;
@@ -138,10 +139,10 @@ io.on('connection', function(client){
 			}
 			startx = msg.startx*100;
 			starty = msg.starty*100;
-			log(Math.round(client.sessionId/100000)+": "+msg.which+' RETURN2 - startx: '+rnd(startx)+', starty: '+rnd(starty)+', angle: '+rnd(msg.angle));	
+			log(Math.round(client.sessionId/100000000000000)+": "+msg.which+' RETURN2 - startx: '+rnd(startx)+', starty: '+rnd(starty)+', angle: '+rnd(msg.angle));
 
-			deltax *= -1.1; // switch directions and increase speed, normal: -1.1
-			
+			deltax *= -1; // switch directions and increase speed, normal: -1.1
+
 			var maxSpeed = 15; // normal: 15
 			deltax = Math.min(deltax, maxSpeed);
 			deltax = Math.max(deltax, -1 * maxSpeed);
@@ -649,6 +650,8 @@ function reset() {
   if (p2scored) deltax = Math.abs(deltax) * -1;
   p1scored = 0;
   p2scored = 0;
+  p1returned = 0;
+  p2returned = 0;
 
   if (deltax < 0) { // p2 is serving
     send(player1.id, {type:'collide', value:true});
@@ -662,7 +665,7 @@ function reset() {
   deltay = 0;
   startx = 50, starty = 50;
 
-	log('serving');
+	//log("serving, p1returned: "+p1returned+", p2returned: "+p2returned);
 	// serve ball
 	moveBall();
 
@@ -720,7 +723,7 @@ function movePaddles() {
   movePaddle('p2', p2TargetY, p2LastY);
 
   io.broadcast({type:'move', p1pos:p1pos, p2pos:p2pos});
-	
+
 }
 
 // returns ball at an angle based on point of contact with paddle

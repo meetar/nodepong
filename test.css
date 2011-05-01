@@ -1,12 +1,12 @@
 /* Cribbed (as with 90% of the internet) from:
-	 http://meyerweb.com/eric/tools/css/reset/
+	 http://meyerweb.com/eric/tools/css/reset/ 
    v2.0 | 20110126
    License: none (public domain)
 	 Thanks, Eric!
 */
 
 html, body, div, span,
-p, a, em, img, small,
+p, a, em, img, small, 
 center, ol, ul, li,
 form, table, tr, th, td
 
@@ -128,7 +128,7 @@ a {
   position:absolute;
   color:blue;
   background-color: aqua;
-  font-size:60%;
+  font-size:50%;
   text-align: left;
   z-index:2000;
   left: 0;
@@ -140,11 +140,11 @@ a {
   position:absolute;
   color:blue;
   background-color: aqua;
-  font-size:60%;
+  font-size:50%;
   text-align: left;
   z-index:2000;
   left: 0;
-  top: 570px;
+  top: 550px;
 }
 
 #toucharea {
@@ -193,7 +193,7 @@ a {
   z-index: 0;
 }
 
-/* the 4:3 rectangle that allows the court to keep its shape */
+// the 4:3 rectangle that allows the court to keep its shape
 #xgif {
   width:100%;
   visibility:hidden;
@@ -219,7 +219,7 @@ a {
   z-index: 100;
 }
 
-/* inside a 4:3 rectangle, a square is 3:4 */
+// inside a 4:3 rectangle, a square is 3:4
 #ball {
   width:3%;
   height:4%;

@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+    <script type="text/javascript"  src="http://code.jquery.com/jquery-1.5.min.js"></script>
+    <script type="text/javascript"  src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
+
+<style>
+
+#report {
+  position: absolute;
+  z-index:1;
+}
+
+#court {
+  position: absolute;
+  height: 500px;
+  width: 500px;
+  outline: 2px black;
+  background-color: grey;
+}
+
+#ball {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  height: 50px;
+  width: 50px;
+  background-color: red;
+}
+
+</style>
+
+  </head>
+
+<body>
+
+  <div id="report"></div>
+  <div id="court"></div>
+  <div id="ball"></div>
+
+  <script type="text/javascript">
+
+deltax = 50;
+deltay = 0;
+
+ball = $("#ball");
+moved = 0;
+var timeout;
+go = 1;
+function move() {
+  go = 1;
+  moved += 1;
+  //if (ball.position().top + deltay > 100) {
+  //  deltax *= -1;
+    //move();
+  //}
+  //else if (ball.position().left + deltax < 0) {
+  //  deltax *= -1;
+  //}
+
+  ball.animate({top: '+='+deltay, left: '+='+deltax}, {
+    duration:20, easing: 'linear',
+    step: function() {
+        if (ball.position().left > 80) {
+          //alert('1');
+          ball.stop();
+          clearTimeout(timeout);
+          ball.css('left', 80);
+          deltax *= -1;
+          move();
+        }
+        if (ball.position().left < 10) {
+          //alert('1');
+          ball.stop(true);
+          clearTimeout(timeout);
+          ball.css('left', 10);
+          //ball.css('left', 80);
+          deltax *= -1;
+          //go = 0;
+          //move();
+        }
+        ball.html(moved+" "+ball.position().left+","+ball.position().top);
+    }
+  });
+  if (go) timeout = setTimeout("move()", 20);
+}
+
+//jQuery.fx.interval = 100;
+
+move();
+
+  </script>
+
+</body>
+
+
+</html>

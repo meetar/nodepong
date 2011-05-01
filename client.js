@@ -196,10 +196,11 @@ function playLoop(arg) {
 var moveTimeout;
 go = timerX;
 function moveBall() {
+	clearTimeout(moveTimeout);
 	newleft = parseFloat(ball.css('left')) + deltax;
 	newtop = parseFloat(ball.css('top')) + deltay;
 	//alert("x,y: "+ball.position().left+", "+ball.position().top+"<br>deltax: "+deltax+", deltay: "+deltay+"<br>newleft: "+newleft+", newtop: "+newtop);
-	readout.html("x,y: "+rnd(ball.position().left)+", "+rnd(ball.position().top)+"<br>deltax: "+rnd(deltax)+", deltay: "+rnd(deltay)+"<br>newleft: "+rnd(newleft)+", newtop: "+rnd(newtop));
+	readout.html("x,y: "+rnd(parseFloat(ball.css("left")))+", "+rnd(parseFloat(ball.css("top")))+"<br>deltax: "+rnd(deltax)+", deltay: "+rnd(deltay)+"<br>newleft: "+rnd(newleft)+", newtop: "+rnd(newtop));
 	// bounce off ceiling
 	if (ball.position().top + deltay < 0) {
 		clearTimeout(moveTimeout);
@@ -242,34 +243,37 @@ function moveBall() {
 	}
 }
 
+function outAdd(string) {
+	out = readout.html();
+	out += string;
+	readout.html(out);
+}
 // detect collisions between ball and paddle
 function collisionDetection() {
 	if (returned) {
 		readout2.html('Already returned, no collide');
 		return false;
 	}
-  ballx = parseFloat(ball.css('left');
+  ballx = parseFloat(ball.css('left'));
   bally = ball.position().top;
   p1y = p1.position().top;
   p2y = p2.position().top;
 
 	// collision zones: front edge of paddle to halfway off backside of paddle
 	// prevents backedge returns, which feel cheaty
-	if (deltax < 0 && ballx >= 45 && ballx <= 9) {
+	if (deltax < 0 && ballx >= 4.5 && ballx <= 7.5) {
+		outAdd('<br>COLLIDE ZONE P1');
 		// ball on left side heading left; in p1's hitzone?
 		if ( bally >= p1y - ball.height() && bally <= p1y + p1.height() ) {
-			//out = readout.html();
-			//out += '<br>COLLIDE P1';
-			//readout.html(out);
+			outAdd('<br>COLLIDE P1');
 			returned = 'p1';
 			socket.send({what:"return", x:ballx, y:bally});
 		} //else $('#readout').html('no collide left');
-	} else if	(deltax > 0 && ballx >= 85 && ballx <= 89.5) { //
+	} else if	(deltax > 0 && ballx >= 89 && ballx <= 90.5) { //
+		outAdd("<br>P2 COLLIDE ZONE");
 		// ball on right side heading right; in p2's hitzone?
 		if (bally >= p2y - ball.height() && bally <= p2y + p2.height() ) {
-			//out = $('#readout').html();
-			//out += '<br>COLLIDE P2';
-			//$('#readout').html(out);
+			outAdd("<br>P2 COLLIDE");
 			returned = 'p2';
 			socket.send({what:"return", x:ballx, y:bally});
 		} //else $('#readout').html('no collide right');
@@ -282,7 +286,7 @@ function collisionDetection() {
     var angle = (ball.position().top + ball.height() - paddle.position().top)/court.height()*100;
     socket.send({type: 'return',
     						 startx: ballx,
-    						 starty: bally/court.height(),
+    						 starty: bally/court.height()*100,
     						 which: returned,
     						 angle: angle});
   }

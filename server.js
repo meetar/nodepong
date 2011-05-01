@@ -10,7 +10,7 @@ var http = require('http')
 // Hi my name is Node.js, I'll be your server today
 server = http.createServer(function(req, res){
   var path = url.parse(req.url).pathname;
-  log(path);
+  //log(path);
   if (path == "/") path = "/index.html";
 
   fs.readFile(__dirname + path, function(err, data){
@@ -125,8 +125,6 @@ io.on('connection', function(client){
     }
 
 		if (msg.type == 'return') {
-			log(Math.round(client.sessionId/100000000000000)+": "+msg.which+" RETURN1");
-			log(' startx: '+rnd(msg.startx)+', starty: '+rnd(msg.starty)+', angle: '+rnd(msg.angle)+", p1returned: "+p1returned+", p2returned: "+p2returned);
 			if ( msg.which == 'p1' && p1returned == 0) {
 				p1returned = 1;
 				p2returned = 0;
@@ -137,11 +135,15 @@ io.on('connection', function(client){
 				log("DOUBLE RETURN");
 				return false;
 			}
-			startx = msg.startx*100;
-			starty = msg.starty*100;
-			log(Math.round(client.sessionId/100000000000000)+": "+msg.which+' RETURN2 - startx: '+rnd(startx)+', starty: '+rnd(starty)+', angle: '+rnd(msg.angle));
+			startx = msg.startx;
+			starty = msg.starty;
+	
+			log(Math.round(client.sessionId/100000000000000)+": "+msg.which+" RETURN1");
+			log(' startx: '+rnd(startx)+', starty: '+rnd(starty)+', angle: '+rnd(msg.angle)+", p1returned: "+p1returned+", p2returned: "+p2returned);
+	
+	//log(Math.round(client.sessionId/100000000000000)+": "+msg.which+' RETURN2 - startx: '+rnd(startx)+', starty: '+rnd(starty)+', angle: '+rnd(msg.angle));
 
-			deltax *= -1; // switch directions and increase speed, normal: -1.1
+			deltax *= -1.1; // switch directions and increase speed, normal: -1.1
 
 			var maxSpeed = 15; // normal: 15
 			deltax = Math.min(deltax, maxSpeed);

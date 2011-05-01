@@ -1,15 +1,8 @@
-/* Cribbed (as with 90% of the internet) from:
-	 http://meyerweb.com/eric/tools/css/reset/
-   v2.0 | 20110126
-   License: none (public domain)
-	 Thanks, Eric!
-*/
 
 html, body, div, span,
 p, a, em, img, small,
 center, ol, ul, li,
 form, table, tr, th, td
-
 {
 	margin: 0;
 	padding: 0;
@@ -25,6 +18,7 @@ html, body {
   text-align: center;
 	font-size: 100%;
   font: "silkscreen-1", Verdana, sans-serif;
+  font-family: Verdana, sans-serif;
   color: white;
   vertical-align: middle;
 }
@@ -185,7 +179,7 @@ a {
 #centerline {
   position:absolute;
   top: 15%;
-  height: 70%;
+  height: 75%;
   width: 0%;
   border-left: dashed white .15em;
   margin-left:50%;

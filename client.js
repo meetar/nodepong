@@ -1,3 +1,50 @@
+///////////////////////////
+//      NETWORK CODE
+
+// handshake and connect to the server through the transport
+// of Socket.io's choice
+var socket = new io.Socket(null, {port: 9980, rememberTransport: false});
+socket.connect();
+
+// this is triggered by the server's 'broadcast' and 'send' functions,
+// it passes messages to the 'command' function.
+socket.on('message', function(obj){
+  if ('buffer' in obj){
+    for (var i in obj.buffer) command(obj.buffer[i]);
+  } else command(obj);
+});
+
+
+///////////////////////////
+//      GAME CONTROL
+
+// 
+function ready() {
+  $('#welcome').css('visibility','hidden');
+  $('#insertcoin').css('display','none');
+
+  // turn on mouse tracking
+  $(document).mousemove(function(e){ mouseY = e.pageY; });
+
+  // turn on touch tracking
+  $('#toucharea').bind('touchstart touchmove', function(event) {
+    var e = event.originalEvent;
+    mouseY = e.touches[0].pageY;
+    return false;
+  });
+
+  socket.send({type:'ready', name:$('#entername').val()});
+}
+
+// switch to play interface
+function logIn() {
+  $('#splash').css('display', 'none');
+  $('#insertcoin').css('display', 'none');
+  $('.hide').css('display', 'inline');
+  $('#welcome').css('display', 'inline');
+}
+
+
 function makeid() {
     var txt = '';
     var consonants = 'BCDFGHJKLMNPQRSTVWXYZ';
@@ -15,28 +62,19 @@ function scrollWindow() {
   //readout.html(String($(window).width()));
 }
 
-$(document).ready(function() {
-  scrollWindow();
-  window.onorientationchange = scrollWindow;
 
-  $('#entername').val(makeid());
-  $('#entername').select();
-  $('#entername').onfocus = '$(\'#entername\').value = \'\';';
-
-  // click play and accept default name for fast testing
-  insertcoin();
-  ready();
-
-});
+///////////////////////////
+//     GAME VARIABLES
 
 var playing = false; // are we sending mousemoves to the server?
+                     // false == spectator
 var colliding = false; // only players check for collisions
 var returned = false;
-var paddle = '';
-var lastBallX = 0, lastBallY = 0;
+var paddle = ''; // stores player name: p1 or p2
 var deltax = 0, deltay = 0;
 var mouseY = 0, lastY = 50, goal = 50;
 var moveTimeout; // moveBall loop holder
+var lastGoal; // compare current mouse position to last reported
 
 
 // array of score-displaying divs
@@ -53,28 +91,22 @@ var scores = {
   9:[1,2,3,4,6,7]
 }
 
-score('score1', 0);
-score('score2', 0);
-
+// jQuery shortcuts
 var p1 = $('#p1'), p2 = $('#p2'), ball = $('#ball'), court = $('#court');
 var readout = $('#readout');
 var readout2 = $('#readout2');
+
 var displayText;
 
-function score(which, val) {
-  for (x in [1,2,3,4,5,6,7,8,9]) {
-    element = '#'+which+' .s'+x;
-    $(element).css('visibility', 'hidden');
-  }
-  for (x in scores[val]) {
-    element = '#'+which+' .s'+scores[val][x];
-    $(element).css('visibility', 'visible');
-  }
-}
 
-// this command is triggered by the server's 'broadcast'
+
+///////////////////////////
+//      GAME LOGIC
+
+// triggered by the server's 'broadcast' command
 function command(msg){
 
+	// respond to server with confirmation message
   socket.send({type:'heartBeat'});
 
 	// should go through the server code and make sure these are all needed
@@ -139,20 +171,15 @@ function command(msg){
 			moveBall();
     	break;
 
-    case 'move':
-			//p1.css({'top': msg.p1pos+'%'});
-			//p2.css({'top': msg.p2pos+'%'});
-      break;
-
-    case 'pmove': // move paddle
-    	paddle = $("#"+msg.which);
-    	paddle.stop();
-    	lastY = parseFloat(paddle.css('top'));
+    case 'movePaddle': // move paddle
+    	which = $("#"+msg.which);
+    	which.stop();
+    	which.css('top', msg.pos+"%");
 
 			// speed limit: 4% per step @ 20 fps
-			//duration = Math.abs(msg.goal - msg.pos)*20;
-			duration = Math.abs(msg.goal - lastY)*20;
-			paddle.animate({top: msg.goal+'%'}, {"duration": duration, "easing": "linear"});
+			// 12 comes from trial and error
+			duration = Math.abs(msg.goal - msg.pos)*12;
+			which.animate({top: msg.goal+'%'}, {"duration": duration, "easing": "linear"});
 			readout.html("goal: "+rnd(msg.goal)+", duration: "+rnd(duration));
       break;
 
@@ -160,26 +187,16 @@ function command(msg){
   }
 }
 
-var socket = new io.Socket(null, {port: 9980, rememberTransport: false});
-socket.connect();
-
-// sends message to 'command' function
-socket.on('message', function(obj){
-  if ('buffer' in obj){
-    for (var i in obj.buffer) command(obj.buffer[i]);
-  } else command(obj);
-});
-
-var lastGoal;
 // send mouse position to the server
 function movePaddle() {
 	paddle = $("#"+playing);
+	// get mouse position relative to court height as a %
 	var possibleGoal = (mouseY - p1.height()/2 - court.offset().top) / court.height() * 100;
+	// minimum movement: 1%
 	goal = Math.abs(goal - possibleGoal) > 1 ? possibleGoal : goal;
-	// keep paddle in bounds
+	// keep paddle in court
 	goal = Math.min ( Math.max(0, goal), 92);
-
-/*
+	// speed limit: 4%
 	if (goal-lastY < 0) {
 		newY = Math.max(lastY-4, goal);
 	} else if	(goal-lastY > 0) {
@@ -187,35 +204,22 @@ function movePaddle() {
 	}
 	paddle.css('top', newY+"%");
 	lastY = newY;
-*/
 
-	//readout2.html("lastY-4: "+rnd(lastY-4)+", lastY+4: "+rnd(lastY+4)+", goal-lastY: "+rnd(goal-lastY));
-	//if (lastY != goal) socket.send({type:'pmove', which:playing, pos:lastY, goal:goal});
-	if (lastGoal != goal) socket.send({type:'pmove', which:playing, pos:lastY, goal:goal});
+	readout2.html("lastY-4: "+rnd(lastY-4)+", lastY+4: "+rnd(lastY+4)+", goal-lastY: "+rnd(goal-lastY));
+
+	// update if mouse moved since last goal was sent
+	if (lastGoal != goal) {
+		socket.send({type:'movePaddle', which:playing, pos:lastY, goal:goal});
+	}
+	// store goal
 	lastGoal = goal;
-
 }
 
-function ready() {
-  $('#welcome').css('visibility','hidden');
-  $('#insertcoin').css('display','none');
-
-  // turn on mouse tracking
-  $(document).mousemove(function(e){ mouseY = e.pageY; });
-
-  // turn on touch tracking
-  $('#toucharea').bind('touchstart touchmove', function(event) {
-    var e = event.originalEvent;
-    mouseY = e.touches[0].pageY;
-    return false;
-  });
-
-  socket.send({type:'ready', name:$('#entername').val()});
-}
-
+var playTimer;
 function playLoop(arg) {
+	clearTimeout(playTimer)
   if (playing) {
-    setTimeout('playLoop('+arg+')', arg);
+    playTimer = setTimeout('playLoop('+arg+')', arg);
     //movePaddles();
     movePaddle();
   }
@@ -228,6 +232,7 @@ function moveBall() {
 	newtop = parseFloat(ball.css('top')) + deltay;
 
 	//readout.html("x,y: "+rnd(parseFloat(ball.css("left")))+", "+rnd(parseFloat(ball.css("top")))+"<br>deltax: "+rnd(deltax)+", deltay: "+rnd(deltay)+"<br>newleft: "+rnd(newleft)+", newtop: "+rnd(newtop));
+
 	// bounce off ceiling
 	if (ball.position().top + deltay < 0) {
 		clearTimeout(moveTimeout);
@@ -240,6 +245,7 @@ function moveBall() {
 		deltay = Math.abs(deltay)*-1; // upwards
 	}
 
+	// move ball
 	ball.css({'left': newleft+"%", 'top': newtop+"%"});
 
 	//readout2.html("left: "+rnd(ball.position().left)+", top: "+rnd(ball.position().top));
@@ -248,31 +254,26 @@ function moveBall() {
 		collisionDetection();
 	}
 
-	// GOOOOOOOOOOOOOOAL
-	if (parseFloat(ball.css('left')) < 0) { // 2%
+	// P2 SCORED
+	if (parseFloat(ball.css('left')) < 0) {
 		ball.css('visibility', 'hidden');
-		// p2 scored
-		//readout.html("P2 SCORED<br>ballx: "+rnd(ball.position().left)+", court.width*02: "+rnd(court.width()*.02));
 		socket.send({type:'score', which:'p2'});
-	} else if (parseFloat(ball.css('left')) > 97) { // 97%
+
+	// P1 SCORED
+	} else if (parseFloat(ball.css('left')) > 97) { // 97% = 100% - 3% ball width
 		ball.css('visibility', 'hidden');
-		// p1 scored
-		//readout.html("P1 SCORED<br>ballx: "+rnd(ball.position().left)+", court.width*98: "+rnd(court.width()*.98));
 		socket.send({type:'score', which:'p1'});
+
+	// business as usual; loop the loop
 	} else {
 		moveTimeout = setTimeout("moveBall()", 50);
 	}
 }
 
-function outAdd(string) {
-	out = readout.html();
-	out += string;
-	readout.html(out);
-}
+
 // detect collisions between ball and paddle
 function collisionDetection() {
 	if (returned) {
-		//readout2.html('Already returned, no collide');
 		return false;
 	}
   ballx = parseFloat(ball.css('left'));
@@ -282,19 +283,16 @@ function collisionDetection() {
 
 	// collision zones: front edge of paddle to halfway off backside of paddle
 	// prevents backedge returns, which feel cheaty
+	// maybe just make it bounce off top and bottom edges?
 	if (deltax < 0 && ballx >= 4.5 && ballx <= 7.5) {
-		//outAdd('<br>COLLIDE ZONE P1');
 		// ball on left side heading left; in p1's hitzone?
 		if ( bally >= p1y - ball.height() && bally <= p1y + p1.height() ) {
-			//outAdd('<br>COLLIDE P1');
 			returned = 'p1';
 			socket.send({what:"return", x:ballx, y:bally});
-		} //else $('#readout').html('no collide left');
+		}
 	} else if	(deltax > 0 && ballx >= 89 && ballx <= 90.5) { //
-		//outAdd("<br>P2 COLLIDE ZONE");
 		// ball on right side heading right; in p2's hitzone?
 		if (bally >= p2y - ball.height() && bally <= p2y + p2.height() ) {
-			//outAdd("<br>P2 COLLIDE");
 			returned = 'p2';
 			socket.send({what:"return", x:ballx, y:bally});
 		} //else $('#readout').html('no collide right');
@@ -302,8 +300,8 @@ function collisionDetection() {
 
   // a magnificent return
 	if (returned) {
-		//readout2.html('collided');
     // get relative y position so server can calculate english
+    // not currently working properly
     var angle = (ball.position().top + ball.height() - paddle.position().top)/court.height()*100;
     socket.send({type: 'return',
     						 startx: ballx,
@@ -313,6 +311,20 @@ function collisionDetection() {
   }
 
 }
+
+
+
+function score(which, val) {
+  for (x in [1,2,3,4,5,6,7,8,9]) {
+    element = '#'+which+' .s'+x;
+    $(element).css('visibility', 'hidden');
+  }
+  for (x in scores[val]) {
+    element = '#'+which+' .s'+scores[val][x];
+    $(element).css('visibility', 'visible');
+  }
+}
+
 
 // no thanks, just browsing
 function spectate() {
@@ -326,13 +338,6 @@ function spectate() {
 
     socket.send({type:'watching'});
   });
-}
-
-function logIn() {
-  $('#splash').css('display', 'none');
-  $('#insertcoin').css('display', 'none');
-  $('.hide').css('display', 'inline');
-  $('#welcome').css('display', 'inline');
 }
 
 function insertcoin() {
@@ -353,10 +358,36 @@ function insertcoin() {
   logIn();
 }
 
+
+/////////////////////////////
+//     HELPER FUNCTIONS
 function rnd(val) {
 	return Math.round(val*100)/100;
+}
+
+function outAdd(string) {
+	out = readout.html();
+	out += string;
+	readout.html(out);
 }
 
 // set animation speed: delay between updates in milliseconds
 // equivalent to 20 frames per second
 jQuery.fx.interval = 50;
+
+// trigger when document has finished loading
+$(document).ready(function() {
+  scrollWindow();
+  window.onorientationchange = scrollWindow;
+
+  $('#entername').val(makeid());
+  $('#entername').select();
+  $('#entername').onfocus = '$(\'#entername\').value = \'\';';
+
+	score('score1', 0);
+	score('score2', 0);
+
+  // click play and accept default name for fast testing
+  insertcoin();
+  ready();
+});

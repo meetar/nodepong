@@ -180,7 +180,7 @@ io.on('connection', function(client){
 
 		// player received last message from server
     if (msg.type == 'heartBeat') {
-      log('heartbeat:'+client.sessionId+', p1.id:'+player1.id+', p2.id:'+player2.id);
+      //log('heartbeat:'+client.sessionId+', p1.id:'+player1.id+', p2.id:'+player2.id);
       if (client.sessionId == player1.id) p1heartBeat = true;
       else if (client.sessionId == player2.id) p2heartBeat = true;
     }

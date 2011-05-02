@@ -339,7 +339,7 @@ function collisionDetection() {
   if (returned) {
     // get relative y position so server can calculate english
     // todo: debug
-    var angle = (parseFloat(ball.css('top')) - parseFloat(paddle.css('top'));
+    var angle = parseFloat(ball.css('top')) - parseFloat(paddle.css('top'));
     socket.send({type: 'return',
                  startx: ballx,
                  starty: bally/court.height()*100,

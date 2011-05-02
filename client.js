@@ -210,10 +210,11 @@ function command(msg){
       which = $("#"+msg.which);
       // cancel any existing jQuery animations
       which.stop(true);
-      which.css('top', msg.pos+"%");
+      pos = parseFloat(which.css('top'));
 
       // speed limit: 4% per step @ 20 fps
-      duration = Math.abs(msg.goal - msg.pos)*12; // 12 comes from trial and error
+      //duration = Math.abs(msg.goal - msg.pos)*12; // 12 comes from trial and error
+      duration = Math.abs(msg.goal - pos)*12; // 12 comes from trial and error
 
       // use jQuery animation to move the paddle from its last reported
       // position to its last reported goal

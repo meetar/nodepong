@@ -18,7 +18,7 @@ socket.on('message', function(obj){
 ///////////////////////////
 //      GAME CONTROL
 
-// 
+// prepare for play
 function ready() {
   $('#welcome').css('visibility','hidden');
   $('#insertcoin').css('display','none');
@@ -33,7 +33,23 @@ function ready() {
     return false;
   });
 
+  // send ready message to server
+  // todo: check server to prevent existing names
+  // todo: sanitize/encode inputs to prevent hanky and/or panky
   socket.send({type:'ready', name:$('#entername').val()});
+}
+
+// autogenerate a random 5-letter ID for testing
+function makeid() {
+  var txt = '';
+  var consonants = 'BCDFGHJKLMNPQRSTVWXYZ';
+  var vowels = 'AEIOUY';
+  for (x=0;x<2;x++) {
+    txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
+    txt += vowels.charAt(Math.floor(Math.random() * vowels.length));
+  }
+  txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
+  return txt;
 }
 
 // switch to play interface
@@ -44,19 +60,37 @@ function logIn() {
   $('#welcome').css('display', 'inline');
 }
 
+// no thanks, just browsing
+function spectate() {
+  $("#coin").animate({
+    right: '0'
+  }, 250, function() {
+    $('#splash').css('display', 'none');
+    $('#insertcoin').css('display', 'inline');
+    $('#hide').css('display', 'inline');
+    $('#welcome').css('display', 'none');
 
-function makeid() {
-    var txt = '';
-    var consonants = 'BCDFGHJKLMNPQRSTVWXYZ';
-    var vowels = 'AEIOUY';
-    for (x=0;x<2;x++) {
-      txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
-      txt += vowels.charAt(Math.floor(Math.random() * vowels.length));
-    }
-    txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
-    return txt;
+    socket.send({type:'watching'});
+  });
 }
 
+function insertcoin() {
+  $("#play").css('color', 'red');
+  /*
+  $("#coin").animate({
+    right: '+=.25em'
+  }, 100, 'linear', function() {
+    $("#coin").animate({
+      right: '2.1em'
+    }, 250, 'linear', function() {
+      setTimeout('logIn()', 500);
+    });
+  });
+  */
+  logIn();
+}
+
+// hide address bar on iPhone by scrolling down slightly
 function scrollWindow() {
   /mobile/i.test(navigator.userAgent) && !location.hash && window.scrollTo(0, 1);
   //readout.html(String($(window).width()));
@@ -97,7 +131,7 @@ var readout = $('#readout');
 var readout2 = $('#readout2');
 
 var displayText;
-
+var playTimer; // stores event loop timer
 
 
 ///////////////////////////
@@ -106,10 +140,10 @@ var displayText;
 // triggered by the server's 'broadcast' command
 function command(msg){
 
-	// respond to server with confirmation message
+  // respond to server with confirmation message
   socket.send({type:'heartBeat'});
 
-	// should go through the server code and make sure these are all needed
+  // should go through the server code and make sure these are all needed
   switch(msg.type) {
     case 'newgame':
       $('#player1').html(msg.player1);
@@ -122,6 +156,7 @@ function command(msg){
       playing = false;
       paddle = '';
       ball.css('visibility', 'hidden');
+      deltax = 0, deltay = 0;
       $('#playerhide').css('visibility', 'hidden');
       p1.css('background-color', 'gray');
       p2.css('background-color', 'gray');
@@ -161,63 +196,38 @@ function command(msg){
       break;
     
     case 'moveBall': // move ball
-    	ball.css({'visibility': 'visible', 'left': msg.startx+"%", 'top': msg.starty+"%"});
-			deltax = msg.deltax;
-			deltay = msg.deltay;
-			if ( (deltax > 0 && playing == "p2") ||
-			(deltax < 0 && playing == "p1") ) {
-				returned = false; // prepare to return
-			}
-			moveBall();
-    	break;
+      ball.css({'visibility': 'visible', 'left': msg.startx+"%", 'top': msg.starty+"%"});
+      deltax = msg.deltax;
+      deltay = msg.deltay;
+      if ( (deltax > 0 && playing == "p2") ||
+      (deltax < 0 && playing == "p1") ) {
+        returned = false; // prepare to return
+      }
+      moveBall();
+      break;
 
     case 'movePaddle': // move paddle
-    	which = $("#"+msg.which);
-    	which.stop();
-    	which.css('top', msg.pos+"%");
+      which = $("#"+msg.which);
+      // cancel any existing jQuery animations
+      which.stop(true);
+      which.css('top', msg.pos+"%");
 
-			// speed limit: 4% per step @ 20 fps
-			// 12 comes from trial and error
-			duration = Math.abs(msg.goal - msg.pos)*12;
-			which.animate({top: msg.goal+'%'}, {"duration": duration, "easing": "linear"});
-			readout.html("goal: "+rnd(msg.goal)+", duration: "+rnd(duration));
+      // speed limit: 4% per step @ 20 fps
+      duration = Math.abs(msg.goal - msg.pos)*12; // 12 comes from trial and error
+
+      // use jQuery animation to move the paddle from its last reported
+      // position to its last reported goal
+      which.animate({top: msg.goal+'%'}, {"duration": duration, "easing": "linear"});
+      //readout.html("goal: "+rnd(msg.goal)+", duration: "+rnd(duration));
       break;
 
     default: break;
   }
 }
 
-// send mouse position to the server
-function movePaddle() {
-	paddle = $("#"+playing);
-	// get mouse position relative to court height as a %
-	var possibleGoal = (mouseY - p1.height()/2 - court.offset().top) / court.height() * 100;
-	// minimum movement: 1%
-	goal = Math.abs(goal - possibleGoal) > 1 ? possibleGoal : goal;
-	// keep paddle in court
-	goal = Math.min ( Math.max(0, goal), 92);
-	// speed limit: 4%
-	if (goal-lastY < 0) {
-		newY = Math.max(lastY-4, goal);
-	} else if	(goal-lastY > 0) {
-		newY = Math.min(lastY+4, goal);
-	}
-	paddle.css('top', newY+"%");
-	lastY = newY;
-
-	readout2.html("lastY-4: "+rnd(lastY-4)+", lastY+4: "+rnd(lastY+4)+", goal-lastY: "+rnd(goal-lastY));
-
-	// update if mouse moved since last goal was sent
-	if (lastGoal != goal) {
-		socket.send({type:'movePaddle', which:playing, pos:lastY, goal:goal});
-	}
-	// store goal
-	lastGoal = goal;
-}
-
-var playTimer;
+// main event loop
 function playLoop(arg) {
-	clearTimeout(playTimer)
+  clearTimeout(playTimer)
   if (playing) {
     playTimer = setTimeout('playLoop('+arg+')', arg);
     //movePaddles();
@@ -225,94 +235,118 @@ function playLoop(arg) {
   }
 }
 
-function moveBall() {
-	// clear any existing moveBall loops
-	clearTimeout(moveTimeout);
-	newleft = parseFloat(ball.css('left')) + deltax;
-	newtop = parseFloat(ball.css('top')) + deltay;
+// send mouse position to the server
+function movePaddle() {
+  paddle = $("#"+playing);
+  // get mouse position relative to court height as a %
+  var possibleGoal = (mouseY - p1.height()/2 - court.offset().top) / court.height() * 100;
+  // minimum movement: 1%
+  goal = Math.abs(goal - possibleGoal) > 1 ? possibleGoal : goal;
+  // keep paddle in court
+  goal = Math.min ( Math.max(0, goal), 92);
+  // speed limit: 4%
+  if (goal-lastY < 0) {
+    newY = Math.max(lastY-4, goal);
+  } else if (goal-lastY > 0) {
+    newY = Math.min(lastY+4, goal);
+  }
+  paddle.css('top', newY+"%");
+  lastY = newY;
 
-	//readout.html("x,y: "+rnd(parseFloat(ball.css("left")))+", "+rnd(parseFloat(ball.css("top")))+"<br>deltax: "+rnd(deltax)+", deltay: "+rnd(deltay)+"<br>newleft: "+rnd(newleft)+", newtop: "+rnd(newtop));
+  //readout2.html("lastY-4: "+rnd(lastY-4)+", lastY+4: "+rnd(lastY+4)+", goal-lastY: "+rnd(goal-lastY));
 
-	// bounce off ceiling
-	if (ball.position().top + deltay < 0) {
-		clearTimeout(moveTimeout);
-		ball.css('top', 0);
-		deltay = Math.abs(deltay); // downwards
-	// bounce off floor
-	} else if ( (ball.position().top + deltay) > ( court.height() - ball.height()*2) ) {
-		clearTimeout(moveTimeout);
-		ball.css('top', (court.height() - ball.height())/court.height()*100+"%");
-		deltay = Math.abs(deltay)*-1; // upwards
-	}
-
-	// move ball
-	ball.css({'left': newleft+"%", 'top': newtop+"%"});
-
-	//readout2.html("left: "+rnd(ball.position().left)+", top: "+rnd(ball.position().top));
-
-	if (colliding && !returned) {
-		collisionDetection();
-	}
-
-	// P2 SCORED
-	if (parseFloat(ball.css('left')) < 0) {
-		ball.css('visibility', 'hidden');
-		socket.send({type:'score', which:'p2'});
-
-	// P1 SCORED
-	} else if (parseFloat(ball.css('left')) > 97) { // 97% = 100% - 3% ball width
-		ball.css('visibility', 'hidden');
-		socket.send({type:'score', which:'p1'});
-
-	// business as usual; loop the loop
-	} else {
-		moveTimeout = setTimeout("moveBall()", 50);
-	}
+  // update if mouse moved since last goal was sent
+  if (lastGoal != goal) {
+    socket.send({type:'movePaddle', which:playing, pos:lastY, goal:goal});
+  }
+  // store goal
+  lastGoal = goal;
 }
 
+function moveBall() {
+  // clear any existing moveBall loops
+  clearTimeout(moveTimeout);
+  newleft = parseFloat(ball.css('left')) + deltax;
+  newtop = parseFloat(ball.css('top')) + deltay;
+
+  //readout.html("x,y: "+rnd(parseFloat(ball.css("left")))+", "+rnd(parseFloat(ball.css("top")))+"<br>deltax: "+rnd(deltax)+", deltay: "+rnd(deltay)+"<br>newleft: "+rnd(newleft)+", newtop: "+rnd(newtop));
+
+  // bounce off ceiling
+  if (parseFloat(ball.css('top')) + deltay < 0) {
+    clearTimeout(moveTimeout);
+    ball.css('top', 0+"%");
+    deltay = Math.abs(deltay); // downwards
+  // bounce off floor
+  } else if ( (parseFloat(ball.css('top')) + deltay) > 96 ) {
+    clearTimeout(moveTimeout);
+    ball.css('top', 96+"%");
+    deltay = Math.abs(deltay)*-1; // upwards
+  }
+
+  // move ball
+  ball.css({'left': newleft+"%", 'top': newtop+"%"});
+
+  //readout2.html("left: "+rnd(ball.position().left)+", top: "+rnd(ball.position().top));
+
+  if (colliding && !returned) {
+    collisionDetection();
+  }
+
+  // P2 SCORED
+  if (parseFloat(ball.css('left')) < 0) {
+    ball.css('visibility', 'hidden');
+    socket.send({type:'score', which:'p2'});
+
+  // P1 SCORED
+  } else if (parseFloat(ball.css('left')) > 97) { // 97% = 100% - 3% ball width
+    ball.css('visibility', 'hidden');
+    socket.send({type:'score', which:'p1'});
+
+  // business as usual; loop the loop
+  } else {
+    moveTimeout = setTimeout("moveBall()", 50);
+  }
+}
 
 // detect collisions between ball and paddle
 function collisionDetection() {
-	if (returned) {
-		return false;
-	}
-  ballx = parseFloat(ball.css('left'));
+  if (returned) { // already detected this volley
+    return false;
+  }
+  ballx = parseFloat(ball.css('left')); // get percentage
   bally = ball.position().top;
   p1y = p1.position().top;
   p2y = p2.position().top;
 
-	// collision zones: front edge of paddle to halfway off backside of paddle
-	// prevents backedge returns, which feel cheaty
-	// maybe just make it bounce off top and bottom edges?
-	if (deltax < 0 && ballx >= 4.5 && ballx <= 7.5) {
-		// ball on left side heading left; in p1's hitzone?
-		if ( bally >= p1y - ball.height() && bally <= p1y + p1.height() ) {
-			returned = 'p1';
-			socket.send({what:"return", x:ballx, y:bally});
-		}
-	} else if	(deltax > 0 && ballx >= 89 && ballx <= 90.5) { //
-		// ball on right side heading right; in p2's hitzone?
-		if (bally >= p2y - ball.height() && bally <= p2y + p2.height() ) {
-			returned = 'p2';
-			socket.send({what:"return", x:ballx, y:bally});
-		} //else $('#readout').html('no collide right');
-	}
-
-  // a magnificent return
-	if (returned) {
-    // get relative y position so server can calculate english
-    // not currently working properly
-    var angle = (ball.position().top + ball.height() - paddle.position().top)/court.height()*100;
-    socket.send({type: 'return',
-    						 startx: ballx,
-    						 starty: bally/court.height()*100,
-    						 which: returned,
-    						 angle: angle});
+  // collision zones: front edge of paddle to halfway off backside of paddle
+  // prevents backedge returns, which feel cheaty
+  // maybe just make it bounce off top and bottom edges?
+  if (deltax < 0 && ballx >= 4.5 && ballx <= 7.5) {
+    // ball on left side heading left; in p1's hitzone?
+    if ( bally >= p1y - ball.height() && bally <= p1y + p1.height() ) {
+      returned = 'p1';
+      socket.send({what:"return", x:ballx, y:bally});
+    }
+  } else if (deltax > 0 && ballx >= 89 && ballx <= 90.5) { //
+    // ball on right side heading right; in p2's hitzone?
+    if (bally >= p2y - ball.height() && bally <= p2y + p2.height() ) {
+      returned = 'p2';
+      socket.send({what:"return", x:ballx, y:bally});
+    } //else $('#readout').html('no collide right');
   }
 
+  // a magnificent return
+  if (returned) {
+    // get relative y position so server can calculate english
+    // todo: debug
+    var angle = (parseFloat(ball.css('top')) - parseFloat(paddle.css('top'));
+    socket.send({type: 'return',
+                 startx: ballx,
+                 starty: bally/court.height()*100,
+                 which: returned,
+                 angle: angle});
+  }
 }
-
-
 
 function score(which, val) {
   for (x in [1,2,3,4,5,6,7,8,9]) {
@@ -326,49 +360,16 @@ function score(which, val) {
 }
 
 
-// no thanks, just browsing
-function spectate() {
-  $("#coin").animate({
-    right: '0'
-  }, 250, function() {
-    $('#splash').css('display', 'none');
-    $('#insertcoin').css('display', 'inline');
-    $('#hide').css('display', 'inline');
-    $('#welcome').css('display', 'none');
-
-    socket.send({type:'watching'});
-  });
-}
-
-function insertcoin() {
-  coinBounce = false;
-  $("#play").css('color', 'red');
-  starting = true;
-  /*
-  $("#coin").animate({
-    right: '+=.25em'
-  }, 100, 'linear', function() {
-    $("#coin").animate({
-      right: '2.1em'
-    }, 250, 'linear', function() {
-      setTimeout('logIn()', 500);
-    });
-  });
-  */
-  logIn();
-}
-
-
 /////////////////////////////
 //     HELPER FUNCTIONS
 function rnd(val) {
-	return Math.round(val*100)/100;
+  return Math.round(val*100)/100;
 }
 
 function outAdd(string) {
-	out = readout.html();
-	out += string;
-	readout.html(out);
+  out = readout.html();
+  out += string;
+  readout.html(out);
 }
 
 // set animation speed: delay between updates in milliseconds
@@ -384,10 +385,12 @@ $(document).ready(function() {
   $('#entername').select();
   $('#entername').onfocus = '$(\'#entername\').value = \'\';';
 
-	score('score1', 0);
-	score('score2', 0);
+  score('score1', 0);
+  score('score2', 0);
 
   // click play and accept default name for fast testing
   insertcoin();
   ready();
 });
+
+// END CLIENT.JS

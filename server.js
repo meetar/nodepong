@@ -69,7 +69,7 @@ io.on('connection', function(client){
     log('\nCONNECTION NUMBER '+sessions.length+': '+client.sessionId);
   }
 
-	// receive and parse messages from client
+  // receive and parse messages from client
   client.on('message', function(msg){
     // to log all messages from clients:
     //var logmsg = 'msg: ';
@@ -79,50 +79,80 @@ io.on('connection', function(client){
     // receive and broadcast paddle data
     // why can't i broadcast this straight from the player?
     if (msg.type == 'movePaddle') {
-      log("movePaddle, which: "+msg.which+", goal: "+rnd(msg.goal));
+      //log("movePaddle, which: "+msg.which+", goal: "+rnd(msg.goal));
       // send client's paddle position and goal to everybody except client
       io.broadcast({type: 'movePaddle', which:msg.which, pos:msg.pos, goal:msg.goal}, client.sessionId);
+      
+      if (client.sessionId == player2.id) {
+        if (p1heartBeat == false) {
+          p1skippedBeat++; //log('p1 SKIPPED: '+p1skippedBeat);
+        } else {
+          p1skippedBeat = 0;
+        }
+      }
+      if (client.sessionId == player1.id) {
+        if (p2heartBeat == false) {
+          p2skippedBeat++; //log('p2 SKIPPED: '+p2skippedBeat);
+        } else {
+          p2skippedBeat = 0;
+        }
+      }
+
+      p1heartBeat = false;
+      p2heartBeat = false;
+
+      if (p1skippedBeat == flatline) {
+        log('player 1 FLATLINE');
+        gameover('forfeit', player1);
+        return false;
+      }
+      if (p2skippedBeat == flatline) {
+        log('player 2 FLATLINE');
+        gameover('forfeit', player2);
+        return false;
+      }
+
     }
 
     if (msg.type == 'score') {
       if (msg.which == 'p1' && p1scored == 0) {
-				p1scored = 1;
-				score1++;
-				score();
+        p1scored = 1;
+        score1++;
+        score();
       } else if (msg.which == 'p2' && p2scored == 0) {
-				p2scored = 1;
-				score2++;
-				score();
+        p2scored = 1;
+        score2++;
+        score();
       }
     }
 
-		if (msg.type == 'return') {
-			if ( msg.which == 'p1' && p1returned == 0) {
-				p1returned = 1;
-				p2returned = 0;
-			} else if (msg.which == 'p2' && p2returned == 0) {
-				p2returned = 1;
-				p1returned = 0;
-			} else {
-				log("DOUBLE RETURN");
-				return false;
-			}
-			startx = msg.startx;
-			starty = msg.starty;
-	
-			log(Math.round(client.sessionId/100000000000000)+": "+msg.which+" RETURN1");
-			log(' startx: '+rnd(startx)+', starty: '+rnd(starty)+', angle: '+rnd(msg.angle)+", p1returned: "+p1returned+", p2returned: "+p2returned);
-	
-			deltax *= -1.1; // switch directions and increase speed, normal: -1.1
+    if (msg.type == 'return') {
+      if ( msg.which == 'p1' && p1returned == 0) {
+        p1returned = 1;
+        p2returned = 0;
+      } else if (msg.which == 'p2' && p2returned == 0) {
+        p2returned = 1;
+        p1returned = 0;
+      } else {
+        log("DOUBLE RETURN");
+        return false;
+      }
+      startx = msg.startx;
+      starty = msg.starty;
+  
+      log(Math.round(client.sessionId/100000000000000)+": "+msg.which+" RETURN1");
+      log(' startx: '+rnd(startx)+', starty: '+rnd(starty)+', angle: '+rnd(msg.angle)+", p1returned: "+p1returned+", p2returned: "+p2returned);
+  
+      deltax *= -1.1; // switch directions and increase speed, normal: -1.1
 
-			var maxSpeed = 15; // normal: 15
-			deltax = Math.min(deltax, maxSpeed);
-			deltax = Math.max(deltax, -1 * maxSpeed);
+      var maxSpeed = 15; // normal: 15
+      deltax = Math.min(deltax, maxSpeed);
+      deltax = Math.max(deltax, -1 * maxSpeed);
 
-			deltay = english(msg.angle);
-			moveBall();
+      deltay = english(msg.angle);
+      moveBall();
 
-		}
+    }
 
     // session announces readiness to play
     if (msg.type == 'ready') {
@@ -148,7 +178,11 @@ io.on('connection', function(client){
       }
 
       if (queue.length == 1) { // lonely player1...
-        setTimeout(function() {send(client.sessionId, {type:'display', alert:'WAITING FOR CHALLENGER'})}, 2000);
+        setTimeout(function() { // wait two seconds
+          if (queue.length == 1) { // if still lonely, send a sad message
+            send(client.sessionId, {type:'display', alert:'WAITING FOR CHALLENGER'})
+          }
+        }, 2000);
         var statusmsg = player.name + ' - WAITING FOR CHALLENGER';
         send(client.sessionId, {type:'html', which:'status', html:statusmsg});
       } else if (queue.length == 2) {
@@ -171,18 +205,22 @@ io.on('connection', function(client){
             else log('PROB NEWGAMEID STUCK');
           }, newgameDelay*3 );
       }
-
     }
 
     if (msg.type == 'watching') {
       updateSpectatorCount();
     }
 
-		// player received last message from server
+    // player received last message from server
     if (msg.type == 'heartBeat') {
-      log('heartbeat:'+client.sessionId+', p1.id:'+player1.id+', p2.id:'+player2.id);
-      if (client.sessionId == player1.id) p1heartBeat = true;
-      else if (client.sessionId == player2.id) p2heartBeat = true;
+      if (client.sessionId == player1.id) {
+        //log('heartbeat: p1 '+player1.id);
+        p1heartBeat = true;
+      }
+      else if (client.sessionId == player2.id) {
+        //log('heartbeat: p2 '+player2.id);
+        p2heartBeat = true;
+      }
     }
 
     if (msg.type == 'log') {
@@ -195,34 +233,40 @@ io.on('connection', function(client){
     log('\nDISCONNECT: '+client.sessionId);
 
     // if playing, game over - disconnecter forfeits
-    if ((client.sessionId == player1 || client.sessionId == player2)
+    log("client.sessionId: "+client.sessionId+", player1: "+player1.id+", player2: "+player2.id);
+    if ((client.sessionId == player1.id || client.sessionId == player2.id)
         && gameOn) {
-      gameover('forfeit', client.sessionId);
+      which = client.sessionId == player1.id ? player1 : player2;
+      gameover('forfeit', which);
     }
     // client loses place in line
     var idx = queue.indexOf(hasAttr(queue, 'id', client.sessionId));
     if (idx != -1) {
       queue.splice(idx, 1);
-      // update everyone's place in line
-      updateQueuePosition();
     }
     var idx = sessions.indexOf(client.sessionId);
     if (idx != -1) sessions.splice(idx, 1);
 
     if (queue.length == 1) {
-    	playing = false;
-    	gameOn = false;
+      playing = false;
+      gameOn = false;
       var statusMsg = queue[0].name + ' - WAITING FOR CHALLENGER';
+      log(statusMsg);
       send(queue[0].id, {type:'html', which:'status', html:statusMsg});
     }
+
+    updatePlayerCount();
+    updateSpectatorCount();
+    updateQueuePosition();
+
   });
 });
 
 // move ball
 function moveBall() {
-	log('  moveBall: startx: '+rnd(startx)+', starty: '+rnd(starty)+', deltax: '+rnd(deltax)+', deltay: '+rnd(deltay));
+  log('  moveBall: startx: '+rnd(startx)+', starty: '+rnd(starty)+', deltax: '+rnd(deltax)+', deltay: '+rnd(deltay));
 
-	io.broadcast({type:'moveBall', startx:startx, starty:starty, deltax:deltax, deltay:deltay});
+  io.broadcast({type:'moveBall', startx:startx, starty:starty, deltax:deltax, deltay:deltay});
 }
 
 
@@ -265,7 +309,7 @@ var deltay = 0;
 updateScores();
 
 function score() {
-	log('score');
+  log('score');
   point = true;
   playing = false;
   updateScores();
@@ -359,7 +403,7 @@ function updateSpectatorCount() {
 //     HELPER FUNCTIONS
 
 function rnd(val) {
-	return Math.round(val*100)/100;
+  return Math.round(val*100)/100;
 }
 
 function log(x) {
@@ -479,7 +523,7 @@ function newgame(id) {
 
     getSet = true;
     if (!playLoopID) {
-	    log(' NO PLAYLOOP: starting');
+      log(' NO PLAYLOOP: starting');
       playLoopID = setTimeout(playLoop, delay, 'NEWGAME');
     } else log('PROB: playloop already going');
 
@@ -509,33 +553,9 @@ function setcss(which, property, value){
 function playLoop(caller) {
   // make sure players are still connected and haven't lagged out --
   // sometimes takes awhile for disconnect to be triggered
-  if (p1heartBeat == false) {
-    p1skippedBeat++; //log('p1 SKIPPED: '+p1skippedBeat);
-  } else {
-    p1skippedBeat = 0;
-  }
-  if (p2heartBeat == false) {
-    p2skippedBeat++; //log('p2 SKIPPED: '+p2skippedBeat);
-  } else {
-    p2skippedBeat = 0;
-  }
-
-  p1heartBeat = false;
-  p2heartBeat = false;
-
-  if (p1skippedBeat == flatline) {
-    log('player 1 FLATLINE');
-    gameover('forfeit', player1);
-    return false;
-  }
-  if (p2skippedBeat == flatline) {
-    log('player 2 FLATLINE');
-    gameover('forfeit', player2);
-    return false;
-  }
-
   if (playing || getSet) {
-		//movePaddles();
+    // old
+    //movePaddles();
   } else {
     log('playLoop broke');
   }
@@ -554,7 +574,7 @@ function playLoop(caller) {
   }
 
   if (gameOn) {
-		// repeat
+    // repeat
     playLoopID = setTimeout(playLoop, delay, 'gameOn');
   } else {
     log('gameOn false: killing playLoop');
@@ -567,7 +587,7 @@ function playLoop(caller) {
 // GAME OVER
 // type:'win'|'forfeit', player:[object Object]
 function gameover(type, which) {
-  //log('GAME OVER: '+type+', '+which.name);
+  log('GAME OVER: '+type+', '+which.name);
   gameOn = false;
   playing = false;
   newgameID = false;
@@ -646,9 +666,10 @@ function gameover(type, which) {
 }
 
 function reset() {
-  log('\n*RESET* ');
-  if (playing || !gameOn || !newgame) {
-    log(' false reset: playing: '+playing+', gameOn: '+gameOn);
+  log('\n RESET: playing: '+playing+', gameOn: '+gameOn+', newgame: '+(newgame != false));
+  //if (playing || !gameOn || !newgame) { 
+  if ( (playing && !gameOn) || (playing && !newgame) ) {
+    log(' false reset');
     return false;
   }
   if (queue.length < 2) {
@@ -676,9 +697,9 @@ function reset() {
   deltay = 0;
   startx = 50, starty = 50;
 
-	//log("serving, p1returned: "+p1returned+", p2returned: "+p2returned);
-	// serve ball
-	moveBall();
+  //log("serving, p1returned: "+p1returned+", p2returned: "+p2returned);
+  // serve ball
+  moveBall();
 
   getset = false;
   playing = true;
@@ -726,11 +747,11 @@ function movePaddle(which, targetY, lastY) {
 }
 
 function returnBall(which, angle) {
-	deltay = english(diff);
+  deltay = english(diff);
 }
 
 function movePaddle2(which, pos, goal) {
-	time = 
+  time = 
   io.broadcast({type:'move', which:which, pos:pos, goal:goal, time:time});
 }
 
@@ -738,7 +759,7 @@ function movePaddle2(which, pos, goal) {
 function english(yval) {
   var yfac = 1.5; // angle extremeness tuner
 
-	// convert from 0..11.458 range to 0..100
+  // convert from 0..11.458 range to 0..100
   yval *= 8.727;
 
   if (yval < 0) deltay = -1 * yfac; // edge not as good as corner

@@ -112,6 +112,16 @@ io.on('connection', function(client){
       }
     }
 
+    // receive and broadcast paddle data
+    // why can't i broadcast this straight from the player?
+    if (msg.type == 'pmove') {
+      //log("pmove, which: "+msg.which+", pos: "+rnd(msg.pos)+", goal: "+rnd(msg.goal));
+      log("pmove, which: "+msg.which+", goal: "+rnd(msg.goal));
+      //io.broadcast({type: 'pmove', which:msg.which, pos:msg.pos, goal:msg.goal});
+      //io.broadcast({type: 'pmove', which:msg.which, goal:msg.goal});
+      io.broadcast({type: 'pmove', which:msg.which, pos:msg.pos, goal:msg.goal});
+    }
+
     if (msg.type == 'score') {
       if (msg.which == 'p1' && p1scored == 0) {
 				p1scored = 1;
@@ -526,7 +536,7 @@ function playLoop(caller) {
   }
 */
   if (playing || getSet) {
-		movePaddles();
+		//movePaddles();
   } else {
     log('playLoop broke');
   }
@@ -725,7 +735,11 @@ function movePaddles() {
   movePaddle('p2', p2TargetY, p2LastY);
 
   io.broadcast({type:'move', p1pos:p1pos, p2pos:p2pos});
+}
 
+function movePaddle2(which, pos, goal) {
+	time = 
+  io.broadcast({type:'move', which:which, pos:pos, goal:goal, time:time});
 }
 
 // returns ball at an angle based on point of contact with paddle

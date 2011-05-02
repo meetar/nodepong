@@ -147,8 +147,6 @@ function command(msg){
     case 'pmove': // move paddle
     	paddle = $("#"+msg.which);
     	paddle.stop();
-    	lastY = parseFloat(paddle.css('top'));
-
 			// speed limit: 4% per step @ 20 fps
 			//duration = Math.abs(msg.goal - msg.pos)*20;
 			duration = Math.abs(msg.goal - lastY)*20;
@@ -178,6 +176,7 @@ function movePaddle() {
 	goal = Math.abs(goal - possibleGoal) > 1 ? possibleGoal : goal;
 	// keep paddle in bounds
 	goal = Math.min ( Math.max(0, goal), 92);
+	lastY = parseFloat(paddle.css('top'));
 
 /*
 	if (goal-lastY < 0) {

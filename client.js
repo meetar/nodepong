@@ -3,7 +3,7 @@
 
 // handshake and connect to the server through the transport
 // of Socket.io's choice
-var socket = new io.Socket(null, {port: 9980, rememberTransport: false});
+var socket = new io.Socket(null, {port: 80, rememberTransport: false});
 socket.connect();
 
 // this is triggered by the server's 'broadcast' and 'send' functions,

@@ -40,7 +40,7 @@ send404 = function(res){
   res.end();
 };
 
-server.listen(9980); // 9980: duostack's experimental websockets port
+server.listen(80); // 9980: duostack's experimental websockets port
 
 
 ///////////////////////////////

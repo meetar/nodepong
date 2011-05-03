@@ -107,6 +107,7 @@ var returned = false;
 var paddle = ''; // stores player name: p1 or p2
 var deltax = 0, deltay = 0;
 var mouseY = 0, lastY = 50, newY = 50, goal = 50;
+var lastbx = 50, lastby = 50; // ball positions, for collision detection
 var moveTimeout; // moveBall loop holder
 var lastGoal; // compare current mouse position to last reported
 
@@ -340,6 +341,32 @@ function collisionDetection() {
   // collision zones: front edge of paddle to halfway off backside of paddle
   // prevents backedge returns, which feel cheaty
   // maybe just make it bounce off top and bottom edges?
+
+
+  // new swept-volume collision detection
+  topmost = lastby < bally ? lastby : bally;
+  topmost += ball.height(); // highest point reached by bottom of ball
+  bottommost = lastby > bally ? lastby : bally; // lowest point reached by top of ball
+
+  if (deltax < 0 && lastbx <= 7.5 && ballx >= 4.5) {
+    outAdd("LEFT");
+    // ball on left side heading left; in p1's hitzone?
+    if ( topmost >= p1y && bottommost <= p1y + p1.height() ) {
+      outAdd(" HIT");
+      returned = 'p1';
+      socket.send({what:"return", x:ballx, y:bally});
+    }
+  } else if (deltax > 0 && lastbx >= 89 && ballx <= 92) {
+    outAdd("RIGHT");
+    // ball on right side heading right; in p2's hitzone?
+    if ( topmost >= p2y && bottommost <= p2y + p2.height() ) {
+      outAdd("HIT");
+      returned = 'p2';
+      socket.send({what:"return", x:ballx, y:bally});
+    } //else $('#readout').html('no collide right');
+  }
+
+  /* old collision detection
   if (deltax < 0 && ballx >= 4.5 && ballx <= 7.5) {
     outAdd("LEFT");
     // ball on left side heading left; in p1's hitzone?
@@ -357,7 +384,8 @@ function collisionDetection() {
       socket.send({what:"return", x:ballx, y:bally});
     } //else $('#readout').html('no collide right');
   }
-
+  */
+  
   // a magnificent return
   if (returned) {
     // get relative y position so server can calculate english
@@ -369,6 +397,9 @@ function collisionDetection() {
                  starty: bally/court.height()*100,
                  which: returned,
                  angle: angle});
+  } else {
+    lastbx = ballx;
+    lastby = bally;
   }
 }
 

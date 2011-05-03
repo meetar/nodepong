@@ -4,10 +4,10 @@ p, a, em, img, small,
 center, ol, ul, li,
 form, table, tr, th, td
 {
-	margin: 0;
-	padding: 0;
-	border: 0;
-	line-height: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  line-height: 1;
 }
 
 html, body {
@@ -16,7 +16,7 @@ html, body {
   background-color: #aaa;
   outline: 0px dotted green;
   text-align: center;
-	font-size: 100%;
+  font-size: 100%;
   font: "silkscreen-1", Verdana, sans-serif;
   font-family: Verdana, sans-serif;
   color: white;
@@ -201,6 +201,7 @@ a {
   top:46%;
   height:8%;
   z-index: 100;
+  color:green;
 }
 
 #p2 {
@@ -211,6 +212,7 @@ a {
   top:46%;
   height:8%;
   z-index: 100;
+  color:green;
 }
 
 /* inside a 4:3 rectangle, a square is 3:4 */

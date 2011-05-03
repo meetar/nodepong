@@ -117,9 +117,11 @@ io.on('connection', function(client){
     if (msg.type == 'score') {
       if (msg.which == 'p1' && p1scored == 0) {
         p1scored = 1;
+        log('p1 score');
         score1++;
         score();
       } else if (msg.which == 'p2' && p2scored == 0) {
+        log('p2 score');
         p2scored = 1;
         score2++;
         score();
@@ -309,7 +311,6 @@ var deltay = 0;
 updateScores();
 
 function score() {
-  log('score');
   point = true;
   playing = false;
   updateScores();
@@ -519,7 +520,7 @@ function newgame(id) {
 
   // start paddles
   if (!playing) {
-    log(' !PLAYING');
+    //log(' !PLAYING');
 
     getSet = true;
     if (!playLoopID) {
@@ -529,6 +530,7 @@ function newgame(id) {
 
     // start gameplay
     if (resetID) {
+      // kill any existing loop
       clearTimeout(resetID);
     }
     resetID = setTimeout( reset, resetDelay );

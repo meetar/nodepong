@@ -40,8 +40,7 @@ send404 = function(res){
   res.end();
 };
 
-server.listen(80); // 9980: duostack's experimental websockets port
-
+server.listen(80); // http port
 
 ///////////////////////////////
 //        SESSION CODE
@@ -50,7 +49,7 @@ server.listen(80); // 9980: duostack's experimental websockets port
 var io = io.listen(server);
 
 sessions = []; // list of all sessions
-queue = []; // list of all players waiting to play, in order
+queue = []; // list of all players waiting to play, in order;
             // any sessions not in queue are spectators
 var player1 = 0, player2 = 0; // current players
 
@@ -132,9 +131,11 @@ io.on('connection', function(client){
       if ( msg.which == 'p1' && p1returned == 0) {
         p1returned = 1;
         p2returned = 0;
+        endx = 97; // = 100 - 3% ball width
       } else if (msg.which == 'p2' && p2returned == 0) {
         p2returned = 1;
         p1returned = 0;
+        endx = 0;
       } else {
         log("DOUBLE RETURN");
         return false;
@@ -145,14 +146,11 @@ io.on('connection', function(client){
       log(Math.round(client.sessionId/100000000000000)+": "+msg.which+" RETURN1");
       log(' startx: '+rnd(startx)+', starty: '+rnd(starty)+', angle: '+rnd(msg.angle)+", p1returned: "+p1returned+", p2returned: "+p2returned);
   
-      deltax *= -1.1; // switch directions and increase speed, normal: -1.1
+      duration *= .9; // increase speed; (.9)
+      duration = Math.max(duration, 1000); // speed limit
 
-      var maxSpeed = 15; // normal: 15
-      deltax = Math.min(deltax, maxSpeed);
-      deltax = Math.max(deltax, -1 * maxSpeed);
-
-      deltay = english(msg.angle);
-      moveBall();
+      //deltay = english(msg.angle);
+      moveBall(duration);
 
     }
 
@@ -265,10 +263,11 @@ io.on('connection', function(client){
 });
 
 // move ball
-function moveBall() {
-  log('  moveBall: startx: '+rnd(startx)+', starty: '+rnd(starty)+', deltax: '+rnd(deltax)+', deltay: '+rnd(deltay));
+function moveBall(moveTime) {
+  log('  moveBall: startx: '+rnd(startx)+', endx: '+endx+', starty: '+rnd(starty)+', duration: '+moveTime+', deltay: '+rnd(deltay));
 
-  io.broadcast({type:'moveBall', startx:startx, starty:starty, deltax:deltax, deltay:deltay});
+  // need to serve ball with half duration: from center court
+  io.broadcast({type:'moveBall', startx:startx, starty:starty, endx:endx, deltay:deltay, duration:moveTime});
 }
 
 
@@ -305,7 +304,8 @@ var leaderboardHTML = '';
 var leaders;
 
 // flip a coin to see who serves
-var deltax = (Math.random() < .5 ? -1 : 1);
+var endx = (Math.random() < .5 ? 0 : 97);
+var duration = 4000; // first volley takes 2 seconds
 var deltay = 0;
 
 updateScores();
@@ -515,7 +515,6 @@ function newgame(id) {
 
   score1 = 0;
   score2 = 0;
-  // update scores
   updateScores();
 
   // start paddles
@@ -680,14 +679,12 @@ function reset() {
   }
 
   // determine who won coin toss/game/volley
-  if (p1scored) deltax = Math.abs(deltax);
-  if (p2scored) deltax = Math.abs(deltax) * -1;
   p1scored = 0;
   p2scored = 0;
   p1returned = 0;
   p2returned = 0;
 
-  if (deltax < 0) { // p2 is serving
+  if (endx == 0) { // p2 is serving
     send(player1.id, {type:'collide', value:true});
     send(player2.id, {type:'collide', value:false});
   } else {          // p1 is serving
@@ -695,13 +692,13 @@ function reset() {
     send(player1.id, {type:'collide', value:false});
   }
 
-  deltax /= Math.abs(deltax); // set to 1 while keeping sign
+  duration = 4000;  
   deltay = 0;
   startx = 50, starty = 50;
 
   //log("serving, p1returned: "+p1returned+", p2returned: "+p2returned);
-  // serve ball
-  moveBall();
+  // serve ball: half speed because from center court
+  moveBall(duration/2);
 
   getset = false;
   playing = true;
@@ -748,18 +745,9 @@ function movePaddle(which, targetY, lastY) {
   }
 }
 
-function returnBall(which, angle) {
-  deltay = english(diff);
-}
-
-function movePaddle2(which, pos, goal) {
-  time = 
-  io.broadcast({type:'move', which:which, pos:pos, goal:goal, time:time});
-}
-
 // returns ball at an angle based on point of contact with paddle
 function english(yval) {
-  var yfac = 1.5; // angle extremeness tuner
+  var yfac = 1.0; //1.5; // angle extremeness tuner
 
   // convert from 0..11.458 range to 0..100
   yval *= 8.727;

@@ -224,7 +224,7 @@ io.on('connection', function(client){
     }
 
     if (msg.type == 'log') {
-      log(client.sessionId+': '+msg.what);
+      log(rnd(client.sessionId/10000000000000)+': '+msg.what);
     }
 
   });

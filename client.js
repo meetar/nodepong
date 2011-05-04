@@ -357,34 +357,16 @@ function collisionDetection() {
       socket.send({what:"return", x:ballx, y:bally});
     }
   } else if (deltax > 0 && lastbx >= 89 && ballx <= 92) {
+    socket.send({type:"log", what:{lastbx+" "+ballx});
     outAdd("RIGHT");
     // ball on right side heading right; in p2's hitzone?
     if ( topmost >= p2y && bottommost <= p2y + p2.height() ) {
       outAdd("HIT");
       returned = 'p2';
       socket.send({what:"return", x:ballx, y:bally});
+      socket.send({type:"log", what:"test"});
     } //else $('#readout').html('no collide right');
   }
-
-  /* old collision detection
-  if (deltax < 0 && ballx >= 4.5 && ballx <= 7.5) {
-    outAdd("LEFT");
-    // ball on left side heading left; in p1's hitzone?
-    if ( bally >= p1y - ball.height() && bally <= p1y + p1.height() ) {
-      outAdd(" HIT");
-      returned = 'p1';
-      socket.send({what:"return", x:ballx, y:bally});
-    }
-  } else if (deltax > 0 && ballx >= 89 && ballx <= 92) { //
-    outAdd("RIGHT");
-    // ball on right side heading right; in p2's hitzone?
-    if (bally >= p2y - ball.height() && bally <= p2y + p2.height() ) {
-      outAdd("HIT");
-      returned = 'p2';
-      socket.send({what:"return", x:ballx, y:bally});
-    } //else $('#readout').html('no collide right');
-  }
-  */
   
   // a magnificent return
   if (returned) {

@@ -143,7 +143,7 @@ io.on('connection', function(client){
       startx = msg.startx;
       starty = msg.starty;
   
-      log(Math.round(client.sessionId/100000000000000)+": "+msg.which+" RETURN1");
+      log(parseInt(client.sessionId/100000000000000)+": "+msg.which+" RETURN1");
       log(' startx: '+rnd(startx)+', starty: '+rnd(starty)+', angle: '+rnd(msg.angle)+", p1returned: "+p1returned+", p2returned: "+p2returned);
   
       duration *= .9; // increase speed; (.9)
@@ -224,7 +224,7 @@ io.on('connection', function(client){
     }
 
     if (msg.type == 'log') {
-      log(rnd(client.sessionId/10000000000000)+': '+msg.what);
+      log(parseInt(client.sessionId/100000000000000)+': '+msg.what);
     }
 
   });

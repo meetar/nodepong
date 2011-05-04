@@ -143,13 +143,13 @@ io.on('connection', function(client){
       startx = msg.startx;
       starty = msg.starty;
   
-      log(parseInt(client.sessionId/100000000000000)+": "+msg.which+" RETURN1");
-      log(' startx: '+rnd(startx)+', starty: '+rnd(starty)+', angle: '+rnd(msg.angle)+", p1returned: "+p1returned+", p2returned: "+p2returned);
+      //log(parseInt(client.sessionId/100000000000000)+": "+msg.which+" RETURN1");
+      //log(' startx: '+rnd(startx)+', starty: '+rnd(starty)+', angle: '+rnd(msg.angle)+", p1returned: "+p1returned+", p2returned: "+p2returned);
   
       duration *= .9; // increase speed; (.9)
       duration = Math.max(duration, 1000); // speed limit
 
-      //deltay = english(msg.angle);
+      deltay = english(msg.angle);
       moveBall(duration);
 
     }
@@ -747,23 +747,25 @@ function movePaddle(which, targetY, lastY) {
 
 // returns ball at an angle based on point of contact with paddle
 function english(yval) {
+  // convert from 0..11.5 range to 0..100
+  // should really max out at 11 = 3% ball height + 8% paddle height
+  yval *= 8.7;
+
+  if      (yval < 0)   deltay = -1; // edge not as good as corner
+  else if (yval < 10)  deltay = -3; // corner better than edge
+  else if (yval < 20)  deltay = -1.25;
+  else if (yval < 30)  deltay = -.8333;
+  else if (yval < 40)  deltay = -.41666;
+  else if (yval < 49)  deltay = -.1;
+  else if (yval < 52)  deltay = 0;
+  else if (yval < 60)  deltay = .1;
+  else if (yval < 70)  deltay = .41666;
+  else if (yval < 80)  deltay = .83333;
+  else if (yval < 90)  deltay = 1.25;
+  else if (yval < 100) deltay = 3;
+  else deltay = 1;
+
   var yfac = 1.0; //1.5; // angle extremeness tuner
-
-  // convert from 0..11.458 range to 0..100
-  yval *= 8.727;
-
-  if (yval < 0) deltay = -1 * yfac; // edge not as good as corner
-  else if (yval < 10) deltay = -3 * yfac; // corner better than edge
-  else if (yval < 20) deltay = -1.25 * yfac;
-  else if (yval < 30) deltay = -.8333 * yfac;
-  else if (yval < 40) deltay = -.41666 * yfac;
-  else if (yval < 49) deltay = -.1 * yfac;
-  else if (yval < 52) deltay = 0;
-  else if (yval < 60) deltay = .1 * yfac;
-  else if (yval < 70) deltay = .41666 * yfac;
-  else if (yval < 80) deltay = .83333 * yfac;
-  else if (yval < 90) deltay = 1.25 * yfac;
-  else if (yval < 100) deltay = 3 * yfac;
-  else deltay = 1 * yfac;
+  deltay *= yfac;
   return deltay;
 }

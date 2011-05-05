@@ -127,7 +127,7 @@ var scores = {
 }
 
 // jQuery shortcuts
-var p1 = $('#p1'), p2 = $('#p2'), ball = $('#ball'), court = $('#court');
+var p1 = $('#p1'), p2 = $('#p2'), ball = $('#ball'), court = $('#court'), $body = $('body');
 var readout = $('#readout');
 var readout2 = $('#readout2');
 
@@ -418,6 +418,21 @@ function outAdd(string) {
 // equivalent to 20 frames per second
 jQuery.fx.interval = 50;
 
+function setBodyScale() {
+ 
+  var scaleSource = court.width(),
+    scaleFactor = 0.35,                     
+    maxScale = 200,
+    minScale = 100; //Tweak these values to taste
+
+  var fontSize = scaleSource * scaleFactor; //Multiply the width of the body by the scaling factor:
+
+  if (fontSize > maxScale) fontSize = maxScale;
+  if (fontSize < minScale) fontSize = minScale; //Enforce the minimum and maximums
+
+  $body.css('font-size', fontSize + '%');
+}
+
 // trigger when document has finished loading
 $(document).ready(function() {
   scrollWindow();
@@ -433,6 +448,14 @@ $(document).ready(function() {
   // click play and accept default name for fast testing
   insertcoin();
   ready();
+
+
+  $(window).resize(function(){
+    setBodyScale();
+  });
+
+  //Fire it when the page first loads:
+  setBodyScale();
 });
 
 // END CLIENT.JS

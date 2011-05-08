@@ -408,96 +408,12 @@ a {
 
 
 
-/******** ABOUT PAGE **********/
-
-.about {
-  background-color: #ddd;
-  color: #000;
-  text-align: left;
-  max-width: 640px;
-  min-width: 240px;
-  width: 70%;
-  padding: 5%;
-  margin: 0% auto 10% auto;
-  font-family: Verdana, sans-serif;
-  min-height: 100%;
-  outline: 2px solid green;
-}
-
-.about a {
-  color: #004cb8;
-  text-decoration: underline;
-}
-
-.link {
-  margin-left: 2em;
-}
-
-p, ul {
-  font-family: Verdana, sans-serif;
-  font-size: 75%;
-  line-height: 1.5em;
-  margin: 1em 0em;
-}
-
-p.nodespeak {
-  font-family: "silkscreen-1", Verdana, sans-serif;
-  font-size: 150%;
-}
-
-h1 {
-  font-weight: bold;
-  font-size: 120%;
-}
-
-h2 {
-  font-weight: bold;
-  font-size: 90%;
-}
-
-.about h2 a {
-  color: black;
-  text-decoration: none;
-}
-
-li {
-    font-family: Verdana, sans-serif;
-    line-height: 1.4em;
-    margin: 0 0;
-}
-
-.title {
-  font-family: "silkscreen-1", Verdana, sans-serif;
-  font-size: 5em;
-  margin: 0px auto;
-  width: 100%;
-}
-.smallcap {
-  font-size: 80%;
-}
-p.code, pre {
-  font-family: 'Lucida Console', 'Bitstream Vera Sans Mono', 'Courier New', Monaco, Courier, monospace;
-  white-space: pre;
-  line-height: 1.4em;
-  border: 0px dashed #aaa8a8;
-  padding: 0.5em 0 0.3em 0.5em;
-  font-size: 70%;
-  color: #000;
-  background-color: #f9f9f9;
-  overflow: auto;
-}
-em {
-  font-weight: bold;
-}
-
-
-
 /******* MEDIA QUERIES *******/
 
 @media (max-width: 380px) {
   body {
-  outline:0px solid red;
-  height:100%;
+    outline:0px solid red;
+    height:100%;
   }
   .s2 {height:45%;}
   .s3 {left:80%; top:0; height:45%;}
@@ -508,8 +424,7 @@ em {
 
 @media (min-width: 381px) and (max-width: 512px) {
   body { 
-  outline:0px solid orange;
-
+    outline:0px solid orange;
   }
   .s3 {left:80%; top:0; height:45%;}
   .s6 {left:80%; top:37.5%; height:61.25%;}
@@ -519,8 +434,7 @@ em {
 
 @media (min-width: 512px) and (max-width: 820px) {
   body {
-
-  outline:0px solid yellow;
+    outline:0px solid yellow;
   }
   .s3 {left:80%; top:0; height:45%;}
   .s6 {left:80%; top:37.5%; height:61.25%;}
@@ -529,8 +443,7 @@ em {
 
 @media (min-width: 820px) {
   body {
-
-  outline:0px solid green;
+    outline:0px solid green;
   }
 }
 
@@ -539,6 +452,7 @@ em {
 @media (max-width: 320px) and (max-height: 480px) and (orientation: portrait) {
   body {
   outline:0px solid blue;
+  width:100%;
   }
   #splash {
     width:100%;
@@ -547,16 +461,13 @@ em {
   #rotate {
     display: inline;
   }
-  .about {
-    font-size: 200%;
-  }
 }
 
 
 /* iphone landscape mode */
-@media (max-width: 320px) and (max-height: 320px) and (orientation: landscape) {
+@media (max-width: 480px) and (max-height: 320px) and (orientation: landscape) {
   body {
-  outline:0px solid purple;
+    outline:2px solid purple;
   }
   #splash {
     width:80%;
@@ -589,5 +500,6 @@ em {
     margin: 0;
     display:none;
   }
+
 }
 

@@ -19,8 +19,8 @@ socket.on('message', function(obj){
 //      GAME CONTROL
 
 // prepare for play
-function ready() {
-  $('#welcome').css('visibility','hidden');
+function play() {
+  $('#login').css('visibility','hidden');
   $('#insertcoin').css('display','none');
 
   // turn on mouse tracking
@@ -52,29 +52,22 @@ function makeid() {
   return txt;
 }
 
-// switch to play interface
-function logIn() {
-  $('#splash').css('display', 'none');
-  $('#insertcoin').css('display', 'none');
-  $('.hide').css('display', 'inline');
-  $('#welcome').css('display', 'inline');
-}
-
 // no thanks, just browsing
 function spectate() {
-  $("#coin").animate({
-    right: '0'
-  }, 250, function() {
-    $('#splash').css('display', 'none');
-    $('#insertcoin').css('display', 'inline');
-    $('#hide').css('display', 'inline');
-    $('#welcome').css('display', 'none');
-
-    socket.send({type:'watching'});
-  });
+  $('#insertcoin').css('visibility', 'visible');
+  $('#login').css('display', 'none');
+  $('#alert').css('display', 'none');
+  socket.send({type:'watching'});
 }
 
+// switch to play interface
 function insertcoin() {
+  $('#insertcoin').css('visibility', 'hidden');
+
+  $('#entername').val(makeid());
+  $('#entername').select();
+  $('#entername').onfocus = '$(\'#entername\').value = \'\';';
+
   $("#play").css('color', 'red');
   /*
   $("#coin").animate({
@@ -87,7 +80,9 @@ function insertcoin() {
     });
   });
   */
-  logIn();
+  $('#login').css('display', 'inline');
+  //ready();
+
 }
 
 // hide address bar on iPhone by scrolling down slightly
@@ -146,7 +141,9 @@ function command(msg){
 
   // should go through the server code and make sure these are all needed
   switch(msg.type) {
-    case 'newgame':
+    
+    // set player names and show players
+    case 'gameon':
       $('#player1').html(msg.player1);
       $('#player2').html(msg.player2);
       $('#playerhide').css('visibility', 'visible');
@@ -169,7 +166,7 @@ function command(msg){
       $('#alert').css('visibility', 'visible');
       displayText = setTimeout( function() {
         $('#alert').css('visibility', 'hidden');
-      }, 100);
+      }, 2000);
       break;
 
     case 'css': // modify css of which
@@ -264,12 +261,19 @@ function command(msg){
       break;
 
     case 'movePaddle': // move paddle
+      readout.html('which: '+msg.which+', pos: '+msg.pos+', goal: '+msg.goal);
+    
       which = $("#"+msg.which);
       // cancel any existing jQuery animations
       which.stop(true);
+      
+      if (msg.init) {
+        which.css('top', msg.pos+'%');
+      }
+      
       //pos = parseFloat(which.css('top'));
       pos = which.position().top/court.height()*100;
-
+      
       // speed limit: 4% per step @ 20 fps
       //duration = Math.abs(msg.goal - msg.pos)*12; // 12 comes from trial and error
       duration = Math.abs(msg.goal - pos)*12; // 12 comes from trial and error
@@ -435,6 +439,7 @@ function setBodyScale() {
 
 // trigger when document has finished loading
 $(document).ready(function() {
+  $('#insertcoin').css('visibility', 'hidden');
   scrollWindow();
   window.onorientationchange = scrollWindow;
 
@@ -446,8 +451,7 @@ $(document).ready(function() {
   score('score2', 0);
 
   // click play and accept default name for fast testing
-  insertcoin();
-  ready();
+  //insertcoin();
 
 
   $(window).resize(function(){
@@ -456,6 +460,7 @@ $(document).ready(function() {
 
   //Fire it when the page first loads:
   setBodyScale();
+  
 });
 
 // END CLIENT.JS

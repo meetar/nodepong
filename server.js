@@ -67,6 +67,72 @@ io.on('connection', function(client){
     sessions.push(client.sessionId);
     log('\nCONNECTION NUMBER '+sessions.length+': '+client.sessionId);
   }
+  
+  if (gameOn) {
+    io.broadcast({type:'gameon', player1:player1.name, player2:player2.name});
+  }
+  
+  // populate leaderboard
+  if (queue.length < 10) {
+    updateLeaderboard();
+  }
+  updatePlayerCount();
+  updateSpectatorCount();
+
+  // get current paddle positions and animate
+  var connectTime = new Date(); // get current timestamp
+
+  // for player 1
+  var elapsedTime = connectTime - p1posTime;
+  
+  // paddles move 4% per 50ms
+  var dist = p1goal - p1pos;
+  var timeNeeded = Math.abs(dist/4*50); // total% / 4% * 50ms = total milliseconds to travel dist
+  if (elapsedTime > timeNeeded ) {
+    percentCompleted = 1;
+    var currentPos = p1goal;
+  } else {
+    var percentCompleted = elapsedTime / timeNeeded;
+    var currentPos = dist*percentCompleted + p1pos;
+  }
+
+  report(['p1goal', 'p1pos']);
+  log('connectTime: '+connectTime.getTime());
+  log('p1posTime: '+p1posTime.getTime());
+  log('elapsedTime: '+elapsedTime);
+  log('dist: '+dist);
+  log('timeNeeded: '+timeNeeded);
+  log('percentCompleted: '+percentCompleted);
+  log('currentPos: '+currentPos);
+  
+  send(client.sessionId, {type:'movePaddle', which:'p1', pos:currentPos, goal:p1goal, init:true});
+
+  // same for player 2
+  var elapsedTime = connectTime - p2posTime;
+  
+  // paddles move 4% per 50ms
+  var dist = p2goal - p2pos;
+  var timeNeeded = Math.abs(dist/4*50); // total% / 4% * 50ms = total milliseconds to travel dist
+  if (elapsedTime > timeNeeded ) {
+    percentCompleted = 1;
+    var currentPos = p2goal;
+  } else {
+    var percentCompleted = elapsedTime / timeNeeded;
+    var currentPos = dist*percentCompleted + p2pos;
+  }
+
+  report(['p2goal', 'p2pos']);
+  log('connectTime: '+connectTime.getTime());
+  log('p2posTime: '+p2posTime.getTime());
+  log('elapsedTime: '+elapsedTime);
+  log('dist: '+dist);
+  log('timeNeeded: '+timeNeeded);
+  log('percentCompleted: '+percentCompleted);
+  log('currentPos: '+currentPos);
+  
+  send(client.sessionId, {type:'movePaddle', which:'p2', pos:currentPos, goal:p2goal, init:true});
+
+
 
   // receive and parse messages from client
   client.on('message', function(msg){
@@ -76,25 +142,34 @@ io.on('connection', function(client){
     //log(logmsg);
 
     // receive and broadcast paddle data
-    // why can't i broadcast this straight from the player?
     if (msg.type == 'movePaddle') {
       //log("movePaddle, which: "+msg.which+", goal: "+rnd(msg.goal));
       // send client's paddle position and goal to everybody except client
       io.broadcast({type: 'movePaddle', which:msg.which, pos:msg.pos, goal:msg.goal}, client.sessionId);
       
-      if (client.sessionId == player2.id) {
+      if (client.sessionId == player1.id) {
         if (p1heartBeat == false) {
           p1skippedBeat++; //log('p1 SKIPPED: '+p1skippedBeat);
         } else {
           p1skippedBeat = 0;
         }
+        
+        p1pos = msg.pos;
+        p1goal = msg.goal;
+        p1posTime = new Date();
+        
       }
-      if (client.sessionId == player1.id) {
+      if (client.sessionId == player2.id) {
         if (p2heartBeat == false) {
           p2skippedBeat++; //log('p2 SKIPPED: '+p2skippedBeat);
         } else {
           p2skippedBeat = 0;
         }
+
+        p2pos = msg.pos;
+        p2goal = msg.goal;
+        p2posTime = new Date();
+
       }
 
       p1heartBeat = false;
@@ -165,10 +240,12 @@ io.on('connection', function(client){
         // add player to waiting list
         queue.push(player);
         send(client.sessionId, {type:'html', which:'position', html:queue.length});
-        send(client.sessionId, {type:'display', alert:'WELCOME '+player.name});
+        setTimeout( function() {
+          send(client.sessionId, {type:'display', alert:'WELCOME '+player.name});
+        }, 500);
 
         // populate leaderboard
-        if (queue.length < 10) {
+        if (queue.length < 10) { // if length > 10, new player wouldn't show up anyway
           updateLeaderboard();
         }
 
@@ -182,7 +259,7 @@ io.on('connection', function(client){
           if (queue.length == 1) { // if still lonely, send a sad message
             send(client.sessionId, {type:'display', alert:'WAITING FOR CHALLENGER'})
           }
-        }, 2000);
+        }, 3000);
         var statusmsg = player.name + ' - WAITING FOR CHALLENGER';
         send(client.sessionId, {type:'html', which:'status', html:statusmsg});
       } else if (queue.length == 2) {
@@ -276,11 +353,10 @@ function moveBall(moveTime) {
 
 // start paddles off at midcourt
 var p1pos = 50, p2pos = 50; // percents
-var p1TargetY = .5,
-    p1LastY = .5,
-    p2TargetY = .5,
-    p2LastY = .5;
+var p1goal = 50, p2goal = 50;
+var p1posTime = new Date(), p2posTime = new Date();
 
+var connectTime = new Date();
 
 var p1heartBeat = false, p2heartBeat = false;
 var p1skippedBeat = 0, p2skippedBeat = 0;
@@ -296,8 +372,8 @@ var p1returned = 0, p2returned = 0;
 var delay = 50; // ms between updates (50)
 var maxScore = 2;
 var flatline = 25; // maximum allowable number of skipped heartBeats (25)
-var resetDelay = 500 // delay between volleys (2000)
-var newgameDelay = 500 // delay between games (2000)
+var resetDelay = 2000 // delay between volleys (2000)
+var newgameDelay = 2000 // delay between games (2000)
 
 var leaderboard = [];
 var leaderboardHTML = '';
@@ -338,6 +414,7 @@ function updateQueuePosition() {
     if (x != 0 && x != 1) { // don't update status of the current players
       if (x == 2) {
         var statusmsg = queue[x].name+ ' - NEXT IN LINE!';
+        send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'magenta'});
       } else {
         var y = parseInt(x)-1;
         log('updating queue['+x+']: '+queue[x]+': '+queue[x].name +': '+getOrdinal(y));
@@ -504,7 +581,7 @@ function newgame(id) {
     return false;
   }
 
-  io.broadcast({type:'newgame', player1:player1.name, player2:player2.name});
+  io.broadcast({type:'gameon', player1:player1.name, player2:player2.name});
   var statusmsg = player1.name + ' - PLAYING';
   send(player1.id, {type:'html', which:'status', html:statusmsg});
   var statusmsg = player2.name + ' - PLAYING';
@@ -704,45 +781,6 @@ function reset() {
   playing = true;
   resetID = false;
   //log(' reset END');
-}
-
-// calculate paddle position based on last and goal positions
-function movePaddle(which, targetY, lastY) {
-
-  // get abs of distance since last update
-  var delta = lastY - targetY;
-
-  // minimum movement: 1%
-  if (Math.abs(delta) < .01) {
-    return false;
-  }
-
-  // speed limit: 4%
-  var delta1 = Math.min(.04, Math.abs(delta));
-
-  // using a second delta so we can keep the sign
-  // now set delta1 to sign of delta
-  delta1 *= (delta < 0 ? -1 : 1);
-  // calculate new fractional position
-  targetY = lastY - delta1;
-
-  // keep in court
-  targetY = Math.min(targetY, .92);
-  targetY = Math.max(targetY, 0);
-
-  // record for posterity
-  lastY = targetY;
-
-  // convert to percent and send
-  sendY = targetY*100;
-
-  if (which == 'p1') {
-    p1pos = sendY;
-    p1LastY = lastY;
-  } else {
-    p2pos = sendY;
-    p2LastY = lastY;
-  }
 }
 
 // returns ball at an angle based on point of contact with paddle

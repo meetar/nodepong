@@ -15,97 +15,17 @@ html, body {
   width: 100%;
   background-color: #aaa;
   outline: 0px dotted green;
-  text-align: center;
+  text-align: left;
   font-size: 100%;
   font-family: "silkscreen-1", Verdana, sans-serif;
+  letter-spacing: -.05em;
   color: white;
   vertical-align: middle;
-}
-
-.small {
-  font-size: .8em;
 }
 
 a {
   text-decoration:none;
 }
-
-
-
-/***** SPLASH SCREEN *****/
-#splash {
-  position:relative;
-  max-width:20em;
-  min-width:240px;
-  width:70%;
-  margin: 2px auto;
-  padding:0;
-  top:0;
-  outline: 0px solid black;
-  background-color: #333;
-  text-align: center;
-  z-index: 1000;
-}
-
-#splash p {
-  padding:2%;
-  outline: 0px solid red;
-}
-
-#splash img {
-  height:1.2em;
-  width:1.2em;
-  vertical-align:middle;
-  margin: 0 2% 0 3%;
-}
-
-#nodepong {
-  font-size: 200%;
-}
-
-#browsers img {
-  height:1.2em;
-  width:1.2em;
-  vertical-align:middle;
-  margin: 0 2% 0 3%;
-}
-
-#coinslot {
-  margin: 0 auto;
-  position:relative;
-  width:4.1em;
-  height:1.2em;
-}
-
-#coinslot img {
-  position:absolute;
-  margin:0;
-  padding:0;
-  height:1.5em;
-  width:1.5em;
-}
-
-#slotfront {
-  z-index:1000;
-  right:2.475em;
-}
-
-#coin {
-  z-index:990;
-  right:0px;
-}
-
-#slotback {
-  z-index:980;
-  right:1em;
-}
-
-#play {
-  cursor:pointer;
-}
-
-
-
 
 
 
@@ -116,28 +36,27 @@ a {
 
 /***** PLAY SCREEN *****/
 
-#readout {
-  display:inline;
+#readout, #version {
   position:absolute;
   color:blue;
   background-color: aqua;
   font-size:60%;
   text-align: left;
   z-index:2000;
-  left: 0;
-  top: 500px;
 }
 
+#readout {
+    position:absolute;
+top: 30px}
+
 #readout2 {
-  display:inline;
   position:absolute;
   color:blue;
   background-color: aqua;
   font-size:60%;
   text-align: left;
   z-index:2000;
-  left: 0;
-  top: 570px;
+  top: 70px;
 }
 
 #toucharea {
@@ -159,10 +78,13 @@ a {
   width:70%;
   margin-left:auto;
   margin-right:auto;
-  outline: 2px solid green;
+  outline: 0px solid green;
+  text-align: center;
+  background-color: green;
 }
 
 .hide {
+  background-color: green;
   position:relative;
   display:none;
 }
@@ -298,24 +220,31 @@ a {
   background-color: #333;
 }
 
-#welcome {
+#login {
   position:absolute;
   left:4%;
-  top:40%;
+  top:35%;
   width:89%;
   padding:2%;
   color:red;
   text-align:center;
   background-color: #ccc;
-  z-index:1000;}
+  z-index:1000;
+}
 
 #entername {
-  width: 35%;
-  font-size: .9em;
+  margin-top: .2em;
+  width: 45%;
+  font-size: 2em;
 }
 
 #go {
-  font-size: .9em;
+  font-size: 1.5em;
+}
+
+#cancel {
+  margin-top: .5em;
+  font-size: .8em;
 }
 
 
@@ -337,6 +266,19 @@ a {
   position: relative;
   width:100%;
 }
+
+#insertcoin a {
+  color: red;
+  background-color: #ccc;
+  border: 0px solid black;
+}
+
+#insertcoin a:hover {
+  color: cyan;
+  background-color: magenta;
+}
+
+
 
 #rotate {
   display:none;
@@ -382,7 +324,7 @@ a {
 #footer {
   position:relative;
   text-align: center;
-  font-size: 50%;
+  font-size: 53%;
   margin: 1% auto;
   padding: 2%;
   padding-bottom: 10%;
@@ -492,7 +434,8 @@ a {
   }
   .s3 {left:85%; top:0; height:45%;}
   .s6 {left:85%; top:37.5%; height:61.25%;}
-  #welcome {
+
+  #login {
 
   }
   #info {

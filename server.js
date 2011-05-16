@@ -140,11 +140,6 @@ io.on('connection', function(client){
     //for (i in msg) { logmsg += (i+':'+msg[i]+' '); }
     //log(logmsg);
 
-    // set initial paddle position
-    if (msg.type == 'setPaddle') {
-      io.broadcast({type: 'movePaddle', which:msg.which, pos:msg.pos, goal:msg.pos, init:true});
-    }
-
     // receive and broadcast paddle data
     if (msg.type == 'movePaddle') {
       //log("movePaddle, which: "+msg.which+", goal: "+rnd(msg.goal));
@@ -332,7 +327,10 @@ io.on('connection', function(client){
       } else if (queue.length > 1 && !gameOn && newgame) { // claims game already triggered?
           setTimeout(function() { // give it 3 newgameDelays
             if (newgameID) newgame(3); // if newgameID still not reset, try to start a new game anyway
-            else log('PROB NEWGAMEID STUCK');
+            else {
+              log('PROB NEWGAMEID STUCK');
+              reset();
+            }
           }, newgameDelay*3 );
       }
     }

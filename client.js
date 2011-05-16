@@ -194,7 +194,9 @@ function command(msg){
     case 'gameon':
       $('#player1').html(msg.player1);
       $('#player2').html(msg.player2);
-      $('#playerhide').css('visibility', 'visible');
+      setTimeout ( function() {
+        $('#playerhide').css('visibility', 'visible');
+      }, 100); // give the paddles time to move
       break;
 
     case 'playing':
@@ -204,8 +206,10 @@ function command(msg){
         paddle.css('background-color', 'white');
         ball.css('background-color', 'white');
         colliding = true;
-        // send last mouse position as paddle position
-        socket.send({type:'setPaddle', which:playing, pos:lastY});
+
+        paddle.css('top', '50%');
+        socket.send({type:'movePaddle', which:playing, pos:lastY, goal:lastY});
+
         playLoop(msg.delay*1); // normally 1 - .8 seems to reduce lag?
       }
       break;

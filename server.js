@@ -232,6 +232,14 @@ io.on('connection', function(client){
     if (msg.type == 'validate') {
       log('validate');
       log('queue length: '+queue.length);
+      for (x in leaders) {
+        log('x: '+x);
+        log('leaders['+x+'].name: '+leaders[x].name);
+        if (msg.name == leaders[x].name) {
+          send(client.sessionId, {type:'validate', valid:false, alert:"NAME IN USE, TRY AGAIN"});
+          return false;
+        }
+      }
       for (x in queue) {
         log('x: '+x);
         log('queue['+x+'].name: '+queue[x].name);
@@ -319,8 +327,9 @@ io.on('connection', function(client){
       }
     }
 
+    // move player from queue to spectators
     if (msg.type == 'spectating') {
-      var statusmsg = player.name + ' - SPECTATING';
+      var statusmsg = ((msg.name) ? msg.name + ' - ' : '') + 'SPECTATING';
       send(client.sessionId, {type:'html', which:'status', html:statusmsg});
       tapOut(client.sessionId);
       updatePlayerCounts();
@@ -412,7 +421,6 @@ var score1 = 0, score2 = 0;
 var p1scored = 0, p2scored = 0;
 var p1returned = 0, p2returned = 0;
 
-// game settings
 var delay = 50; // ms between updates (50)
 var maxScore = 2;
 var flatline = 25; // maximum allowable number of skipped heartBeats (25)
@@ -469,19 +477,20 @@ function updateQueuePositions() {
   }
 }
 
-
 function updateLeaderboard() {
   // combine queue with leaderboard
   leaders = queue.slice(0); // make a copy of the queue
+  
+  // if board not empty, add old leaderboard to queue
   if (leaderboard.length != 0) leaders = leaders.concat(leaderboard);
-
-  // remove duplicates
-  leaders = eliminateDuplicates(leaders);
 
   // sort by wins
   leaders.sort(function(a, b){
    return b.wins-a.wins; // i don't understand this
   })
+
+  // remove duplicates
+  leaders = eliminateDuplicates(leaders);
 
   leaders = leaders.slice(0,10); // trim to top 10
   leaderboard = leaders.slice(0); // copy array for storage
@@ -528,14 +537,17 @@ function updatePlayerCounts() {
 /////////////////////////////
 //     HELPER FUNCTIONS
 
+// round to nearest hundredth
 function rnd(val) {
   return Math.round(val*100)/100;
 }
 
+// log shortcut
 function log(x) {
   console.log(x);
 }
 
+// log a list of variables
 function report(list) {
   msg = ''
   for (x in list) {
@@ -544,19 +556,10 @@ function report(list) {
   log(msg);
 }
 
-// approximate python's 'is in'
+// is a member of obj? approximate python's 'is in'
 function contains(a, obj) {
   var i = a.length;
   while (i--) { if (a[i] == obj) return true; }
-  return false;
-}
-
-function oldContains(arr, i) {
-  for(x in arr) {
-    if(arr[x] === i){
-      return true;
-    }
-  }
   return false;
 }
 
@@ -571,16 +574,17 @@ function hasAttr(obj, id, val) {
 }
 
 function eliminateDuplicates(array) {
-  var newArray=new Array();
+  var newArray = new Array();
 
-  label:for(var i=0; i<array.length;i++ ) {
+  label:for(var i=0; i<array.length; i++ ) {
     for(var j=0; j<newArray.length;j++ ) {
-      if(newArray[j]==array[i]) continue label;
+      if(newArray[j].name==array[i].name) continue label;
     }
     newArray[newArray.length] = array[i];
   }
   return newArray;
 }
+
 
 //////////////////////////////////
 //           NEW GAME      
@@ -797,7 +801,7 @@ function gameover(type, which) {
     if (!newgameID) newgameID = setTimeout(function() {newgame(1)}, newgameDelay );
     else log('PROB: already newgame');
   } else if (queue.length == 1){
-    var statusMsg = queue[0].name + ' - WAITING FOR CHALLENGER';
+    var statusMsg = queue[0].name + ' - AWAITING CHALLENGER';
     send(queue[0].id, {type:'html', which:'status', html:statusMsg});
   }
 }

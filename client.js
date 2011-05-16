@@ -22,7 +22,7 @@ var validateTimeout;
 
 // ask server if desired ID is valid
 function validateName() {
-  name = $('#entername').val();
+  name = $('#entername').val().toUpperCase();
   valid = ( /[^A-Za-z\d ]/.test(name)==false);
   if (name.length < 1) valid = false
   
@@ -51,7 +51,7 @@ function loginAlert(alertString) {
 function play() {
   $('#login').css('display','none');
   $('#insertcoin').css('display','none');
-  $('#spectate').css('display','inline');
+  $('#spectate').css('visibility','visible');
 
   // turn on mouse tracking
   $(document).mousemove(function(e){ mouseY = e.pageY; });
@@ -77,7 +77,10 @@ function makeID() {
     txt += vowels.charAt(Math.floor(Math.random() * vowels.length));
   }
   txt += consonants.charAt(Math.floor(Math.random() * consonants.length));
-  return txt;
+  $('#entername').val(txt);
+  $('#entername').select();
+  $('#entername').onfocus = '$(\'#entername\').value = \'\';';
+
 }
 
 // no thanks, just browsing
@@ -85,9 +88,10 @@ function spectate() {
   $('#insertcoin').css('display', 'inline');
   $('#insertcoin').css('visibility', 'visible');
   $('#spectate').css('display', 'none');
+  $('#spectate').css('visibility', 'hidden');
   $('#login').css('display', 'none');
   //$('#alert').css('display', 'none');
-  socket.send({type:'spectating'});
+  socket.send({type:'spectating', name:playerName});
 }
 
 // switch to play interface
@@ -97,16 +101,17 @@ function insertcoin() {
 
     $('#insertcoin').css('display', 'none');
     $('#spectate').css('display', 'inline');
-    //$('#status').css('display', 'block');
+    $('#spectate').css('visibility', 'hidden');
+    $('#status').css('display', 'block');
 
-    $('#entername').val(makeID());
-    $('#entername').select();
-    $('#entername').onfocus = '$(\'#entername\').value = \'\';';
+    makeID();
 
     $("#play").css('color', 'red');
 
     $('#login').css('display', 'inline');
   } else {
+    $('#spectate').css('display', 'inline');
+    $('#spectate').css('visibility', 'visible');
     play();
   }
   //ready();
@@ -175,7 +180,7 @@ function command(msg){
     case 'validate':
       clearTimeout(validateTimeout);
       if (msg.valid) {
-        playerName = $('#entername').val();
+        playerName = $('#entername').val().toUpperCase();
         play();
       }
       else {
@@ -482,16 +487,14 @@ function setBodyScale() {
 
 // trigger when document has finished loading
 $(document).ready(function() {
-  $('#insertcoin').css('display', 'none');
-  $('#spectate').css('display', 'none');
+  $('#insertcoin').css('visibility', 'hidden');
+  $('#spectate').css('visibility', 'hidden');
   scrollWindow();
   window.onorientationchange = scrollWindow;
 
   $('#playerhide').css('visibility', 'hidden');
 
-  $('#entername').val(makeID());
-  $('#entername').select();
-  $('#entername').onfocus = '$(\'#entername\').value = \'\';';
+  makeID();
 
   score('score1', 0);
   score('score2', 0);

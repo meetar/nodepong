@@ -230,19 +230,26 @@ top: 30px}
 }
 
 #hello {
-  font-size: 200%;
+  color: black;
+  font-size: 215%;
+  letter-spacing: -.05em;
+  font-weight: bold;
 }
 
 #login {
   position:absolute;
   left:4%;
-  top:30%;
+  top:22%;
   width:89%;
   padding:2%;
   color:red;
   text-align:center;
   background-color: #ccc;
   z-index:1000;
+}
+
+#loginMessage {
+  color:red;
 }
 
 #entername {
@@ -276,13 +283,17 @@ top: 30px}
 }
 
 #insertcoin, #spectate, #status, #playerCounts, #rotate {
+  color: cyan;
   position: relative;
   width:100%;
 }
 
+#spectate a {
+  color: cyan;
+}
+
 #insertcoin a {
-  color: red;
-  background-color: #ccc;
+  color: magenta;
   border: 0px solid black;
 }
 
@@ -290,8 +301,6 @@ top: 30px}
   color: cyan;
   background-color: magenta;
 }
-
-
 
 #rotate {
   display:none;

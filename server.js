@@ -384,7 +384,7 @@ function tapOut(sessionId) {
   if (queue.length == 1) {
     playing = false;
     gameOn = false;
-    var statusMsg = queue[0].name + ' - WAITING FOR CHALLENGER';
+    var statusMsg = queue[0].name + ' - AWAITING CHALLENGER';
     log(statusMsg);
     send(queue[0].id, {type:'html', which:'status', html:statusMsg});
   }

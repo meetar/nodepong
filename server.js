@@ -259,11 +259,9 @@ io.on('connection', function(client){
       if (!hasAttr(queue, 'id', client.sessionId)) { // prevent double additions
       //if (!(contains(sessions, client.sessionId))) { // prevent double additions
 
-        log('> ready: '+msg.name+' '+client.sessionId)
-
         var idx = spectators.indexOf(hasAttr(spectators, 'id', client.sessionId));
         if (idx != -1) {
-          log(' spectator now playing');
+          //log(' spectator now playing');
           queue.push(spectators[idx]);
           spectators.splice(idx, 1);
         } else {
@@ -288,14 +286,17 @@ io.on('connection', function(client){
         updatePlayerCounts();
 
       } else {
-        log(' session already seen');
+        //log(' session already seen');
         for (x in queue) {
-          if (client.sessionId == queue[x].id) { // prevent double additions
+          if (client.sessionId == queue[x].id) { // identify existing player
             player = queue[x];
             break;
           }
         }
+      
       }
+      
+      log('> ready: '+msg.name+' '+client.sessionId)
 
       if (queue.length == 1) { // lonely player1...
         setTimeout(function() { // wait two seconds
@@ -306,7 +307,7 @@ io.on('connection', function(client){
         var statusmsg = player.name + ' - AWAITING CHALLENGER';
         send(client.sessionId, {type:'html', which:'status', html:statusmsg});
       } else if (queue.length == 2) {
-        var statusmsg = player.name+ ' - READY TO PLAY';
+        var statusmsg = player.name+ ' - READY';
         send(client.sessionId, {type:'html', which:'status', html:statusmsg});
       } else {
         updateQueuePositions();

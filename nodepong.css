@@ -283,7 +283,6 @@ top: 30px}
 }
 
 #insertcoin, #spectate, #status, #playerCounts, #rotate {
-  color: cyan;
   position: relative;
   width:100%;
 }

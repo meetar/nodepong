@@ -197,15 +197,17 @@ function command(msg){
       $('#playerhide').css('visibility', 'visible');
       break;
 
-    case 'endgame':
-      colliding = false;
-      playing = false;
-      paddle = '';
-      ball.css('visibility', 'hidden');
-      deltax = 0, deltay = 0;
-      $('#playerhide').css('visibility', 'hidden');
-      p1.css('background-color', 'gray');
-      p2.css('background-color', 'gray');
+    case 'playing':
+      if (msg.paddle == 'p1' || msg.paddle == 'p2') {
+        playing = msg.paddle;
+        paddle = $('#'+msg.paddle);
+        paddle.css('background-color', 'white');
+        ball.css('background-color', 'white');
+        colliding = true;
+        // send last mouse position as paddle position
+        socket.send({type:'setPaddle', which:playing, pos:lastY});
+        playLoop(msg.delay*1); // normally 1 - .8 seems to reduce lag?
+      }
       break;
 
     case 'display': // show a message
@@ -225,16 +227,6 @@ function command(msg){
       $('#'+msg.which).html(msg.html);
       break;
 
-    case 'playing':
-      if (msg.paddle == 'p1' || msg.paddle == 'p2') {
-        playing = msg.paddle;
-        paddle = $('#'+msg.paddle);
-        paddle.css('background-color', 'white');
-        ball.css('background-color', 'white');
-        colliding = true;
-        playLoop(msg.delay*1); // normally 1 - .8 seems to reduce lag?
-      }
-      break;
 
     case 'score': // update score
       score(msg.which, msg.val);
@@ -330,6 +322,17 @@ function command(msg){
       // position to its last reported goal
       which.animate({top: msg.goal+'%'}, {"duration": duration, "easing": "linear", step: function () {  if (testMode) which.html(":"+rnd(msg.goal)+","+rnd(pos)); }
         });
+      break;
+      
+    case 'endgame':
+      colliding = false;
+      playing = false;
+      paddle = '';
+      ball.css('visibility', 'hidden');
+      deltax = 0, deltay = 0;
+      $('#playerhide').css('visibility', 'hidden');
+      p1.css('background-color', 'gray');
+      p2.css('background-color', 'gray');
       break;
 
     default: break;

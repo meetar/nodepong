@@ -140,6 +140,11 @@ io.on('connection', function(client){
     //for (i in msg) { logmsg += (i+':'+msg[i]+' '); }
     //log(logmsg);
 
+    // set initial paddle position
+    if (msg.type == 'setPaddle') {
+      io.broadcast({type: 'movePaddle', which:msg.which, pos:msg.pos, goal:msg.pos, init:true});
+    }
+
     // receive and broadcast paddle data
     if (msg.type == 'movePaddle') {
       //log("movePaddle, which: "+msg.which+", goal: "+rnd(msg.goal));
@@ -667,7 +672,6 @@ function newgame(id) {
   score2 = 0;
   updateScores();
 
-  // start paddles
   if (!playing) {
     //log(' !PLAYING');
 

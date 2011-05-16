@@ -336,6 +336,9 @@ io.on('connection', function(client){
     if (msg.type == 'spectating') {
       var statusmsg = ((msg.name) ? msg.name + ' - ' : '') + 'SPECTATING';
       send(client.sessionId, {type:'html', which:'status', html:statusmsg});
+      send(client.sessionId, {type:'css', which:'status', property:'background-color', value:'#666'});
+      send(client.sessionId, {type:'css', which:'status', property:'color', value:'white'});
+
       tapOut(client.sessionId);
       updatePlayerCounts();
     }

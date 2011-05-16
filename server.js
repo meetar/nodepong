@@ -392,6 +392,8 @@ function tapOut(sessionId) {
     var statusMsg = queue[0].name + ' - AWAITING CHALLENGER';
     log(statusMsg);
     send(queue[0].id, {type:'html', which:'status', html:statusMsg});
+    send(queue[0].id, {type:'css', which:'status', property:'background-color', value:'#666'});
+    send(queue[0].id, {type:'css', which:'status', property:'color', value:'white'});
   }
 
   updatePlayerCounts();
@@ -804,7 +806,7 @@ function gameover(type, which) {
     var statusMsg = queue[0].name + ' - AWAITING CHALLENGER';
     send(queue[0].id, {type:'html', which:'status', html:statusMsg});
     send(queue[0].id, {type:'css', which:'status', property:'background-color', value:'#666'});
-    send(queue[0].id, {type:'css', which:'status', property:'background-color', value:'white'});
+    send(queue[0].id, {type:'css', which:'status', property:'color', value:'white'});
   }
 }
 

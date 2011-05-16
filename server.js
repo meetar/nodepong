@@ -50,7 +50,7 @@ var io = io.listen(server);
 
 sessions = []; // list of all sessions
 queue = []; // list of all players waiting to play, in order;
-            // any sessions not in queue are spectators
+spectators = [];
 var player1 = 0, player2 = 0; // current players
 
 // helper function with session checking to prevent send errors
@@ -228,16 +228,45 @@ io.on('connection', function(client){
 
     }
 
+    // session sends name validation request
+    if (msg.type == 'validate') {
+      log('validate');
+      log('queue length: '+queue.length);
+      for (x in queue) {
+        log('x: '+x);
+        log('queue['+x+'].name: '+queue[x].name);
+        if (msg.name == queue[x].name) {
+          send(client.sessionId, {type:'validate', valid:false, alert:"NAME IN USE, TRY AGAIN"});
+          return false;
+        }
+      }
+      send(client.sessionId, {type:'validate', valid:true});
+    }
+
     // session announces readiness to play
     if (msg.type == 'ready') {
+      //log(' checking sessions, length: '+queue.length);
+      //for (x in sessions) log('s '+sessions[x]);
+      //for (x in queue) log('q '+queue[x].id);
       if (!hasAttr(queue, 'id', client.sessionId)) { // prevent double additions
-        log('ready: '+msg.name+' '+client.sessionId)
+      //if (!(contains(sessions, client.sessionId))) { // prevent double additions
 
-        // player object definition
-        player = {id:client.sessionId, name:msg.name, wins:0, losses:0}
+        log('> ready: '+msg.name+' '+client.sessionId)
 
-        // add player to waiting list
-        queue.push(player);
+        var idx = spectators.indexOf(hasAttr(spectators, 'id', client.sessionId));
+        if (idx != -1) {
+          log(' spectator now playing');
+          queue.push(spectators[idx]);
+          spectators.splice(idx, 1);
+        } else {
+
+          // player object definition
+          player = {id:client.sessionId, name:msg.name, wins:0, losses:0}
+
+          // add player to waiting list
+          queue.push(player);
+        }
+
         send(client.sessionId, {type:'html', which:'position', html:queue.length});
         setTimeout( function() {
           send(client.sessionId, {type:'display', alert:'WELCOME '+player.name});
@@ -250,6 +279,14 @@ io.on('connection', function(client){
 
         updatePlayerCounts();
 
+      } else {
+        log(' session already seen');
+        for (x in queue) {
+          if (client.sessionId == queue[x].id) { // prevent double additions
+            player = queue[x];
+            break;
+          }
+        }
       }
 
       if (queue.length == 1) { // lonely player1...
@@ -283,7 +320,8 @@ io.on('connection', function(client){
     }
 
     if (msg.type == 'spectating') {
-      send(client.sessionId, {type:'html', which:'status', html:''});
+      var statusmsg = player.name + ' - SPECTATING';
+      send(client.sessionId, {type:'html', which:'status', html:statusmsg});
       tapOut(client.sessionId);
       updatePlayerCounts();
     }
@@ -329,6 +367,7 @@ function tapOut(sessionId) {
   // client loses place in line
   var idx = queue.indexOf(hasAttr(queue, 'id', sessionId));
   if (idx != -1) {
+    spectators.push(queue[idx]);
     queue.splice(idx, 1);
   }
 
@@ -418,7 +457,7 @@ function updateQueuePositions() {
   for (x in queue) {
     if (x != 0 && x != 1) { // don't update status of the current players
       if (x == 2) {
-        var statusmsg = queue[x].name+ ' - NEXT IN LINE!';
+        var statusmsg = queue[x].name + ' - NEXT IN LINE!';
         send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'magenta'});
       } else {
         var y = parseInt(x)-1;
@@ -571,7 +610,7 @@ function newgame(id) {
 
   if (contains(sessions, player1.id)) {
     send(player1.id, { type:'playing', paddle:'p1', delay:delay });
-    send(player1.id, { type:'display', alert:'PLAYER 1 - GET READY'});
+    send(player1.id, { type:'display', alert:'PLAYER 1 - GET READY<br>BEST OF 3'});
   } else { // player1 not connected, abort and reset
     var idx = queue.indexOf(player1);
     if (idx != -1) queue.splice(idx, 1);
@@ -581,7 +620,7 @@ function newgame(id) {
   }
   if (contains(sessions, player2.id)) {
     send(player2.id, { type:'playing', paddle:'p2', delay:delay });
-    send(player2.id, { type:'display', alert:'PLAYER 2 - GET READY'});
+    send(player2.id, { type:'display', alert:'PLAYER 2 - GET READY<br>BEST OF 3'});
   } else { // player2 not connected, abort and reset
     var idx = queue.indexOf(player2);
     if (idx != -1) queue.splice(idx, 1);

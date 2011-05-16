@@ -18,10 +18,40 @@ socket.on('message', function(obj){
 ///////////////////////////
 //      GAME CONTROL
 
+var validateTimeout;
+
+// ask server if desired ID is valid
+function validateName() {
+  name = $('#entername').val();
+  valid = ( /[^A-Za-z\d ]/.test(name)==false);
+  if (name.length < 1) valid = false
+  
+  if (valid) socket.send({type:'validate', name:name});
+  else {
+    $('#entername').select();
+    loginAlert("INVALID NAME, TRY AGAIN");
+    return false;
+  }
+  
+  validateTimeout = setTimeout( function() {
+    loginAlert("SERVER TIMEOUT, TRY AGAIN");
+  }, 20000);
+  
+}
+
+function loginAlert(alertString) {
+    $('#loginMessage').html(alertString);
+    $('#entername').css('background-color', 'red');
+    setTimeout( function() {
+      $('#entername').css('background-color', 'white');
+    }, 500);
+}
+
 // prepare for play
 function play() {
-  $('#login').css('visibility','hidden');
+  $('#login').css('display','none');
   $('#insertcoin').css('display','none');
+  $('#spectate').css('display','inline');
 
   // turn on mouse tracking
   $(document).mousemove(function(e){ mouseY = e.pageY; });
@@ -34,13 +64,11 @@ function play() {
   });
 
   // send ready message to server
-  // todo: check server to prevent existing names
-  // todo: sanitize/encode inputs to prevent hanky and/or panky
-  socket.send({type:'ready', name:$('#entername').val()});
+  socket.send({type:'ready', name:playerName});
 }
 
 // autogenerate a random 5-letter ID for testing
-function makeid() {
+function makeID() {
   var txt = '';
   var consonants = 'BCDFGHJKLMNPQRSTVWXYZ';
   var vowels = 'AEIOUY';
@@ -64,28 +92,23 @@ function spectate() {
 
 // switch to play interface
 function insertcoin() {
-  $('#insertcoin').css('display', 'none');
-  $('#spectate').css('display', 'inline');
-  $('#status').css('display', 'block');
+  if (!playerName) {
+    $('#loginMessage').html("WHAT YOUR PONG NAME");
 
-  $('#entername').val(makeid());
-  $('#entername').select();
-  $('#entername').onfocus = '$(\'#entername\').value = \'\';';
+    $('#insertcoin').css('display', 'none');
+    $('#spectate').css('display', 'inline');
+    //$('#status').css('display', 'block');
 
-  $("#play").css('color', 'red');
-  /*
-  $("#coin").animate({
-    right: '+=.25em'
-  }, 100, 'linear', function() {
-    $("#coin").animate({
-      right: '2.1em'
-    }, 250, 'linear', function() {
-      setTimeout('logIn()', 500);
-    });
-  });
-  */
-  $('#login').css('display', 'inline');
-  $('#login').css('visibility', 'visible');
+    $('#entername').val(makeID());
+    $('#entername').select();
+    $('#entername').onfocus = '$(\'#entername\').value = \'\';';
+
+    $("#play").css('color', 'red');
+
+    $('#login').css('display', 'inline');
+  } else {
+    play();
+  }
   //ready();
 
 }
@@ -100,6 +123,7 @@ function scrollWindow() {
 ///////////////////////////
 //     GAME VARIABLES
 
+var playerName = '';
 var playing = false; // are we sending mousemoves to the server?
                      // false == spectator
 var colliding = false; // only players check for collisions
@@ -147,6 +171,20 @@ function command(msg){
   // should go through the server code and make sure these are all needed
   switch(msg.type) {
     
+    // receives server's ID validation
+    case 'validate':
+      clearTimeout(validateTimeout);
+      if (msg.valid) {
+        playerName = $('#entername').val();
+        play();
+      }
+      else {
+        loginAlert(msg.alert);
+        if (msg.suggested) $('#entername').val(msg.suggested);
+      }
+      
+      break;
+
     // set player names and show players
     case 'gameon':
       $('#player1').html(msg.player1);
@@ -445,12 +483,13 @@ function setBodyScale() {
 // trigger when document has finished loading
 $(document).ready(function() {
   $('#insertcoin').css('display', 'none');
+  $('#spectate').css('display', 'none');
   scrollWindow();
   window.onorientationchange = scrollWindow;
 
   $('#playerhide').css('visibility', 'hidden');
 
-  $('#entername').val(makeid());
+  $('#entername').val(makeID());
   $('#entername').select();
   $('#entername').onfocus = '$(\'#entername\').value = \'\';';
 

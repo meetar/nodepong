@@ -85,7 +85,6 @@ top: 30px}
   margin-right:auto;
   outline: 0px solid green;
   text-align: center;
-  background-color: green;
 }
 
 .hide {
@@ -192,21 +191,26 @@ top: 30px}
 
 /* scores */
 #player1 {
+  outline: 2px solid blue;
   position:absolute;
-  top:0%;
-  left: 15%;
+  width: 25%;
+  top:5%;
+  left: 17%;
 }
 
 #player2 {
+  outline: 2px solid blue;
   position:absolute;
-  top:0%;
-  right: 15%;
+  top:5%;
+  right: 17%;
+  width:25%
 }
 
 #vs{
   text-align: center;
   font-size:80%;
-  position:relative;
+  position:absolute;
+  width: 100%;
   top:5%;
 }
 
@@ -225,6 +229,10 @@ top: 30px}
   background-color: #333;
 }
 
+#hello {
+  font-size: 200%;
+}
+
 #login {
   position:absolute;
   left:4%;
@@ -239,7 +247,7 @@ top: 30px}
 
 #entername {
   margin-top: .2em;
-  width: 45%;
+  width: 50%;
   font-size: 2em;
 }
 
@@ -267,7 +275,7 @@ top: 30px}
 
 }
 
-#insertcoin, #status, #playerCounts, #rotate {
+#insertcoin, #spectate, #status, #playerCounts, #rotate {
   position: relative;
   width:100%;
 }
@@ -414,7 +422,7 @@ a {
 /* iphone landscape mode */
 @media (max-width: 480px) and (max-height: 320px) and (orientation: landscape) {
   body {
-    outline:2px solid purple;
+    outline:0px solid purple;
   }
   #splash {
     width:80%;

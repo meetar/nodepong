@@ -377,6 +377,7 @@ function tapOut(sessionId) {
   // client loses place in line
   var idx = queue.indexOf(hasAttr(queue, 'id', sessionId));
   if (idx != -1) {
+    log(' leaving queue, becoming spectator');
     spectators.push(queue[idx]);
     queue.splice(idx, 1);
   }
@@ -468,6 +469,7 @@ function updateQueuePositions() {
       if (x == 2) {
         var statusmsg = queue[x].name + ' - NEXT IN LINE!';
         send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'magenta'});
+        send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'cyan'});
       } else {
         var y = parseInt(x)-1;
         log('updating queue['+x+']: '+queue[x]+': '+queue[x].name +': '+getOrdinal(y));
@@ -637,14 +639,14 @@ function newgame(id) {
   io.broadcast({type:'gameon', player1:player1.name, player2:player2.name});
   var statusmsg = player1.name + ' - PLAYING';
   send(player1.id, {type:'html', which:'status', html:statusmsg});
-  send(player1.id, {type:'css', which:'status', property:'background-color', value:'cyan'});
-  send(player1.id, {type:'css', which:'status', property:'color', value:'magenta'});
+  send(player1.id, {type:'css', which:'status', property:'background-color', value:'magenta'});
+  send(player1.id, {type:'css', which:'status', property:'color', value:'cyan'});
   //send(player1.id, {type:'css', which:'p1', property:'background-color', value:'cyan'});
   
   var statusmsg = player2.name + ' - PLAYING';
   send(player2.id, {type:'html', which:'status', html:statusmsg});
-  send(player2.id, {type:'css', which:'status', property:'background-color', value:'cyan'});
-  send(player2.id, {type:'css', which:'status', property:'color', value:'magenta'});
+  send(player2.id, {type:'css', which:'status', property:'background-color', value:'magenta'});
+  send(player2.id, {type:'css', which:'status', property:'color', value:'cyan'});
   //send(player2.id, {type:'css', which:'p2', property:'background-color', value:'cyan'});
 
   updateQueuePositions();
@@ -776,17 +778,8 @@ function gameover(type, which) {
     winner.wins ++;
 
     // remove loser from queue and sessions
-    var idx = queue.indexOf(loser);
-    if (idx != -1) {
-      log('removing from queue');
-      queue.splice(idx,1);
-      io.broadcast({type:'board', mode:'remove', remove:idx});
-    } else {
-      log('not in queue - can\'t remove');
-    }
-    var idx = sessions.indexOf(loser.id);
-    if (idx != -1) sessions.splice(idx, 1);
-
+    tapOut(loser.id);
+    
     // tag losing player slot for reassignment
     if (loser == player1) player1 = 0; else player2 = 0;
 

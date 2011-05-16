@@ -306,13 +306,13 @@ io.on('connection', function(client){
         }, 3000);
         var statusmsg = player.name + ' - AWAITING CHALLENGER';
         send(client.sessionId, {type:'html', which:'status', html:statusmsg});
-        send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'#666'});
-        send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'white'});
+        send(client.sessionId, {type:'css', which:'status', property:'background-color', value:'#666'});
+        send(client.sessionId, {type:'css', which:'status', property:'color', value:'white'});
       } else if (queue.length == 2) {
         var statusmsg = player.name+ ' - READY';
-        send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'aqua'});
-        send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'fuchsia'});
         send(client.sessionId, {type:'html', which:'status', html:statusmsg});
+        send(client.sessionId, {type:'css', which:'status', property:'background-color', value:'aqua'});
+        send(client.sessionId, {type:'css', which:'status', property:'color', value:'fuchsia'});
       } else {
         updateQueuePositions();
       }
@@ -472,12 +472,14 @@ function updateQueuePositions() {
     if (x != 0 && x != 1) { // don't update status of the current players
       if (x == 2) {
         var statusmsg = queue[x].name + ' - NEXT IN LINE!';
-        send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'fuchsia'});
+        send(queue[x].id, {type:'css', which:'status', property:'color', value:'fuchsia'});
         send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'aqua'});
       } else {
         var y = parseInt(x)-1;
         log('updating queue['+x+']: '+queue[x]+': '+queue[x].name +': '+getOrdinal(y));
         var statusmsg = queue[x].name+ ' - '+getOrdinal(y) + ' IN LINE';
+        send(queue[x].id, {type:'css', which:'status', property:'color', value:'white'});
+        send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'#666'});
       }
       send(queue[x].id, {type:'html', which:'status', html:statusmsg});
     }

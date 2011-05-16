@@ -191,7 +191,7 @@ top: 30px}
 
 /* scores */
 #player1 {
-  outline: 2px solid blue;
+  outline: 0px solid blue;
   position:absolute;
   width: 25%;
   top:5%;
@@ -199,7 +199,7 @@ top: 30px}
 }
 
 #player2 {
-  outline: 2px solid blue;
+  outline: 0px solid blue;
   position:absolute;
   top:5%;
   right: 17%;

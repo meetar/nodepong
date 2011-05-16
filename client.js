@@ -54,15 +54,19 @@ function makeid() {
 
 // no thanks, just browsing
 function spectate() {
+  $('#insertcoin').css('display', 'inline');
   $('#insertcoin').css('visibility', 'visible');
+  $('#spectate').css('display', 'none');
   $('#login').css('display', 'none');
-  $('#alert').css('display', 'none');
-  socket.send({type:'watching'});
+  //$('#alert').css('display', 'none');
+  socket.send({type:'spectating'});
 }
 
 // switch to play interface
 function insertcoin() {
-  $('#insertcoin').css('visibility', 'hidden');
+  $('#insertcoin').css('display', 'none');
+  $('#spectate').css('display', 'inline');
+  $('#status').css('display', 'block');
 
   $('#entername').val(makeid());
   $('#entername').select();
@@ -81,6 +85,7 @@ function insertcoin() {
   });
   */
   $('#login').css('display', 'inline');
+  $('#login').css('visibility', 'visible');
   //ready();
 
 }
@@ -261,7 +266,7 @@ function command(msg){
       break;
 
     case 'movePaddle': // move paddle
-      readout.html('which: '+msg.which+', pos: '+msg.pos+', goal: '+msg.goal);
+      //readout.html('which: '+msg.which+', pos: '+rnd(msg.pos)+', goal: '+rnd(msg.goal));
     
       which = $("#"+msg.which);
       // cancel any existing jQuery animations
@@ -439,9 +444,11 @@ function setBodyScale() {
 
 // trigger when document has finished loading
 $(document).ready(function() {
-  $('#insertcoin').css('visibility', 'hidden');
+  $('#insertcoin').css('display', 'none');
   scrollWindow();
   window.onorientationchange = scrollWindow;
+
+  $('#playerhide').css('visibility', 'hidden');
 
   $('#entername').val(makeid());
   $('#entername').select();

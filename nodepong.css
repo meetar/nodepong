@@ -27,7 +27,10 @@ a {
   text-decoration:none;
 }
 
-
+.wf-loading {
+  /* hide web fonts until they have finished loading */
+  visibility: hidden;
+}
 
 
 
@@ -43,6 +46,7 @@ a {
   font-size:60%;
   text-align: left;
   z-index:2000;
+  display: none;
 }
 
 #readout {
@@ -57,6 +61,7 @@ top: 30px}
   text-align: left;
   z-index:2000;
   top: 70px;
+  display: none;
 }
 
 #toucharea {
@@ -208,14 +213,14 @@ top: 30px}
 #alert {
   position:absolute;
   left:0;
-  top:40%;
+  top:35%;
   width:100%;
   margin-left:auto;
   margin-right:auto;
   padding: 3% 0%;
   text-align:center;
   color:red;
-  font-size: 1em;
+  font-size: 1.5em;
   z-index:100;
   background-color: #333;
 }
@@ -223,7 +228,7 @@ top: 30px}
 #login {
   position:absolute;
   left:4%;
-  top:35%;
+  top:30%;
   width:89%;
   padding:2%;
   color:red;
@@ -262,7 +267,7 @@ top: 30px}
 
 }
 
-#insertcoin, #status, #numberOfPlayers, #numberOfSpectators, #rotate {
+#insertcoin, #status, #playerCounts, #rotate {
   position: relative;
   width:100%;
 }
@@ -298,7 +303,7 @@ top: 30px}
 #scoretable {
   width: 60%;
   padding: 2% 0% 5% 0%;
-  margin: 2% 24% 5% 16%;
+  margin: -2% 24% 5% 16%;
   font-size: 100%;
 }
 

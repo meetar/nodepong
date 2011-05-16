@@ -76,8 +76,7 @@ io.on('connection', function(client){
   if (queue.length < 10) {
     updateLeaderboard();
   }
-  updatePlayerCount();
-  updateSpectatorCount();
+  updatePlayerCounts();
 
   // get current paddle positions and animate
   var connectTime = new Date(); // get current timestamp
@@ -96,14 +95,14 @@ io.on('connection', function(client){
     var currentPos = dist*percentCompleted + p1pos;
   }
 
-  report(['p1goal', 'p1pos']);
-  log('connectTime: '+connectTime.getTime());
-  log('p1posTime: '+p1posTime.getTime());
-  log('elapsedTime: '+elapsedTime);
-  log('dist: '+dist);
-  log('timeNeeded: '+timeNeeded);
-  log('percentCompleted: '+percentCompleted);
-  log('currentPos: '+currentPos);
+  //report(['p1goal', 'p1pos']);
+  //log('connectTime: '+connectTime.getTime());
+  //log('p1posTime: '+p1posTime.getTime());
+  //log('elapsedTime: '+elapsedTime);
+  //log('dist: '+dist);
+  //log('timeNeeded: '+timeNeeded);
+  //log('percentCompleted: '+percentCompleted);
+  //log('currentPos: '+currentPos);
   
   send(client.sessionId, {type:'movePaddle', which:'p1', pos:currentPos, goal:p1goal, init:true});
 
@@ -121,14 +120,14 @@ io.on('connection', function(client){
     var currentPos = dist*percentCompleted + p2pos;
   }
 
-  report(['p2goal', 'p2pos']);
-  log('connectTime: '+connectTime.getTime());
-  log('p2posTime: '+p2posTime.getTime());
-  log('elapsedTime: '+elapsedTime);
-  log('dist: '+dist);
-  log('timeNeeded: '+timeNeeded);
-  log('percentCompleted: '+percentCompleted);
-  log('currentPos: '+currentPos);
+  //report(['p2goal', 'p2pos']);
+  //log('connectTime: '+connectTime.getTime());
+  //log('p2posTime: '+p2posTime.getTime());
+  //log('elapsedTime: '+elapsedTime);
+  //log('dist: '+dist);
+  //log('timeNeeded: '+timeNeeded);
+  //log('percentCompleted: '+percentCompleted);
+  //log('currentPos: '+currentPos);
   
   send(client.sessionId, {type:'movePaddle', which:'p2', pos:currentPos, goal:p2goal, init:true});
 
@@ -249,8 +248,7 @@ io.on('connection', function(client){
           updateLeaderboard();
         }
 
-        updatePlayerCount();
-        updateSpectatorCount();
+        updatePlayerCounts();
 
       }
 
@@ -260,13 +258,13 @@ io.on('connection', function(client){
             send(client.sessionId, {type:'display', alert:'WAITING FOR CHALLENGER'})
           }
         }, 3000);
-        var statusmsg = player.name + ' - WAITING FOR CHALLENGER';
+        var statusmsg = player.name + ' - AWAITING CHALLENGER';
         send(client.sessionId, {type:'html', which:'status', html:statusmsg});
       } else if (queue.length == 2) {
         var statusmsg = player.name+ ' - READY TO PLAY';
         send(client.sessionId, {type:'html', which:'status', html:statusmsg});
       } else {
-        updateQueuePosition();
+        updateQueuePositions();
       }
 
       report(['gameOn', 'playing', 'newgameID']);
@@ -284,8 +282,10 @@ io.on('connection', function(client){
       }
     }
 
-    if (msg.type == 'watching') {
-      updateSpectatorCount();
+    if (msg.type == 'spectating') {
+      send(client.sessionId, {type:'html', which:'status', html:''});
+      tapOut(client.sessionId);
+      updatePlayerCounts();
     }
 
     // player received last message from server
@@ -309,35 +309,40 @@ io.on('connection', function(client){
   client.on('disconnect', function(){
     log('\nDISCONNECT: '+client.sessionId);
 
-    // if playing, game over - disconnecter forfeits
-    log("client.sessionId: "+client.sessionId+", player1: "+player1.id+", player2: "+player2.id);
-    if ((client.sessionId == player1.id || client.sessionId == player2.id)
-        && gameOn) {
-      which = client.sessionId == player1.id ? player1 : player2;
-      gameover('forfeit', which);
-    }
-    // client loses place in line
-    var idx = queue.indexOf(hasAttr(queue, 'id', client.sessionId));
-    if (idx != -1) {
-      queue.splice(idx, 1);
-    }
+    tapOut(client.sessionId);
+    
     var idx = sessions.indexOf(client.sessionId);
     if (idx != -1) sessions.splice(idx, 1);
-
-    if (queue.length == 1) {
-      playing = false;
-      gameOn = false;
-      var statusMsg = queue[0].name + ' - WAITING FOR CHALLENGER';
-      log(statusMsg);
-      send(queue[0].id, {type:'html', which:'status', html:statusMsg});
-    }
-
-    updatePlayerCount();
-    updateSpectatorCount();
-    updateQueuePosition();
-
   });
+
 });
+
+function tapOut(sessionId) {
+  // if playing, game over - player forfeits
+  log("sessionId: "+sessionId+", player1: "+player1.id+", player2: "+player2.id);
+  if ((sessionId == player1.id || sessionId == player2.id)
+      && gameOn) {
+    which = sessionId == player1.id ? player1 : player2;
+    gameover('forfeit', which);
+  }
+
+  // client loses place in line
+  var idx = queue.indexOf(hasAttr(queue, 'id', sessionId));
+  if (idx != -1) {
+    queue.splice(idx, 1);
+  }
+
+  if (queue.length == 1) {
+    playing = false;
+    gameOn = false;
+    var statusMsg = queue[0].name + ' - WAITING FOR CHALLENGER';
+    log(statusMsg);
+    send(queue[0].id, {type:'html', which:'status', html:statusMsg});
+  }
+
+  updatePlayerCounts();
+  updateQueuePositions();
+}
 
 // move ball
 function moveBall(moveTime) {
@@ -409,7 +414,7 @@ function getOrdinal(number) {
 }
 
 // update "4th in line" display
-function updateQueuePosition() {
+function updateQueuePositions() {
   for (x in queue) {
     if (x != 0 && x != 1) { // don't update status of the current players
       if (x == 2) {
@@ -436,7 +441,7 @@ function updateLeaderboard() {
 
   // sort by wins
   leaders.sort(function(a, b){
-   return b.wins-a.wins;
+   return b.wins-a.wins; // i don't understand this
   })
 
   leaders = leaders.slice(0,10); // trim to top 10
@@ -448,8 +453,12 @@ function updateLeaderboard() {
   var scores = '';
 
   for (var x=0; x<leaders.length; x++) { // assemble leaderboard table
+  
+    // pick a class depending on whether they're still connected
     class = (contains(sessions, leaders[x].id)) ? '\'name\'' : '\'disconame\'';
+    // build line
     scoreline = '<tr><td class=\'rank\'>'+String(parseInt(x)+1)+'.</td><td class='+class+'>'+leaders[x].name+'</td><td class=\'scor\'>'+leaders[x].wins+'</td></tr>\n'
+    // add line to list
     scores += scoreline;
   }
   for (x=0;x<blanks;x++) {
@@ -460,20 +469,20 @@ function updateLeaderboard() {
   io.broadcast({type:'html', which:'scoretable', html:leaderboardHTML});
 }
 
-function updatePlayerCount() {
-  var numString = queue.length + ' player' + (queue.length > 1 ? 's' : '') + ' connected';
-  io.broadcast({type:'html', which:'numberOfPlayers', html:numString});
-}
-
-function updateSpectatorCount() {
-  var spectators = sessions.length - queue.length;
-  var numString = ''
-  if (spectators > 0) {
-    numString = spectators + ' spectator' + (spectators > 1 ? 's' : '');
+function updatePlayerCounts() {
+  if (queue.length > 0) {
+    var numString = queue.length + ' player' + (queue.length > 1 ? 's' : '') + ', ';
   } else {
-    numString = 'no spectators';
-}
-  io.broadcast({type:'html', which:'numberOfSpectators', html:numString});
+    numString = 'no players, ';
+  }
+
+  var spectators = sessions.length - queue.length;
+  if (spectators > 0) {
+    numString += spectators + ' spectator' + (spectators > 1 ? 's' : '');
+  } else {
+    numString += 'no spectators';
+  }
+  io.broadcast({type:'html', which:'playerCounts', html:numString});
 }
 
 
@@ -562,7 +571,7 @@ function newgame(id) {
 
   if (contains(sessions, player1.id)) {
     send(player1.id, { type:'playing', paddle:'p1', delay:delay });
-    send(player1.id, { type:'display', alert:'PLAYER 1'});
+    send(player1.id, { type:'display', alert:'PLAYER 1 - GET READY'});
   } else { // player1 not connected, abort and reset
     var idx = queue.indexOf(player1);
     if (idx != -1) queue.splice(idx, 1);
@@ -572,7 +581,7 @@ function newgame(id) {
   }
   if (contains(sessions, player2.id)) {
     send(player2.id, { type:'playing', paddle:'p2', delay:delay });
-    send(player2.id, { type:'display', alert:'PLAYER 2'});
+    send(player2.id, { type:'display', alert:'PLAYER 2 - GET READY'});
   } else { // player2 not connected, abort and reset
     var idx = queue.indexOf(player2);
     if (idx != -1) queue.splice(idx, 1);
@@ -584,10 +593,17 @@ function newgame(id) {
   io.broadcast({type:'gameon', player1:player1.name, player2:player2.name});
   var statusmsg = player1.name + ' - PLAYING';
   send(player1.id, {type:'html', which:'status', html:statusmsg});
+  send(player1.id, {type:'css', which:'status', property:'background-color', value:'cyan'});
+  send(player1.id, {type:'css', which:'status', property:'color', value:'magenta'});
+  //send(player1.id, {type:'css', which:'p1', property:'background-color', value:'cyan'});
+  
   var statusmsg = player2.name + ' - PLAYING';
   send(player2.id, {type:'html', which:'status', html:statusmsg});
+  send(player2.id, {type:'css', which:'status', property:'background-color', value:'cyan'});
+  send(player2.id, {type:'css', which:'status', property:'color', value:'magenta'});
+  //send(player2.id, {type:'css', which:'p2', property:'background-color', value:'cyan'});
 
-  updateQueuePosition();
+  updateQueuePositions();
 
 
   score1 = 0;
@@ -680,6 +696,10 @@ function gameover(type, which) {
     log(winner.name + ' WINS');
     send(winner.id, {type:'display', alert:'YOU WIN'});
     send(loser.id, {type:'display', alert:'YOU LOSE'});
+
+    send(winner.id, {type:'css', which:'p1'});
+    send(loser.id, {type:'display', alert:'YOU LOSE'});
+
     // broadcast to everybody except [winner, loser]
     io.broadcast({type:'display', alert:winner.name+' WINS', id:0}, [winner.id, loser.id]);
 
@@ -730,7 +750,7 @@ function gameover(type, which) {
   }
 
   updateLeaderboard();
-  updatePlayerCount();
+  updatePlayerCounts();
 
 
   if (queue.length > 1) {

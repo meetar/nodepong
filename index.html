@@ -19,6 +19,15 @@
 
     <link rel="stylesheet" href="nodepong.css" type="text/css" media="screen">
 
+    <style type="text/css">
+      .wf-loading html,
+      .wf-loading body {
+        /* Hide the blog title and post titles while web fonts are loading */
+        visibility: hidden;
+      }
+    </style>
+
+
   </head>
 
 
@@ -104,10 +113,10 @@
     <!-- INFO SCREEN -->
     <div id="info">
 
-      <div id="insertcoin"><a href="javascript:insertcoin()">CLICK HERE TO PLAY</a></div>
       <div id="status"></div>
-      <div id="numberOfPlayers">0 players connected</div>
-      <div id="numberOfSpectators">0 spectators</div>
+      <div id="insertcoin"><a href="javascript:insertcoin()">CLICK HERE TO PLAY</a></div>
+      <div id="spectate"><a href="javascript:spectate()">SPECTATE</a></div>
+      <div id="playerCounts">0 players connected</div>
       <div id="rotate">rotate for fullscreen</div>
 
       <div id="leaderboard">

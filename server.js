@@ -306,8 +306,12 @@ io.on('connection', function(client){
         }, 3000);
         var statusmsg = player.name + ' - AWAITING CHALLENGER';
         send(client.sessionId, {type:'html', which:'status', html:statusmsg});
+        send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'#666'});
+        send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'white'});
       } else if (queue.length == 2) {
         var statusmsg = player.name+ ' - READY';
+        send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'aqua'});
+        send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'fuchsia'});
         send(client.sessionId, {type:'html', which:'status', html:statusmsg});
       } else {
         updateQueuePositions();
@@ -468,8 +472,8 @@ function updateQueuePositions() {
     if (x != 0 && x != 1) { // don't update status of the current players
       if (x == 2) {
         var statusmsg = queue[x].name + ' - NEXT IN LINE!';
-        send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'magenta'});
-        send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'cyan'});
+        send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'fuchsia'});
+        send(queue[x].id, {type:'css', which:'status', property:'background-color', value:'aqua'});
       } else {
         var y = parseInt(x)-1;
         log('updating queue['+x+']: '+queue[x]+': '+queue[x].name +': '+getOrdinal(y));
@@ -639,15 +643,15 @@ function newgame(id) {
   io.broadcast({type:'gameon', player1:player1.name, player2:player2.name});
   var statusmsg = player1.name + ' - PLAYING';
   send(player1.id, {type:'html', which:'status', html:statusmsg});
-  send(player1.id, {type:'css', which:'status', property:'background-color', value:'magenta'});
-  send(player1.id, {type:'css', which:'status', property:'color', value:'cyan'});
-  //send(player1.id, {type:'css', which:'p1', property:'background-color', value:'cyan'});
+  send(player1.id, {type:'css', which:'status', property:'background-color', value:'fuchsia'});
+  send(player1.id, {type:'css', which:'status', property:'color', value:'aqua'});
+  //send(player1.id, {type:'css', which:'p1', property:'background-color', value:'aqua'});
   
   var statusmsg = player2.name + ' - PLAYING';
   send(player2.id, {type:'html', which:'status', html:statusmsg});
-  send(player2.id, {type:'css', which:'status', property:'background-color', value:'magenta'});
-  send(player2.id, {type:'css', which:'status', property:'color', value:'cyan'});
-  //send(player2.id, {type:'css', which:'p2', property:'background-color', value:'cyan'});
+  send(player2.id, {type:'css', which:'status', property:'background-color', value:'fuchsia'});
+  send(player2.id, {type:'css', which:'status', property:'color', value:'aqua'});
+  //send(player2.id, {type:'css', which:'p2', property:'background-color', value:'aqua'});
 
   updateQueuePositions();
 
@@ -797,6 +801,8 @@ function gameover(type, which) {
   } else if (queue.length == 1){
     var statusMsg = queue[0].name + ' - AWAITING CHALLENGER';
     send(queue[0].id, {type:'html', which:'status', html:statusMsg});
+    send(queue[0].id, {type:'css', which:'status', property:'background-color', value:'#666'});
+    send(queue[0].id, {type:'css', which:'status', property:'background-color', value:'white'});
   }
 }
 

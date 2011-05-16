@@ -288,17 +288,17 @@ top: 30px}
 }
 
 #spectate a {
-  color: cyan;
+  color: aqua;
 }
 
 #insertcoin a {
-  color: magenta;
+  color: fuchsia;
   border: 0px solid black;
 }
 
 #insertcoin a:hover {
-  color: cyan;
-  background-color: magenta;
+  color: aqua;
+  background-color: fuchsia;
 }
 
 #rotate {

@@ -72,10 +72,7 @@ io.on('connection', function(client){
     io.broadcast({type:'gameon', player1:player1.name, player2:player2.name});
   }
   
-  // populate leaderboard
-  if (queue.length < 10) {
-    updateLeaderboard();
-  }
+  updateLeaderboard(client.sessionId);
   updatePlayerCounts();
 
   // get current paddle positions and animate
@@ -241,8 +238,8 @@ io.on('connection', function(client){
         }
       }
       for (x in queue) {
-        log('x: '+x);
-        log('queue['+x+'].name: '+queue[x].name);
+        //log('x: '+x);
+        //log('queue['+x+'].name: '+queue[x].name);
         if (msg.name == queue[x].name) {
           send(client.sessionId, {type:'validate', valid:false, alert:"NAME IN USE, TRY AGAIN"});
           return false;
@@ -278,11 +275,7 @@ io.on('connection', function(client){
           send(client.sessionId, {type:'display', alert:'WELCOME '+player.name});
         }, 500);
 
-        // populate leaderboard
-        if (queue.length < 10) { // if length > 10, new player wouldn't show up anyway
-          updateLeaderboard();
-        }
-
+        updateLeaderboard(client.sessionId);
         updatePlayerCounts();
 
       } else {
@@ -494,7 +487,7 @@ function updateQueuePositions() {
   }
 }
 
-function updateLeaderboard() {
+function updateLeaderboard(id) {
   // combine queue with leaderboard
   leaders = queue.slice(0); // make a copy of the queue
   
@@ -531,7 +524,11 @@ function updateLeaderboard() {
     scores += blank;
   }
   leaderboardHTML = scores;
-  io.broadcast({type:'html', which:'scoretable', html:leaderboardHTML});
+  if (sessions.length < 10) {
+    send(id, {type:'html', which:'scoretable', html:leaderboardHTML});
+  } else {
+    io.broadcast({type:'html', which:'scoretable', html:leaderboardHTML});
+  }
 }
 
 function updatePlayerCounts() {

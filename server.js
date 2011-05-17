@@ -380,7 +380,7 @@ function tapOut(sessionId) {
   // client loses place in line
   var idx = queue.indexOf(hasAttr(queue, 'id', sessionId));
   if (idx != -1) {
-    log(' leaving queue, becoming spectator');
+    log('> '+queue[idx].name' leaving queue, becoming spectator');
     spectators.push(queue[idx]);
     queue.splice(idx, 1);
   }
@@ -402,8 +402,6 @@ function tapOut(sessionId) {
 // move ball
 function moveBall(moveTime) {
   log('  moveBall: startx: '+rnd(startx)+', endx: '+endx+', starty: '+rnd(starty)+', duration: '+moveTime+', deltay: '+rnd(deltay));
-
-  // need to serve ball with half duration: from center court
   io.broadcast({type:'moveBall', startx:startx, starty:starty, endx:endx, deltay:deltay, duration:moveTime});
 }
 

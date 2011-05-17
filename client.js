@@ -440,7 +440,7 @@ function collisionDetection() {
                  starty: bally/court.height()*100,
                  which: returned,
                  angle: angle});
-    socket.send({type:"log", what:returned+" angle: "+angle});
+    socket.send({type:"log", what:returned+" angle: "+rnd(angle)});
   }
   lastbx = ballx;
   lastby = bally;

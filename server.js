@@ -906,7 +906,8 @@ function english(yval) {
 
   var yfac = 1.0; //1.5; // angle extremeness tuner
   deltay *= yfac;
-  return deltay;
+  speecfac = duration/4000;
+  return deltay/speedfac;
 }
 
 // END server.js

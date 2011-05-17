@@ -456,14 +456,9 @@ function updateScores() {
 
 // get ordinal for number
 function getOrdinal(number) {
-  var ordinal = 'th';
-  var lastchar = String(number).charAt(String(number).length-1);
-  if (number == '11' || number == '12') ordinal = 'th';
-  else if (lastchar == '1') ordinal = 'st';
-  else if (lastchar == '2') ordinal = 'nd';
-  else if (lastchar == '3') ordinal = 'rd';
-  ordinal = String(number)+ordinal;
-  return ordinal;
+  var ordinals = ["th","st","nd","rd"];
+  var val = number%100;
+  return number + (ordinals[(val-20)%10] || ordinals[val] || ordinals[0]);
 }
 
 // update "4th in line" display

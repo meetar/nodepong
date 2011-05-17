@@ -216,9 +216,9 @@ top: 30px}
 
 #alert {
   position:absolute;
-  left:0;
+  left:10%;
   top:30%;
-  width:100%;
+  width:80%;
   margin-left:auto;
   margin-right:auto;
   padding: 3% 0%;

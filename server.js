@@ -69,7 +69,7 @@ io.on('connection', function(client){
   }
   
   if (gameOn) {
-    io.broadcast({type:'gameon', player1:player1.name, player2:player2.name});
+    send(client.sessionId, {type:'gameon', player1:player1.name, player2:player2.name});
   }
   
   updateLeaderboard(client.sessionId);
@@ -172,12 +172,12 @@ io.on('connection', function(client){
       p2heartBeat = false;
 
       if (p1skippedBeat == flatline) {
-        log('player 1 FLATLINE');
+        log('p1 FLATLINE: '+player1.name);
         gameover('forfeit', player1);
         return false;
       }
       if (p2skippedBeat == flatline) {
-        log('player 2 FLATLINE');
+        log('p2 FLATLINE: '+player1.name);
         gameover('forfeit', player2);
         return false;
       }
@@ -185,13 +185,21 @@ io.on('connection', function(client){
     }
 
     if (msg.type == 'score') {
+      if (!gameOn) {
+        log('late score');
+        return false;
+      }
+      if (!msg.me) {
+        log(client.sessionID+' reports '+msg.which+' scored but is not playing');
+        return false;
+      }
       if (msg.which == 'p1' && p1scored == 0) {
         p1scored = 1;
-        log('p1 score');
+        log(msg.me+': P1 SCORE');
         score1++;
         score();
       } else if (msg.which == 'p2' && p2scored == 0) {
-        log('p2 score');
+        log(msg.me+': P2 SCORE');
         p2scored = 1;
         score2++;
         score();
@@ -199,16 +207,26 @@ io.on('connection', function(client){
     }
 
     if (msg.type == 'return') {
+      if (!gameOn) {
+        log('late return');
+        return false;
+      }
+      if (!msg.me) {
+        log(client.sessionID+' reports '+msg.which+' returned but is not playing');
+        return false;
+      }
       if ( msg.which == 'p1' && p1returned == 0) {
+        log(msg.which+' returned');
         p1returned = 1;
         p2returned = 0;
         endx = 97; // = 100 - 3% ball width
       } else if (msg.which == 'p2' && p2returned == 0) {
+        log(msg.which+' returned');
         p2returned = 1;
         p1returned = 0;
         endx = 0;
       } else {
-        log("DOUBLE RETURN");
+        log('DOUBLE RETURN: '+msg.which+', p1returned: '+p1returned+', p2returned: '+p2returned);
         return false;
       }
       startx = msg.startx;
@@ -336,7 +354,6 @@ io.on('connection', function(client){
       send(client.sessionId, {type:'css', which:'status', property:'color', value:'white'});
 
       tapOut(client.sessionId);
-      updatePlayerCounts();
     }
 
     // player received last message from server
@@ -370,7 +387,7 @@ io.on('connection', function(client){
 
 function tapOut(sessionId) {
   // if playing, game over - player forfeits
-  log("sessionId: "+sessionId+", player1: "+player1.id+", player2: "+player2.id);
+  log("TAPOUT: sessionId: "+sessionId+", player1: "+player1.id+", player2: "+player2.id);
   if ((sessionId == player1.id || sessionId == player2.id)
       && gameOn) {
     which = sessionId == player1.id ? player1 : player2;
@@ -397,6 +414,7 @@ function tapOut(sessionId) {
 
   updatePlayerCounts();
   updateQueuePositions();
+  updateLeaderboard();
 }
 
 // move ball
@@ -518,7 +536,9 @@ function updateLeaderboard(id) {
     scores += blank;
   }
   leaderboardHTML = scores;
-  if (sessions.length < 10) {
+  // this cuts down on new connection data spam
+  // not sure it's the right solution, may not be necessary
+  if (sessions.length > 10 && id) {
     send(id, {type:'html', which:'scoretable', html:leaderboardHTML});
   } else {
     io.broadcast({type:'html', which:'scoretable', html:leaderboardHTML});
@@ -789,7 +809,7 @@ function gameover(type, which) {
 
     report(['sessions']);
     loggie = 'queue:';
-    for (x in queue) loggie += ' '+x.name;
+    for (x in queue) loggie += ' '+queue[x].name;
     log(loggie);
   }
 
@@ -839,13 +859,18 @@ function reset() {
   deltay = 0;
   startx = 50, starty = 50;
 
-  //log("serving, p1returned: "+p1returned+", p2returned: "+p2returned);
-  // serve ball: half speed because from center court
-  moveBall(duration/2);
-
   getset = false;
   playing = true;
   resetID = false;
+  
+  log("serving, p1returned: "+p1returned+", p2returned: "+p2returned);
+  // send reset to players
+  send(player1.id, {type:'reset'});
+  send(player2.id, {type:'reset'});
+
+  // serve ball half speed because it's starting from center court, halfway across
+  moveBall(duration/2);
+
   //log(' reset END');
 }
 

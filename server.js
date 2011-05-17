@@ -1,11 +1,12 @@
+#!/usr/local/bin/node
+// I don't remember why this is here
+
 ///////////////////////////////////
 // NodePong 0.1b server.js
 // MIT License (C) P Richardson 2011
 // some portions of this code MIT License (C) LearnBoost 2010
 // some portions of this code MIT License (C) Joyent 2010
 
-// I don't remember why this is here
-#!/usr/local/bin/node
 
 ///////////////////////////////////
 //          SERVER CODE

@@ -1,8 +1,14 @@
+///////////////////////////////////
+// NodePong 0.1b client.js
+// MIT License (C) P Richardson 2011
+// some portions of this code MIT License (C) LearnBoost 2010
+// some portions of this code MIT License (C) Joyent 2010
+
+
 ///////////////////////////
 //      NETWORK CODE
 
-// handshake and connect to the server through the transport
-// of Socket.io's choice
+// handshake and connect to the server through the transport of Socket.io's choice
 var socket = new io.Socket(null, {port: 80, rememberTransport: false});
 socket.connect();
 
@@ -519,4 +525,4 @@ $(document).ready(function() {
   
 });
 
-// END CLIENT.JS
+// END client.js

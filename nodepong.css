@@ -32,7 +32,13 @@ a {
   visibility: hidden;
 }
 
-
+noscript {
+  color: red;
+  font-weight: bold;
+  padding: 2px;
+  background-color: white;
+  text-align: center;
+}
 
 
 

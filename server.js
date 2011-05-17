@@ -380,7 +380,7 @@ function tapOut(sessionId) {
   // client loses place in line
   var idx = queue.indexOf(hasAttr(queue, 'id', sessionId));
   if (idx != -1) {
-    log('> '+queue[idx].name' leaving queue, becoming spectator');
+    log('> '+queue[idx].name+' leaving queue, becoming spectator');
     spectators.push(queue[idx]);
     queue.splice(idx, 1);
   }

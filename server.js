@@ -180,11 +180,13 @@ io.on('connection', function(client){
       p2heartBeat = false;
 
       if (p1skippedBeat == flatline) {
+        p1skippedBeat = 0; // reset
         log('p1 FLATLINE: '+player1.name);
         gameover('forfeit', player1);
         return false;
       }
       if (p2skippedBeat == flatline) {
+        p2skippedBeat = 0; // reset
         log('p2 FLATLINE: '+player1.name);
         gameover('forfeit', player2);
         return false;
@@ -253,11 +255,11 @@ io.on('connection', function(client){
 
     // session sends name validation request
     if (msg.type == 'validate') {
-      log('validate');
-      log('queue length: '+queue.length);
+      //log('validate');
+      //log('queue length: '+queue.length);
       for (x in leaders) {
-        log('x: '+x);
-        log('leaders['+x+'].name: '+leaders[x].name);
+        //log('x: '+x);
+        //log('leaders['+x+'].name: '+leaders[x].name);
         if (msg.name == leaders[x].name) {
           send(client.sessionId, {type:'validate', valid:false, alert:"NAME IN USE, TRY AGAIN"});
           return false;

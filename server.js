@@ -787,7 +787,10 @@ function gameover(type, which) {
     // tag losing player slot for reassignment
     if (loser == player1) player1 = 0; else player2 = 0;
 
-    report(['sessions', 'queue']);
+    report(['sessions']);
+    loggie = 'queue:';
+    for (x in queue) loggie += ' '+x.name;
+    log(loggie);
   }
 
   updateLeaderboard();
@@ -807,10 +810,10 @@ function gameover(type, which) {
 }
 
 function reset() {
-  log('\n RESET: playing: '+playing+', gameOn: '+gameOn+', newgame: '+(newgame != false));
+  log('\nRESET: playing: '+playing+', gameOn: '+gameOn+', newgame: '+(newgame != false));
   //if (playing || !gameOn || !newgame) { 
   if ( (playing && !gameOn) || (playing && !newgame) ) {
-    log(' false reset');
+    log('> false reset');
     return false;
   }
   if (queue.length < 2) {

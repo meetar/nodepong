@@ -18,8 +18,6 @@ socket.on('message', function(obj){
 ///////////////////////////
 //      GAME CONTROL
 
-var validateTimeout;
-
 // ask server if desired ID is valid
 function validateName() {
   name = $('#entername').val().toUpperCase();
@@ -140,7 +138,6 @@ var lastbx = 50, lastby = 50; // ball positions, for collision detection
 var moveTimeout; // moveBall loop holder
 var lastGoal; // compare current mouse position to last reported
 
-
 // array of score-displaying divs
 var scores = {
   0:[1,2,3,5,6,7],
@@ -162,6 +159,7 @@ var readout2 = $('#readout2');
 
 var playTimer; // stores event loop timer
 var displayText;
+var validateTimeout;
 var testMode = false;
 
 ///////////////////////////

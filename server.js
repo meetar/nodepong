@@ -458,9 +458,10 @@ function updateScores() {
 function getOrdinal(number) {
   var ordinal = 'th';
   var lastchar = String(number).charAt(String(number).length-1);
-  if (lastchar == '1') {ordinal = 'st'}
-  else if (lastchar == '2') {ordinal = 'nd'}
-  else if (lastchar == '3') {ordinal = 'rd'}
+  if (number == '11' || number == '12') ordinal = 'th';
+  else if (lastchar == '1') ordinal = 'st';
+  else if (lastchar == '2') ordinal = 'nd';
+  else if (lastchar == '3') ordinal = 'rd';
   ordinal = String(number)+ordinal;
   return ordinal;
 }

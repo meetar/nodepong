@@ -401,7 +401,7 @@ function tapOut(sessionId) {
 
 // move ball
 function moveBall(moveTime) {
-  log('  moveBall: startx: '+rnd(startx)+', endx: '+endx+', starty: '+rnd(starty)+', duration: '+moveTime+', deltay: '+rnd(deltay));
+  //log('  moveBall: startx: '+rnd(startx)+', endx: '+endx+', starty: '+rnd(starty)+', duration: '+rnd(moveTime)+', deltay: '+rnd(deltay));
   io.broadcast({type:'moveBall', startx:startx, starty:starty, endx:endx, deltay:deltay, duration:moveTime});
 }
 

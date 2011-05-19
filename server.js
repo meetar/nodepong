@@ -150,8 +150,9 @@ io.on('connection', function(client){
       //log("movePaddle, which: "+msg.which+", goal: "+rnd(msg.goal));
       // send client's paddle position and goal to everybody except client
       io.broadcast({type: 'movePaddle', which:msg.which, pos:msg.pos, goal:msg.goal}, client.sessionId);
+      //io.broadcast({type: 'movePaddle', which:msg.which, pos:msg.pos, goal:msg.goal});
       
-      if (client.sessionId == player1.id) {
+      if (client.sessionId == player2.id) {
         if (p1heartBeat == false) {
           p1skippedBeat++; //log('p1 SKIPPED: '+p1skippedBeat);
         } else {
@@ -163,7 +164,7 @@ io.on('connection', function(client){
         p1posTime = new Date();
         
       }
-      if (client.sessionId == player2.id) {
+      if (client.sessionId == player1.id) {
         if (p2heartBeat == false) {
           p2skippedBeat++; //log('p2 SKIPPED: '+p2skippedBeat);
         } else {
@@ -203,20 +204,24 @@ io.on('connection', function(client){
         log(client.sessionID+' reports '+msg.which+' scored but is not playing');
         return false;
       }
-      if (msg.which == 'p1' && p1scored == 0) {
+      if (msg.which == 'p1' && p1scored == 0 && p2scored != 1 && p2returned != 1) {
         p1scored = 1;
         log(msg.me+': P1 SCORE');
         score1++;
         score();
-      } else if (msg.which == 'p2' && p2scored == 0) {
+      } else if (msg.which == 'p2' && p2scored == 0 && p1scored != 1 && p1returned != 1) {
         log(msg.me+': P2 SCORE');
         p2scored = 1;
         score2++;
         score();
+      } else {
+        log(msg.me+' reports '+msg.which+' scored, but:');
+        log(' p1scored: '+p1scored+', p2scored: '+p2scored+', p1returned: '+p1returned+', p2returned: '+p2returned);
       }
     }
 
     if (msg.type == 'return') {
+      log(' ');
       if (!gameOn) {
         log('late return');
         return false;
@@ -236,21 +241,44 @@ io.on('connection', function(client){
         p1returned = 0;
         endx = 0;
       } else {
-        log('DOUBLE RETURN: '+msg.which+', p1returned: '+p1returned+', p2returned: '+p2returned);
+        //log('DOUBLE RETURN: '+msg.which+', p1returned: '+p1returned+', p2returned: '+p2returned);
         return false;
       }
       startx = msg.startx;
       starty = msg.starty;
+      endy = msg.endy;
   
       //log(parseInt(client.sessionId/100000000000000)+": "+msg.which+" RETURN1");
       //log(' startx: '+rnd(startx)+', starty: '+rnd(starty)+', angle: '+rnd(msg.angle)+", p1returned: "+p1returned+", p2returned: "+p2returned);
   
-      duration *= .9; // increase speed; (.9)
-      duration = Math.max(duration, 1000); // speed limit
+      timeFactor *= .9; // increase speed with every volley (.9)
+      timefactor = Math.max(timeFactor, .25) // speed limit = 4x
+      duration = xTime * timeFactor;
+      
+      yTime = english(msg.angle);
 
-      deltay = english(msg.angle);
-      moveBall(duration);
+      // adjust x duration to account for ytime: shorter ytime = longer xtime
+      // yTime: 6000 = multiplier: 1.1
+      if (yTime != 0) {
+        var multiplier = 1+((21000 - Math.abs(yTime))/100000);
+        duration = duration * multiplier;
+        log('> yTime: '+yTime+', mult: '+multiplier+', duration: '+duration);
+      }
+      
+      // speed up bounce to match volley speed
+      yTime *= timeFactor;
 
+      // adjust initial duration to account for current y position:
+      // if halfway to goal, halve initial duration
+      // check sign of yTime to find direction of ball, and determine
+      // whether to use starty as proportion completed or proportion remaining
+      inity = (yTime < 0 ? starty : 100 - starty);
+
+      inityTime = Math.abs(yTime * inity/100);
+      
+      moveBall(duration, inityTime, yTime);
+      //log('angle: '+rnd(msg.angle)+', xTime: '+rnd(xTime)+', yTime: '+rnd(yTime)+', inityTime: '+rnd(inityTime)+', duration: '+rnd(duration)+', timefactor: '+rnd(timeFactor));
+      log('angle: '+rnd(msg.angle)+', yTime: '+rnd(yTime)+', duration: '+rnd(duration)+', timefactor: '+rnd(timeFactor));
     }
 
     // session sends name validation request
@@ -428,9 +456,10 @@ function tapOut(sessionId) {
 }
 
 // move ball
-function moveBall(moveTime) {
-  //log('  moveBall: startx: '+rnd(startx)+', endx: '+endx+', starty: '+rnd(starty)+', duration: '+rnd(moveTime)+', deltay: '+rnd(deltay));
-  io.broadcast({type:'moveBall', startx:startx, starty:starty, endx:endx, deltay:deltay, duration:moveTime});
+function moveBall(xTime, inityTime, yTime) {
+  //log('  moveBall: startx: '+rnd(startx)+', endx: '+rnd(endx)+', starty: '+rnd(starty)+', xTime: '+rnd(xTime)+', inityTime: '+rnd(inityTime)+', yTime: '+yTime);
+  //io.broadcast({type:'moveBall', startx:startx, starty:starty, endx:endx, deltay:deltay, xTime:xTime, yTime:ytime});
+  io.broadcast({type:'moveBall', startx:startx, endx:endx, starty:starty, xTime:xTime, inityTime:inityTime, yTime:yTime});
 }
 
 
@@ -466,8 +495,10 @@ var leaders;
 
 // flip a coin to see who serves
 var endx = (Math.random() < .5 ? 0 : 97);
-var duration = 4000; // first volley takes 2 seconds
-var deltay = 0;
+var endy = 50; // serve first ball straight across
+
+var xTime = 4000; // first volley takes 2 seconds
+timeFactor = 1; // duration multiplier
 
 updateScores();
 
@@ -851,12 +882,12 @@ function reset() {
     return 0;
   }
 
-  // determine who won coin toss/game/volley
   p1scored = 0;
   p2scored = 0;
   p1returned = 0;
   p2returned = 0;
 
+  // determine who won coin toss/game/volley
   if (endx == 0) { // p2 is serving
     send(player1.id, {type:'collide', value:true});
     send(player2.id, {type:'collide', value:false});
@@ -865,7 +896,9 @@ function reset() {
     send(player1.id, {type:'collide', value:false});
   }
 
-  duration = 4000;  
+  xTime = 4000;
+  timeFactor = 1;
+  
   deltay = 0;
   startx = 50, starty = 50;
 
@@ -879,7 +912,8 @@ function reset() {
   send(player2.id, {type:'reset'});
 
   // serve ball half speed because it's starting from center court, halfway across
-  moveBall(duration/2);
+  // inityTime and yTime are both 0 = straight across
+  moveBall(xTime/2, 0, 0);
 
   //log(' reset END');
 }
@@ -888,26 +922,27 @@ function reset() {
 function english(yval) {
   // convert from 0..11.5 range to 0..100
   // should really max out at 11 = 3% ball height + 8% paddle height
-  yval *= 8.7;
+  //yval *= 8.7;
 
-  if      (yval < 0)   deltay = -1; // edge not as good as corner
-  else if (yval < 10)  deltay = -3; // corner better than edge
-  else if (yval < 20)  deltay = -1.25;
-  else if (yval < 30)  deltay = -.8333;
-  else if (yval < 40)  deltay = -.41666;
-  else if (yval < 49)  deltay = -.1;
-  else if (yval < 52)  deltay = 0;
-  else if (yval < 60)  deltay = .1;
-  else if (yval < 70)  deltay = .41666;
-  else if (yval < 80)  deltay = .83333;
-  else if (yval < 90)  deltay = 1.25;
-  else if (yval < 100) deltay = 3;
-  else deltay = 1;
+  if      (yval < 0)   speed = -3; // edge not as good as corner
+  else if (yval < 5)  speed = -2; // corner better than edge
+  else if (yval < 10)  speed = -4;
+  else if (yval < 20)  speed = -6;
+  else if (yval < 35)  speed = -8;
+  else if (yval < 49)  speed = -10;
+  else if (yval < 52)  speed = 0;
+  else if (yval < 65)  speed = 10;
+  else if (yval < 80)  speed = 8;
+  else if (yval < 90)  speed = 6;
+  else if (yval < 95)  speed = 4;
+  else if (yval < 100) speed = 2;
+  else speed = 3;
 
   var yfac = 1.0; //1.5; // angle extremeness tuner
-  deltay *= yfac;
-  var speedfac = duration/4000;
-  return deltay/speedfac;
+  speed *= yfac;
+  log(' english: '+rnd(yval)+' = '+speed*1000);
+
+  return speed * 1000;
 }
 
 // END server.js

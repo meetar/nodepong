@@ -45,19 +45,19 @@ noscript {
 
 /***** PLAY SCREEN *****/
 
-#readout, #version {
+#readout, #version, #returned {
   position:absolute;
   color:blue;
   background-color: aqua;
   font-size:60%;
   text-align: left;
   z-index:2000;
-  display: none;
+  display: inline;
 }
 
 #readout {
-    position:absolute;
-top: 30px}
+    top: 30px;
+}
 
 #readout2 {
   position:absolute;
@@ -67,7 +67,11 @@ top: 30px}
   text-align: left;
   z-index:2000;
   top: 70px;
-  display: none;
+  display: inline;
+}
+
+#returned {
+    top: 100px;
 }
 
 #toucharea {
@@ -147,15 +151,29 @@ top: 30px}
 }
 
 /* inside a 4:3 rectangle, a square is 3:4 */
-#ball {
+/* xball moves on X */
+#xball {
+  height:100%;
   width:3%;
-  height:4%;
   background-color:gray;
   position:absolute;
   left:50%;
-  top:50%;
+  top:0%;
   visibility:hidden;
   z-index:50;
+  outline: 0px inset orange;
+}
+
+/* inside a 4:3 rectangle, a square is 3:4 */
+/* ball moves on Y */
+#ball {
+  background-color:gray;
+  width:100%;
+  height:4%;
+  position:absolute;
+  top:50%;
+  left:0%;
+  outline: 0px inset red;
 }
 
 #scores {

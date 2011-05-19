@@ -154,9 +154,11 @@ io.on('connection', function(client){
       
       if (client.sessionId == player2.id) {
         if (p1heartBeat == false) {
-          p1skippedBeat++; //log('p1 SKIPPED: '+p1skippedBeat);
+          p1skippedBeat++;
+          log('p1 SKIPPED: '+p1skippedBeat);
         } else {
           p1skippedBeat = 0;
+          p1heartBeat = false;
         }
         
         p1pos = msg.pos;
@@ -166,9 +168,11 @@ io.on('connection', function(client){
       }
       if (client.sessionId == player1.id) {
         if (p2heartBeat == false) {
-          p2skippedBeat++; //log('p2 SKIPPED: '+p2skippedBeat);
+          p2skippedBeat++;
+          log('p2 SKIPPED: '+p2skippedBeat);
         } else {
           p2skippedBeat = 0;
+          p2heartBeat = false;
         }
 
         p2pos = msg.pos;
@@ -176,9 +180,6 @@ io.on('connection', function(client){
         p2posTime = new Date();
 
       }
-
-      p1heartBeat = false;
-      p2heartBeat = false;
 
       if (p1skippedBeat == flatline) {
         p1skippedBeat = 0; // reset
@@ -448,9 +449,6 @@ function tapOut(sessionId) {
     send(queue[0].id, {type:'css', which:'status', property:'color', value:'white'});
   }
 
-  updatePlayerCounts();
-  updateQueuePositions();
-  updateLeaderboard();
 }
 
 // move ball
@@ -483,7 +481,7 @@ var p1returned = 0, p2returned = 0;
 
 var delay = 50; // ms between updates (50)
 var maxScore = 2;
-var flatline = 25; // maximum allowable number of skipped heartBeats (25)
+var flatline = 50; // maximum allowable number of skipped heartBeats (25)
 var resetDelay = 2000 // delay between volleys (2000)
 var newgameDelay = 2000 // delay between games (2000)
 
@@ -852,10 +850,6 @@ function gameover(type, which) {
     log(loggie);
   }
 
-  updateLeaderboard();
-  updatePlayerCounts();
-
-
   if (queue.length > 1) {
     //log('queue.length: '+queue.length+': '+queue);
     if (!newgameID) newgameID = setTimeout(function() {newgame(1)}, newgameDelay );
@@ -866,6 +860,11 @@ function gameover(type, which) {
     send(queue[0].id, {type:'css', which:'status', property:'background-color', value:'#666'});
     send(queue[0].id, {type:'css', which:'status', property:'color', value:'white'});
   }
+
+  updatePlayerCounts();
+  updateQueuePositions();
+  updateLeaderboard();
+
 }
 
 function reset() {
@@ -908,6 +907,7 @@ function reset() {
   // send reset to players
   send(player1.id, {type:'reset'});
   send(player2.id, {type:'reset'});
+  setcss('ball', 'visibility', 'visible');
 
   // serve ball half speed because it's starting from center court, halfway across
   // inityTime and yTime are both 0 = straight across

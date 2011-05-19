@@ -128,6 +128,10 @@ noscript {
   visibility:hidden;
 }
 
+#playerhide {
+  visibility: hidden;
+}
+
 #p1 {
   background-color: gray;
   position:absolute;
@@ -155,11 +159,10 @@ noscript {
 #xball {
   height:100%;
   width:3%;
-  background-color:gray;
   position:absolute;
   left:50%;
   top:0%;
-  visibility:hidden;
+  visibility:visible;
   z-index:50;
   outline: 0px inset orange;
 }
@@ -173,6 +176,7 @@ noscript {
   position:absolute;
   top:50%;
   left:0%;
+  visibility:hidden;
   outline: 0px inset red;
 }
 

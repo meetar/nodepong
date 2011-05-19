@@ -118,8 +118,6 @@ function insertcoin() {
     $('#spectate').css('visibility', 'visible');
     play();
   }
-  //ready();
-
 }
 
 // hide address bar on iPhone by scrolling down slightly
@@ -275,8 +273,6 @@ function command(msg){
         
         if (testMode) readout2.html("complete: returned: "+returned+", scored: "+scored);
         
-        collisionDetection();
-
         if (msg.endx == 0) {
           if (!returned && !scored) {
           // P2 SCORED
@@ -313,7 +309,6 @@ function command(msg){
         });
       }
 
-
       if ( (deltax > 0 && playing == "p2") || 
            (deltax < 0 && playing == "p1") ) {
         returned = false; // prepare to return
@@ -332,7 +327,6 @@ function command(msg){
         which.css('top', msg.pos+'%');
       }
       
-      //pos = parseFloat(which.css('top'));
       pos = which.position().top/court.height()*100;
       
       // speed limit: 4% per step @ 20 fps
@@ -364,10 +358,6 @@ function command(msg){
 
 // bounce ball off of floor and ceiling
 function bounceY(time) {
-  //alert('bounce, time:'+time);
-  //setTimeout(function() {$("#returned").html('');}, 2000);
-  
-  //ball.stop();
   var top;
   var thisTime, nextTime;
 
@@ -385,30 +375,6 @@ function bounceY(time) {
   );
 }
         
-/*
-// bounce ball off of floor and ceiling
-function oldbounceY(time) {
-  //alert('end: '+end+', time:'+time);
-  ball.stop(true, true);
-  var ypos = ball.position().top;
-  var top;
-  var thisTime, nextTime;
-
-  thisTime = Math.abs(time); // positive animate() durations only
-  nextTime = time * -1; // when done, head the other way
-
-  if (time == 0) top = ypos; // hit straight on? destination = source
-  else top = (time < 0 ? 0 : 96); // negative time = heading up, positive = down 
-  
-  if (testMode) readout2.html('ypos: '+ypos+', top: '+top+', time'+time);
-
-  ball.animate(
-    {top: top+"%"},
-    {duration: Math.abs(thisTime), easing: "linear", complete: function() {bounceY(nextTime);}}
-  );
-}
-*/
-
 // main event loop
 function playLoop(arg) {
   clearTimeout(playTimer)
@@ -459,13 +425,10 @@ function collisionDetection() {
   bally = ball.position().top;
   p1y = p1.position().top;
   p2y = p2.position().top;
-  //outAdd(rnd(ballx)+" ");
-  //socket.send({type:"log", what:": deltax: "+deltax+", lastbx: "+lastbx+", ballx: "+ballx});
 
   // collision zones: front edge of paddle to halfway off backside of paddle
   // prevents backedge returns, which feel cheaty
   // maybe just make it bounce off top and bottom edges?
-
 
   // new swept-volume collision detection
   topmost = lastby < bally ? lastby : bally;
@@ -473,30 +436,20 @@ function collisionDetection() {
   bottommost = lastby > bally ? lastby : bally; // lowest point reached by top of ball
 
   if (deltax < 0 && ballx <= 7.5 && lastbx >= 4.5) {
-    //socket.send({type:"log", what:"p1 RETURN: lastbx: "+rnd(lastbx)+", ballx: "+rnd(ballx)});
-    //socket.send({type:"log", what:"COLLIDE: deltax: "+deltax+", lastbx: "+lastbx+", ballx: "+ballx});
-
     // ball on left side heading left; in p1's hitzone?
     if ( topmost >= p1y && bottommost <= p1y + p1.height() ) {
-      //socket.send({type:"log", what:"P1 RETURN: deltax: "+deltax+", lastbx: "+lastbx+", ballx: "+ballx});
       returned = 'p1';
       deltax = 1;
-      //socket.send({what:"return", me:playing, x:ballx, y:bally}); // is this doing anything?
     }
   } else if (deltax > 0 && ballx >= 89 && lastbx <= 92) {
-    //socket.send({type:"log", what:"p2 RETURN: lastbx: "+rnd(lastbx)+", ballx: "+rnd(ballx)});
-    //socket.send({type:"log", what:"COLLIDE: deltax: "+deltax+", lastbx: "+lastbx+", ballx: "+ballx});
-
     // ball on right side heading right; in p2's hitzone?
     if ( topmost >= p2y && bottommost <= p2y + p2.height() ) {
-      //socket.send({type:"log", what:"p2 RETURN: deltax: "+deltax+", lastbx: "+lastbx+", ballx: "+ballx});
       returned = 'p2';
       deltax = -1;
-      //socket.send({what:"return", me:playing, x:ballx, y:bally});
-    } //else $('#readout').html('no collide right');
+    }
   }
   
-  // a magnificent return
+  // a magnificent return!
   if (returned) {
     xball.stop();
     // get relative y position so server can calculate english
@@ -504,15 +457,9 @@ function collisionDetection() {
     // get position of ball as a proportion of paddle's height
     var which = (returned == 'p1' ? p1 : p2);
     var angle = ((ball.position().top + ball.height()/2 - which.position().top)/which.height())*100;
-    /*
-    $("#returned").html('ball.position().top: '+ball.position().top+
-    '<br>ball.height()/2: '+ball.height()/2+
-    '<br>ball.position().top + ball.height(): '+(ball.position().top + ball.height()/2)+
-    '<br>which.position().top: '+which.position().top+
-    '<br>relative px: '+(ball.position().top + ball.height()/2 - which.position().top)+
-    '<br>which.height(): '+which.height()+
-    '<br>angle: '+rnd(angle));
-    */
+
+    //if (readout) $("#returned").html('ball.position().top: '+ball.position().top+'<br>ball.height()/2: '+ball.height()/2+    '<br>ball.position().top + ball.height(): '+(ball.position().top + ball.height()/2)+'<br>which.position().top: '+which.position().top+'<br>relative px: '+(ball.position().top + ball.height()/2 - which.position().top)+'<br>which.height(): '+which.height()+'<br>angle: '+rnd(angle));
+
     socket.send({type: 'return',
                  me: playing,
                  startx: ballx,
@@ -520,12 +467,10 @@ function collisionDetection() {
                  which: returned,
                  angle: angle});
     if (testMode) readout2.html(playing+" returned! "+returned+", angle: "+angle);
-
-    //socket.send({type:"log", what:returned+" angle: "+rnd(angle)});
   }
+
   lastbx = ballx;
   lastby = bally;
-  //socket.send({type:"log", what:"collide: lastbx: "+rnd(lastbx)+", ballx: "+rnd(ballx)});
 }
 
 function score(which, val) {
@@ -563,10 +508,10 @@ function setBodyScale() {
     maxScale = 200,
     minScale = 100; //Tweak these values to taste
 
-  var fontSize = scaleSource * scaleFactor; //Multiply the width of the body by the scaling factor:
+  var fontSize = scaleSource * scaleFactor; // Multiply the width of the body by the scaling factor:
 
   if (fontSize > maxScale) fontSize = maxScale;
-  if (fontSize < minScale) fontSize = minScale; //Enforce the minimum and maximums
+  if (fontSize < minScale) fontSize = minScale; // Enforce the minimum and maximums
 
   $body.css('font-size', fontSize + '%');
 }

@@ -217,11 +217,14 @@ function command(msg){
 
     case 'display': // show a message
       clearTimeout(displayText); // if there's a timeout already, override
-      $('#alert').html(msg.alert);
-      $('#alert').css('visibility', 'visible');
-      displayText = setTimeout( function() {
-        $('#alert').css('visibility', 'hidden');
-      }, 2000);
+      delay = (msg.delay ? msg.delay : 0);
+      setTimeout( function() {
+        $('#alert').html(msg.alert);
+        $('#alert').css('visibility', 'visible');
+        displayText = setTimeout( function() {
+          $('#alert').css('visibility', 'hidden');
+        }, 2000);
+      }, delay);
       break;
 
     case 'css': // modify css of which

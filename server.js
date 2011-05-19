@@ -327,9 +327,7 @@ io.on('connection', function(client){
         }
 
         send(client.sessionId, {type:'html', which:'position', html:queue.length});
-        setTimeout( function() {
-          send(client.sessionId, {type:'display', alert:'WELCOME '+player.name});
-        }, 500);
+        send(player.id, {type:'display', alert:'WELCOME '+player.name, delay:500});
 
         updateLeaderboard(client.sessionId);
         updatePlayerCounts();

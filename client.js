@@ -582,7 +582,7 @@ $(document).ready(function() {
   score('score2', 0);
 
   // click play and accept default name for fast testing
-  validateName();
+  //validateName();
 
   $(window).resize(function(){
     setBodyScale();

@@ -154,7 +154,7 @@ var readout2 = $('#readout2');
 var playTimer; // stores event loop timer
 var displayText;
 var validateTimeout;
-var testMode = true;
+var testMode = false;
 
 ///////////////////////////
 //      GAME LOGIC

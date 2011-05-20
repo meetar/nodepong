@@ -376,7 +376,7 @@ function command(msg){
       
     case 'endgame':
       socket.send({type:"log", what:"ENDGAME"});
-      readout2.html("FORFEIT");
+      if (testMode) readout2.html("FORFEIT");
       colliding = false;
       playing = false;
       paddle = '';

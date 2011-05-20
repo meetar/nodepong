@@ -155,7 +155,7 @@ io.on('connection', function(client){
       if (client.sessionId == player2.id) {
         if (p1heartBeat == false) {
           p1skippedBeat++;
-          log('p1 SKIPPED: '+p1skippedBeat);
+          //log('p1 SKIPPED: '+p1skippedBeat);
         } else {
           p1skippedBeat = 0;
           p1heartBeat = false;
@@ -169,7 +169,7 @@ io.on('connection', function(client){
       if (client.sessionId == player1.id) {
         if (p2heartBeat == false) {
           p2skippedBeat++;
-          log('p2 SKIPPED: '+p2skippedBeat);
+          //log('p2 SKIPPED: '+p2skippedBeat);
         } else {
           p2skippedBeat = 0;
           p2heartBeat = false;
@@ -370,9 +370,10 @@ io.on('connection', function(client){
 
       // second player! start new game!
       if (queue.length > 1 && !gameOn && !newgameID) {
-        log(' connect NEWGAME');
+        log('NEWGAME');
         newgameID = setTimeout(function() {newgame(2)}, newgameDelay );
-      } else if (queue.length > 1 && !gameOn && newgame) { // claims game already triggered?
+      } else if (queue.length > 1 && !gameOn && newgameID) { // claims game already triggered?
+          log('NEWGAMEID ALREDY TRIGGERED');
           setTimeout(function() { // give it 3 newgameDelays
             if (newgameID) newgame(3); // if newgameID still not reset, try to start a new game anyway
             else {
@@ -406,7 +407,7 @@ io.on('connection', function(client){
     }
 
     if (msg.type == 'log') {
-      log(parseInt(client.sessionId/100000000000000)+': '+msg.what);
+      log(":"+parseInt(client.sessionId/100000000000000)+': '+msg.what);
     }
 
   });
@@ -616,7 +617,7 @@ function log(x) {
 function report(list) {
   msg = ''
   for (x in list) {
-    msg += list[x]+': '+eval(list[x])+' | ';
+    msg += list[x]+': '+eval(list[x])+', ';
   }
   log(msg);
 }
@@ -654,6 +655,7 @@ function eliminateDuplicates(array) {
 //////////////////////////////////
 //           NEW GAME      
 
+// newgame!
 function newgame(id) {
   if (sessions.length < 2 || queue.length < 2) {
     log(' false start- sessions.length:'+sessions.length+', queue.length:'+queue.length);
@@ -718,12 +720,13 @@ function newgame(id) {
   score2 = 0;
   updateScores();
 
+  report(['playing', 'gameOn', 'point', 'player1.name', 'player2.name']);
   if (!playing) {
     //log(' !PLAYING');
 
     getSet = true;
     if (!playLoopID) {
-      log(' NO PLAYLOOP: starting');
+      log('NO PLAYLOOP: starting');
       playLoopID = setTimeout(playLoop, delay, 'NEWGAME');
     } else log('PROB: playloop already going');
 
@@ -733,10 +736,10 @@ function newgame(id) {
       clearTimeout(resetID);
     }
     resetID = setTimeout( reset, resetDelay );
+    log("resetID: "+resetID);
 
   } else {
-    log(' PROB: already playing');
-    report(['playing', 'gameOn', 'point', 'player1.id', 'player2.id']);
+    log('PROB: already playing, resetID: '+resetID);
     //return false;
   }
 
@@ -769,6 +772,8 @@ function playLoop(caller) {
       return 0;
     } else if (!resetID) {
       resetID = setTimeout(reset, resetDelay);
+      log("resetID: "+resetID);
+
     } else {
       log('PROB: already resetting');
     }
@@ -785,8 +790,7 @@ function playLoop(caller) {
   playLoopID = false;
 }
 
-// GAME OVER
-// type:'win'|'forfeit', player:[object Object]
+// gameover! type: 'win' or 'forfeit', which: player object
 function gameover(type, which) {
   log('GAME OVER: '+type+', '+which.name);
   gameOn = false;
@@ -867,10 +871,12 @@ function gameover(type, which) {
 
 }
 
+// reset!
 function reset() {
-  log('\nRESET: playing: '+playing+', gameOn: '+gameOn+', newgame: '+(newgame != false));
-  //if (playing || !gameOn || !newgame) { 
-  if ( (playing && !gameOn) || (playing && !newgame) ) {
+  log('\nRESET: playing: '+playing+', gameOn: '+gameOn+', newgameID: '+(newgameID != false));
+  //if (playing || !gameOn || !newgameID) { 
+  //if ( (playing && !gameOn) || (playing && !newgameID) ) {
+  if (playing || !gameOn) {
     log('> false reset');
     return false;
   }

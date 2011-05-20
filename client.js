@@ -144,10 +144,10 @@ var scores = {
   7:[1,3,6],
   8:[1,2,3,4,5,6,7],
   9:[1,2,3,4,6,7]
-}
+};
 
 // jQuery shortcuts
-var p1 = $('#p1'), p2 = $('#p2'), xball = $('#xball'), ball = $('#ball'), court = $('#court'), $body = $('body');
+var p1 = $('#p1'), p2 = $('#p2'), xball = $('#xball'), ball = $('#ball'), court = $('#court'), body = $('body');
 var readout = $('#readout');
 var readout2 = $('#readout2');
 
@@ -190,7 +190,15 @@ function command(msg){
       break;
 
     case 'playing':
+      socket.send({type:"log", what:"PLAYING"});
       if (msg.paddle == 'p1' || msg.paddle == 'p2') {
+        if (testMode) readout.html('playing: '+msg.paddle);
+        // make sure to kill any previous game
+        ball.css('visibility', 'hidden');
+        xball.stop(true);
+        ball.stop(true);
+        xball.css('left',court.width()/2+"px")
+        ball.css('top',court.height()/2+"px")
         
         // turn on mouse tracking
         $(document).mousemove(function(e){ mouseY = e.pageY; });
@@ -212,7 +220,6 @@ function command(msg){
         paddle.css('top', '50%');
         //paddle.css('background-color', 'blue');
         socket.send({type:'movePaddle', which:playing, pos:lastY, goal:lastY});
-
         playLoop(msg.delay); // normally 1 - .8 seems to reduce lag?
       }
       break;
@@ -247,12 +254,27 @@ function command(msg){
       break;
     
     case 'moveBall': // move ball
-      // kill any existing animates()
-      xball.stop();
-      ball.stop();
-      //if (testMode) readout.html("moveBall: "+rnd(msg.startx)+", "+rnd(msg.starty)+'<br>end: '+msg.endx+', xTime: '+msg.xTime);
-      xball.css({'left': msg.startx+"%"});
-      ball.css({'visibility': 'visible', 'top': msg.starty+"%"});
+      if (!playing) {
+        //socket.send({type:"log", what:"MOVEBALL: BAIL"});
+        return false;
+      }
+      socket.send({type:"log", what:"MOVEBALL"});
+      // kill any existing or queued animates()
+      xball.stop(true);
+      ball.stop(true);
+      if (testMode) {
+        readout.html("");
+        readout.html('moveBall: '+rnd(msg.startx)+", "+rnd(msg.starty)+
+        '<br>end: '+rnd(msg.endx)+', xTime: '+rnd(msg.xTime));
+      }
+      //testing
+      //xball.css({'left': msg.startx+"%"});
+      startxpx = msg.startx/100*court.width();
+      xball.css({'left': startxpx+"px"});
+      //testing
+      //ball.css({'visibility': 'visible', 'top': msg.starty+"%"});
+      startypx = msg.starty/100*court.height();
+      ball.css({'visibility': 'visible', 'top': startypx+"px"});
       ball.css({'background-color': 'white'});
 
       deltax = msg.endx == 0 ? -1 : 1; // set direction
@@ -264,8 +286,11 @@ function command(msg){
       
       /////////////////////////
       // animate xball on the X
-      xball.animate({left: msg.endx+"%"}, {duration: msg.xTime, easing: 'linear',
-
+      //testing
+      //xball.animate({left: msg.endx+"%"}, {duration: msg.xTime, easing: 'linear',
+      endxpx = msg.endx/100*court.width();
+      xball.animate({left: endxpx+"px"}, {duration: msg.xTime, easing: 'linear',
+      
       step: function() {
         //readout2.html("left: "+rnd(xball.position().left)+", top: "+rnd(xball.position().top));
 
@@ -284,8 +309,6 @@ function command(msg){
           if (!returned && !scored) {
           // P2 SCORED
             scored = true;
-            //ball1.css('visibility', 'hidden');
-            //ball.css('background-color', 'red');
             
             socket.send({type:'score', me:playing, which:'p2'});
             //if (testMode) readout2.html("complete at 0: returned: "+returned+", scored: "+scored);
@@ -295,8 +318,6 @@ function command(msg){
           if (!returned && !scored) {
           // P1 SCORED
             scored = true;
-            //ball1.css('visibility', 'hidden');
-            //ball.css('background-color', 'red');
             
             socket.send({type:'score', me:playing, which:'p1'});
             //if (testMode) readout2.html("complete at 97: returned: "+returned+", scored: "+scored);
@@ -313,7 +334,10 @@ function command(msg){
         //if (testMode) readout.html('endy: '+endy+', inityTime: '+rnd(msg.inityTime)+', yTime: '+msg.yTime);
         nextTime = msg.yTime * -1;
 
-        ball.animate({"top": endy+'%'}, {duration: msg.inityTime, easing: 'linear',
+        //testing
+        //ball.animate({"top": endy+'%'}, {duration: msg.inityTime, easing: 'linear',
+        endy = endy/100*court.height();
+        ball.animate({"top": endy+'px'}, {duration: msg.inityTime, easing: 'linear',
           complete: function() {
             bounceY(nextTime);
           }
@@ -351,12 +375,17 @@ function command(msg){
       break;
       
     case 'endgame':
+      socket.send({type:"log", what:"ENDGAME"});
+      readout2.html("FORFEIT");
       colliding = false;
       playing = false;
       paddle = '';
-      xball.stop();
-      ball.stop();
+      xball.stop(true);
+      ball.stop(true);
       ball.css('visibility', 'hidden');
+      xball.css('left',court.width()/2+"px")
+      ball.css('top',court.height()/2+"px")
+        
       
       // turn off mouse tracking
       $(document).mousemove(null);
@@ -378,19 +407,23 @@ function command(msg){
 function bounceY(time) {
   var top;
   var thisTime, nextTime;
-
+  //ball.stop(true, true); // ie has problems with this
   thisTime = Math.abs(time); // positive animate() durations only
   nextTime = time * -1; // when done, head the other way
 
   top = (time < 0 ? 0 : 96); // negative time = heading up, positive = down 
 
   //if (testMode) $("#returned").html('bounce, top: '+top+', time: '+time+', next: '+nextTime+', this: '+thisTime);  
-  //if (testMode) readout2.html('top: '+top+', time'+time);
+  //if (testMode) readout2.html('top!: '+top+', thistime: '+thisTime);
 
+  //testing
+  //ball.animate({top: top+"%"},{duration: thisTime, easing: "linear", complete: function() {bounceY(nextTime);}});
+  topx = top/100*court.height();
   ball.animate(
-    {top: top+"%", "background-color":"red"},
+    {top: topx+"px"},
     {duration: thisTime, easing: "linear", complete: function() {bounceY(nextTime);}}
   );
+  
 }
         
 // main event loop
@@ -470,11 +503,11 @@ function collisionDetection() {
   // a magnificent return!
   if (returned) {
     xball.stop();
+    
     // get relative y position so server can calculate english
-
     // get position of ball as a proportion of paddle's height
     var which = (returned == 'p1' ? p1 : p2);
-    var angle = ((ball.position().top + ball.height()/2 - which.position().top)/which.height())*100;
+    var angle = ((ball.position().top + ball.height()/2 - which.position().top)/paddle.height())*100;
 
     //if (readout) $("#returned").html('ball.position().top: '+ball.position().top+'<br>ball.height()/2: '+ball.height()/2+    '<br>ball.position().top + ball.height(): '+(ball.position().top + ball.height()/2)+'<br>which.position().top: '+which.position().top+'<br>relative px: '+(ball.position().top + ball.height()/2 - which.position().top)+'<br>which.height(): '+which.height()+'<br>angle: '+rnd(angle));
 
@@ -484,7 +517,7 @@ function collisionDetection() {
                  starty: bally/court.height()*100,
                  which: returned,
                  angle: angle});
-    //if (testMode) readout2.html(playing+" returned! "+returned+", angle: "+angle);
+    if (testMode) readout2.html(playing+" returned! "+returned+", angle: "+rnd(angle));
   }
 
   lastbx = ballx;
@@ -531,7 +564,7 @@ function setBodyScale() {
   if (fontSize > maxScale) fontSize = maxScale;
   if (fontSize < minScale) fontSize = minScale; // Enforce the minimum and maximums
 
-  $body.css('font-size', fontSize + '%');
+  body.css('font-size', fontSize + '%');
 }
 
 // trigger when document has finished loading

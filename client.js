@@ -254,10 +254,6 @@ function command(msg){
       break;
     
     case 'moveBall': // move ball
-      if (!playing) {
-        //socket.send({type:"log", what:"MOVEBALL: BAIL"});
-        return false;
-      }
       socket.send({type:"log", what:"MOVEBALL"});
       // kill any existing or queued animates()
       xball.stop(true);

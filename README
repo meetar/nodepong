@@ -5,14 +5,8 @@ NodePong is a browser-based multi-player implementation of the classic arcade ga
 - jQuery for dynamic browser interaction
 - jQuery mobile for mobile touch support
 
-To run the server and serve the app, node.js and socket.io must be installed. To play, you just need a web browser with JavaScript enabled.
+To run the server and serve the app, node.js and socket.io must be installed.
 
-This repository and all of its components are works in progress, and may not function from day to day. It may be occasionally playable at http://nodepong.com/ — give it a shot!
+To play, you just need a web browser with JavaScript enabled.
 
-This is a learning exercise — I've tried to keep things well-commented, and there's a long and rambling about page up at http://about.nodepong.com with lots of details.
-
-Ping!  
-Peter Richardson  
-http://zoomy.net
-@meetar (http://twitter.com/meetar)  
-NYC, May 16 2011
+Play at: http://meetar.github.io/nodepong
